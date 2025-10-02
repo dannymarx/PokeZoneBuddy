@@ -1,6 +1,6 @@
 # PokeZoneBuddy
 
-**PokeZoneBuddy** ist eine macOS- und iOS-App, die Pokémon GO-Events anzeigt und automatisch die lokalen Zeiten für deine Lieblingsstädte umrechnet.  
+**PokeZoneBuddy** ist eine macOS-App, die Pokémon GO-Events anzeigt und automatisch die lokalen Zeiten für deine Lieblingsstädte umrechnet.  
 So weißt du immer genau, wann du zu Hause aktiv sein musst, um ein Event mitspielen zu können, das z. B. in Tokio oder New York stattfindet.
 
 ---

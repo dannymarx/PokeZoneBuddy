@@ -16,7 +16,7 @@
     </g>
   </defs>
 
-  <!-- Hintergrundleiste vollständig gefüllt (keine Transparenz) -->
+  <!-- Lila Hintergrund mit Gradient -->
   <rect x="32" y="32" width="960" height="960" rx="220" fill="url(#bgGrad)"/>
 
   <!-- Kalender (zentriert) -->
