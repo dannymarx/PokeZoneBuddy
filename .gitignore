@@ -6,7 +6,7 @@ build/
 # User-spezifisch
 *.xcuserdatad/
 *.xcuserdata/
-*.xcodeproj/project.xcworkspace/
+*.xcodeproj/project.xcworkspace/xcuserdata/
 *.xcodeproj/xcuserdata/
 
 # Artefakte
@@ -20,3 +20,7 @@ ReleaseDisk/
 
 # macOS
 .DS_Store
+
+# Local development
+scripts/
+assets/AppIcon.icon
