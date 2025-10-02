@@ -172,6 +172,7 @@ h1 {
     border: 1px solid var(--border);
     max-width: 480px;
     margin: 0 auto;
+    text-align: center;
 }
 
 .platforms-text {
