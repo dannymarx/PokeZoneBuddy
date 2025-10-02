@@ -1,0 +1,273 @@
+/* PokeZoneBuddy Landing Page Styles */
+
+:root {
+    --primary: #B694F7;
+    --primary-light: #D8B6FF;
+    --accent: #FBE288;
+    --bg: #FAFAFA;
+    --text: #2D2D2D;
+    --text-light: #666;
+    --white: #FFFFFF;
+    --border: #E5E5E5;
+}
+
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+}
+
+body {
+    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, sans-serif;
+    background: var(--bg);
+    color: var(--text);
+    line-height: 1.6;
+    -webkit-font-smoothing: antialiased;
+}
+
+.container {
+    max-width: 800px;
+    margin: 0 auto;
+    padding: 60px 20px;
+}
+
+/* Hero Section */
+.hero {
+    text-align: center;
+    margin-bottom: 80px;
+}
+
+.app-icon {
+    margin-bottom: 24px;
+}
+
+.app-icon img {
+    border-radius: 24px;
+    box-shadow: 0 10px 40px rgba(182, 148, 247, 0.3);
+}
+
+h1 {
+    font-size: 48px;
+    font-weight: 700;
+    background: linear-gradient(135deg, var(--primary) 0%, var(--primary-light) 100%);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+    margin-bottom: 16px;
+}
+
+.tagline {
+    font-size: 24px;
+    font-weight: 500;
+    color: var(--text);
+    margin-bottom: 16px;
+}
+
+.subtitle {
+    font-size: 18px;
+    color: var(--text-light);
+    max-width: 600px;
+    margin: 0 auto;
+}
+
+/* Features */
+.features {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+    gap: 32px;
+    margin-bottom: 80px;
+}
+
+.feature {
+    text-align: center;
+    padding: 32px 20px;
+    background: var(--white);
+    border-radius: 16px;
+    border: 1px solid var(--border);
+    transition: transform 0.2s, box-shadow 0.2s;
+}
+
+.feature:hover {
+    transform: translateY(-4px);
+    box-shadow: 0 8px 24px rgba(182, 148, 247, 0.15);
+}
+
+.feature-icon {
+    font-size: 48px;
+    margin-bottom: 16px;
+}
+
+.feature h3 {
+    font-size: 20px;
+    font-weight: 600;
+    color: var(--primary);
+    margin-bottom: 8px;
+}
+
+.feature p {
+    font-size: 15px;
+    color: var(--text-light);
+}
+
+/* Example Section */
+.example {
+    text-align: center;
+    margin-bottom: 80px;
+}
+
+.example h2 {
+    font-size: 32px;
+    font-weight: 600;
+    color: var(--text);
+    margin-bottom: 24px;
+}
+
+.example-box {
+    background: linear-gradient(135deg, var(--primary-light) 0%, var(--primary) 100%);
+    padding: 32px;
+    border-radius: 16px;
+    color: var(--white);
+    max-width: 600px;
+    margin: 0 auto;
+}
+
+.example-box p {
+    font-size: 16px;
+    margin-bottom: 12px;
+}
+
+.example-box p:last-child {
+    margin-bottom: 0;
+}
+
+.example-result {
+    font-size: 18px;
+    font-weight: 500;
+}
+
+.highlight {
+    background: var(--accent);
+    color: var(--text);
+    padding: 4px 8px;
+    border-radius: 6px;
+    font-weight: 600;
+}
+
+/* Platforms */
+.platforms {
+    text-align: center;
+    margin-bottom: 80px;
+}
+
+.platforms h2 {
+    font-size: 32px;
+    font-weight: 600;
+    color: var(--text);
+    margin-bottom: 24px;
+}
+
+.platform-badges {
+    display: flex;
+    gap: 16px;
+    justify-content: center;
+    flex-wrap: wrap;
+    margin-bottom: 16px;
+}
+
+.badge {
+    background: var(--white);
+    color: var(--primary);
+    padding: 12px 24px;
+    border-radius: 24px;
+    font-weight: 600;
+    font-size: 16px;
+    border: 2px solid var(--primary);
+}
+
+.coming-soon {
+    font-size: 14px;
+    color: var(--text-light);
+    font-style: italic;
+}
+
+/* Credits */
+.credits {
+    text-align: center;
+    padding: 40px 20px;
+    background: var(--white);
+    border-radius: 16px;
+    border: 1px solid var(--border);
+}
+
+.credits h3 {
+    font-size: 20px;
+    font-weight: 600;
+    color: var(--text);
+    margin-bottom: 16px;
+}
+
+.credits p {
+    font-size: 14px;
+    color: var(--text-light);
+    margin-bottom: 8px;
+}
+
+.credits a {
+    color: var(--primary);
+    text-decoration: none;
+    font-weight: 500;
+    transition: opacity 0.2s;
+}
+
+.credits a:hover {
+    opacity: 0.7;
+}
+
+.github-link {
+    margin-top: 24px;
+}
+
+.github-link a {
+    display: inline-block;
+    background: var(--primary);
+    color: var(--white);
+    padding: 12px 32px;
+    border-radius: 24px;
+    text-decoration: none;
+    font-weight: 600;
+    transition: transform 0.2s, box-shadow 0.2s;
+}
+
+.github-link a:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 8px 24px rgba(182, 148, 247, 0.3);
+}
+
+/* Responsive */
+@media (max-width: 768px) {
+    h1 {
+        font-size: 36px;
+    }
+    
+    .tagline {
+        font-size: 20px;
+    }
+    
+    .subtitle {
+        font-size: 16px;
+    }
+    
+    .features {
+        grid-template-columns: 1fr;
+        gap: 20px;
+    }
+    
+    .example h2,
+    .platforms h2 {
+        font-size: 24px;
+    }
+    
+    .example-box {
+        padding: 24px;
+    }
+}
