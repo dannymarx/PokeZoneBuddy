@@ -6,12 +6,29 @@ So weißt du immer genau, wann du zu Hause aktiv sein musst, um ein Event mitspi
 ---
 
 ## ✨ Features
-- Anzeige kommender Pokémon GO Events
-- Favoritenliste mit eigenen Städten
-- Automatische Umrechnung in deine lokale Zeit
+
+### Core Features
+- 📅 **Event-Übersicht** mit Bildern und Live-Countdowns
+- 🌍 **Favoriten-Städte** aus der ganzen Welt hinzufügen
+- ⏰ **Automatische Zeitumrechnung** in deine lokale Zeitzone
+
+### Event-Details (Version 0.2)
+- 👾 **Pokemon-Details** für Spotlight Hours, Raids & Community Days
+- ✨ **Shiny-Status** - siehe welche Pokemon als Shiny verfügbar sind
+- 📊 **Live-Status** mit Countdowns und Progress-Bars
+- 🎨 **Farbcodierte Event-Types** für schnelle Orientierung
+- 🖼️ **Event-Bilder** in Listen und Detail-Ansichten
+
+### Version 0.2 Highlights
+- Event-Thumbnails (60x60) in der Übersicht
+- Hero-Images (240px) in Detail-Ansicht
+- Featured Pokemon mit Icons (60-100px)
+- Raid-Boss-Galerien mit Shiny-Badges
+- Live-Countdown für laufende Events
+- About-View mit Credits & Copyright
 
 
-➡ [Siehe Changelog](./CHANGELOG.md) für Details zu allen Versionen.
+🔗 [Siehe Changelog](./CHANGELOG.md) für Details zu allen Versionen.
 
 ---
 

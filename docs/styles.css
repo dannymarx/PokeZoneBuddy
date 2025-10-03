@@ -152,6 +152,50 @@ h1 {
     font-weight: 600;
 }
 
+/* What's New Section */
+.whats-new {
+    text-align: center;
+    margin-bottom: 48px;
+}
+
+.whats-new h2 {
+    font-size: 28px;
+    font-weight: 600;
+    color: var(--text);
+    margin-bottom: 24px;
+}
+
+.new-features {
+    background: var(--white);
+    padding: 32px;
+    border-radius: 12px;
+    border: 1px solid var(--border);
+    max-width: 640px;
+    margin: 0 auto;
+}
+
+.new-features ul {
+    list-style: none;
+    text-align: left;
+}
+
+.new-features li {
+    font-size: 15px;
+    color: var(--text);
+    margin-bottom: 12px;
+    padding-left: 8px;
+    line-height: 1.6;
+}
+
+.new-features li:last-child {
+    margin-bottom: 0;
+}
+
+.new-features strong {
+    color: var(--primary);
+    font-weight: 600;
+}
+
 /* Download Section */
 .download {
     text-align: center;
@@ -261,6 +305,32 @@ h1 {
     color: var(--white);
 }
 
+/* Legal Disclaimer */
+.legal-disclaimer {
+    margin: 24px 0 16px 0;
+    padding: 20px;
+    background: linear-gradient(135deg, #FFF9E6 0%, #FFF3D6 100%);
+    border-radius: 8px;
+    border: 1px solid #FFE4A3;
+}
+
+.legal-text {
+    font-size: 12px;
+    color: var(--text);
+    line-height: 1.5;
+    margin-bottom: 10px;
+    text-align: left;
+}
+
+.legal-text:last-child {
+    margin-bottom: 0;
+}
+
+.legal-text strong {
+    color: var(--primary);
+    font-weight: 600;
+}
+
 .privacy-link {
     margin-top: 12px;
     font-size: 12px;
@@ -296,6 +366,22 @@ h1 {
     
     .example-box {
         padding: 20px;
+    }
+    
+    .new-features {
+        padding: 24px;
+    }
+    
+    .new-features li {
+        font-size: 14px;
+    }
+    
+    .legal-disclaimer {
+        padding: 16px;
+    }
+    
+    .legal-text {
+        font-size: 11px;
     }
 
     .platform-info {

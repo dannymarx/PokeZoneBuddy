@@ -59,7 +59,7 @@ final class EventsViewModel: ObservableObject {
             events = try modelContext.fetch(descriptor)
         } catch {
             print("❌ Fehler beim Laden aus Datenbank: \(error)")
-            errorMessage = "Fehler beim Laden der gespeicherten Events"
+            errorMessage = "Failed to load saved events"
             showError = true
         }
     }
@@ -100,7 +100,7 @@ final class EventsViewModel: ObservableObject {
             showError = true
         } catch {
             print("❌ Unbekannter Fehler: \(error)")
-            errorMessage = "Ein unbekannter Fehler ist aufgetreten"
+            errorMessage = String(localized: "alert.error.unknown")
             showError = true
         }
         
@@ -155,9 +155,9 @@ extension EventsViewModel {
         guard let updateTime = lastUpdateTime else { return nil }
         
         let formatter = RelativeDateTimeFormatter()
-        formatter.locale = Locale(identifier: "de_DE")
+        formatter.locale = Locale.current
         formatter.unitsStyle = .full
         
-        return "Aktualisiert \(formatter.localizedString(for: updateTime, relativeTo: Date()))"
+        return String(format: String(localized: "events.last_updated"), formatter.localizedString(for: updateTime, relativeTo: Date()))
     }
 }

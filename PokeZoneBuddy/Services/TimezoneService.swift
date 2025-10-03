@@ -7,7 +7,7 @@
 
 import Foundation
 
-/// Service für Timezone-Konvertierungen und Zeit-Formatierungen
+/// Service for timezone conversions and time formatting
 final class TimezoneService {
     
     // MARK: - Singleton
@@ -16,52 +16,52 @@ final class TimezoneService {
     
     // MARK: - Date Formatters
     
-    /// Formatter für Datum + Zeit (z.B. "05. Okt 2025, 14:00")
+    /// Formatter for date + time (e.g. "Oct 05, 2025, 2:00 PM")
     private lazy var dateTimeFormatter: DateFormatter = {
         let formatter = DateFormatter()
         formatter.dateStyle = .medium
         formatter.timeStyle = .short
-        formatter.locale = Locale(identifier: "de_DE")
+        formatter.locale = Locale(identifier: "en_US")
         return formatter
     }()
     
-    /// Formatter nur für Zeit (z.B. "14:00")
+    /// Formatter for time only (e.g. "2:00 PM")
     private lazy var timeFormatter: DateFormatter = {
         let formatter = DateFormatter()
         formatter.dateStyle = .none
         formatter.timeStyle = .short
-        formatter.locale = Locale(identifier: "de_DE")
+        formatter.locale = Locale(identifier: "en_US")
         return formatter
     }()
     
-    /// Formatter für Datum (z.B. "05. Oktober 2025")
+    /// Formatter for date only (e.g. "October 5, 2025")
     private lazy var dateFormatter: DateFormatter = {
         let formatter = DateFormatter()
         formatter.dateStyle = .long
         formatter.timeStyle = .none
-        formatter.locale = Locale(identifier: "de_DE")
+        formatter.locale = Locale(identifier: "en_US")
         return formatter
     }()
     
     // MARK: - Timezone Conversion
     
-    /// Konvertiert ein Date-Objekt nicht (Date ist immer UTC),
-    /// gibt aber das gleiche Date zurück für die Anzeige in einer anderen Timezone
+    /// Does not convert a Date object (Date is always UTC),
+    /// but returns the same Date for display in a different timezone
     /// - Parameters:
-    ///   - date: Das zu konvertierende Datum
-    ///   - timezone: Die Ziel-Timezone
-    /// - Returns: Das gleiche Date (Dates sind timezone-agnostic)
+    ///   - date: The date to convert
+    ///   - timezone: The target timezone
+    /// - Returns: The same Date (Dates are timezone-agnostic)
     func convertToTimezone(_ date: Date, to timezone: TimeZone) -> Date {
-        // Date-Objekte sind immer in UTC, die Timezone wird nur für die Anzeige verwendet
+        // Date objects are always in UTC, the timezone is only used for display
         return date
     }
     
-    /// Formatiert ein Datum für eine bestimmte Timezone
+    /// Formats a date for a specific timezone
     /// - Parameters:
-    ///   - date: Das zu formatierende Datum
-    ///   - timezone: Die Timezone für die Formatierung
-    ///   - includeDate: Ob das Datum mit angezeigt werden soll (default: true)
-    /// - Returns: Formatierter String (z.B. "05. Okt 2025, 14:00 JST")
+    ///   - date: The date to format
+    ///   - timezone: The timezone for formatting
+    ///   - includeDate: Whether to include the date (default: true)
+    /// - Returns: Formatted string (e.g. "Oct 05, 2025, 2:00 PM JST")
     func formatDateForTimezone(_ date: Date, timezone: TimeZone, includeDate: Bool = true) -> String {
         let formatter = includeDate ? dateTimeFormatter : timeFormatter
         formatter.timeZone = timezone
@@ -72,21 +72,21 @@ final class TimezoneService {
         return "\(timeString) \(tzAbbreviation)"
     }
     
-    /// Formatiert nur die Zeit für eine Timezone
+    /// Formats only the time for a timezone
     /// - Parameters:
-    ///   - date: Das zu formatierende Datum
-    ///   - timezone: Die Timezone
-    /// - Returns: Nur die Zeit (z.B. "14:00")
+    ///   - date: The date to format
+    ///   - timezone: The timezone
+    /// - Returns: Time only (e.g. "2:00 PM")
     func formatTimeOnly(_ date: Date, timezone: TimeZone) -> String {
         timeFormatter.timeZone = timezone
         return timeFormatter.string(from: date)
     }
     
-    /// Formatiert nur das Datum für eine Timezone
+    /// Formats only the date for a timezone
     /// - Parameters:
-    ///   - date: Das zu formatierende Datum
-    ///   - timezone: Die Timezone
-    /// - Returns: Nur das Datum (z.B. "05. Oktober 2025")
+    ///   - date: The date to format
+    ///   - timezone: The timezone
+    /// - Returns: Date only (e.g. "October 5, 2025")
     func formatDateOnly(_ date: Date, timezone: TimeZone) -> String {
         dateFormatter.timeZone = timezone
         return dateFormatter.string(from: date)
@@ -94,13 +94,13 @@ final class TimezoneService {
     
     // MARK: - Time Range Formatting
     
-    /// Formatiert einen Zeitbereich (Start-Ende) für eine Timezone
+    /// Formats a time range (start-end) for a timezone
     /// - Parameters:
-    ///   - startDate: Startzeit
-    ///   - endDate: Endzeit
-    ///   - timezone: Die Timezone
-    ///   - includeDate: Ob das Datum angezeigt werden soll
-    /// - Returns: Formatierter Zeitbereich (z.B. "14:00-17:00 JST" oder "05. Okt, 14:00-17:00 JST")
+    ///   - startDate: Start time
+    ///   - endDate: End time
+    ///   - timezone: The timezone
+    ///   - includeDate: Whether to include the date
+    /// - Returns: Formatted time range (e.g. "2:00 PM-5:00 PM JST" or "Oct 05, 2:00 PM-5:00 PM JST")
     func formatTimeRange(
         startDate: Date,
         endDate: Date,
@@ -124,12 +124,12 @@ final class TimezoneService {
     
     // MARK: - Comparison Helpers
     
-    /// Berechnet die Zeitdifferenz zwischen zwei Timezones in Stunden
+    /// Calculates the time difference between two timezones in hours
     /// - Parameters:
-    ///   - fromTimezone: Quell-Timezone
-    ///   - toTimezone: Ziel-Timezone
-    ///   - date: Referenzdatum (wichtig wegen Sommerzeit)
-    /// - Returns: Zeitdifferenz in Stunden (kann negativ sein)
+    ///   - fromTimezone: Source timezone
+    ///   - toTimezone: Target timezone
+    ///   - date: Reference date (important because of daylight saving)
+    /// - Returns: Time difference in hours (can be negative)
     func timeDifference(
         from fromTimezone: TimeZone,
         to toTimezone: TimeZone,
@@ -140,12 +140,12 @@ final class TimezoneService {
         return (toOffset - fromOffset) / 3600
     }
     
-    /// Erstellt einen Text der die Zeitdifferenz erklärt
+    /// Creates a text that explains the time difference
     /// - Parameters:
-    ///   - sourceTimezone: Die Timezone der Quelle
-    ///   - targetTimezone: Die Timezone des Ziels
-    ///   - date: Referenzdatum
-    /// - Returns: Beschreibender Text (z.B. "7 Stunden früher als deine Zeit")
+    ///   - sourceTimezone: The source timezone
+    ///   - targetTimezone: The target timezone
+    ///   - date: Reference date
+    /// - Returns: Descriptive text (e.g. "7 hours behind your time")
     func timeDifferenceDescription(
         from sourceTimezone: TimeZone,
         to targetTimezone: TimeZone,
@@ -154,23 +154,24 @@ final class TimezoneService {
         let difference = timeDifference(from: sourceTimezone, to: targetTimezone, at: date)
         
         if difference == 0 {
-            return "Gleiche Zeit wie deine Zeit"
+            return String(localized: "time.same_as_yours")
         } else if difference > 0 {
-            return "\(abs(difference)) Stunden später als deine Zeit"
+            return String(format: String(localized: "time.hours_ahead"), abs(difference))
         } else {
-            return "\(abs(difference)) Stunden früher als deine Zeit"
+            return String(format: String(localized: "time.hours_behind"), abs(difference))
         }
     }
     
     // MARK: - User's Current Timezone
     
-    /// Die aktuelle Timezone des Users
+    /// The current timezone of the user
     var userTimezone: TimeZone {
         return TimeZone.current
     }
     
-    /// Formatiert ein Datum für die User-Timezone
+    /// Formats a date for the user's timezone
     func formatDateForUser(_ date: Date, includeDate: Bool = true) -> String {
         return formatDateForTimezone(date, timezone: userTimezone, includeDate: includeDate)
     }
 }
+

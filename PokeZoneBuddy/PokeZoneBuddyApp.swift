@@ -11,8 +11,8 @@ import SwiftData
 @main
 struct PokeZoneBuddyApp: App {
     
-    /// SwiftData ModelContainer für lokale Persistierung
-    /// Speichert Events und FavoriteCities lokal (kein CloudKit)
+    /// SwiftData ModelContainer for local persistence
+    /// Stores Events and FavoriteCities locally (no CloudKit)
     var sharedModelContainer: ModelContainer = {
         let schema = Schema([
             Event.self,
@@ -27,7 +27,7 @@ struct PokeZoneBuddyApp: App {
         do {
             return try ModelContainer(for: schema, configurations: [modelConfiguration])
         } catch {
-            fatalError("ModelContainer konnte nicht erstellt werden: \(error)")
+            fatalError(String(format: String(localized: "fatal.model_container_creation_failed"), String(describing: error)))
         }
     }()
 
@@ -39,9 +39,9 @@ struct PokeZoneBuddyApp: App {
         #if os(macOS)
         .defaultSize(width: 1200, height: 800)
         .commands {
-            // Refresh Command für macOS Menu Bar
+            // Refresh Command for macOS Menu Bar
             CommandGroup(after: .newItem) {
-                Button("Events aktualisieren") {
+                Button(String(localized: "menu.refresh_events")) {
                     NotificationCenter.default.post(name: .refreshEvents, object: nil)
                 }
                 .keyboardShortcut("r", modifiers: .command)
@@ -54,6 +54,6 @@ struct PokeZoneBuddyApp: App {
 // MARK: - Notification Names
 
 extension Notification.Name {
-    /// Notification zum Aktualisieren der Events
+    /// Notification to refresh events
     static let refreshEvents = Notification.Name("refreshEvents")
 }

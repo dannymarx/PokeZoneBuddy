@@ -3,6 +3,7 @@
 //  PokeZoneBuddy
 //
 //  Created by Danny Hollek on 01.10.2025.
+//  Updated for v0.2 on 02.10.2025
 //
 
 import Foundation
@@ -54,39 +55,32 @@ final class APIService {
             
             // JSON dekodieren
             let decoder = JSONDecoder()
-            // Custom Date Decoder für verschiedene Formate
             decoder.dateDecodingStrategy = .custom { decoder in
                 let container = try decoder.singleValueContainer()
                 let dateString = try container.decode(String.self)
                 
-                // DateFormatter für verschiedene ISO8601 Varianten
                 let formatter = DateFormatter()
                 formatter.locale = Locale(identifier: "en_US_POSIX")
                 formatter.timeZone = TimeZone(secondsFromGMT: 0)
                 
-                // Format 1: "2025-08-04T18:00:00.000Z" (mit Z)
-                formatter.dateFormat = "yyyy-MM-dd'T'HH:mm:ss.SSSZ"
-                if let date = formatter.date(from: dateString) {
-                    return date
+                // Try different date formats
+                let formats = [
+                    "yyyy-MM-dd'T'HH:mm:ss.SSSZ",
+                    "yyyy-MM-dd'T'HH:mm:ss.SSS",
+                    "yyyy-MM-dd'T'HH:mm:ss"
+                ]
+                
+                for format in formats {
+                    formatter.dateFormat = format
+                    if let date = formatter.date(from: dateString) {
+                        return date
+                    }
                 }
                 
-                // Format 2: "2025-08-04T18:00:00.000" (ohne Z, aber mit milliseconds)
-                formatter.dateFormat = "yyyy-MM-dd'T'HH:mm:ss.SSS"
-                if let date = formatter.date(from: dateString) {
-                    return date
-                }
-                
-                // Format 3: "2025-08-04T18:00:00" (ohne milliseconds)
-                formatter.dateFormat = "yyyy-MM-dd'T'HH:mm:ss"
-                if let date = formatter.date(from: dateString) {
-                    return date
-                }
-                
-                // Format 4: Mit Z am Ende hinzufügen wenn nicht vorhanden
+                // Try with Z appended
                 if !dateString.hasSuffix("Z") {
-                    let modifiedString = dateString + "Z"
                     formatter.dateFormat = "yyyy-MM-dd'T'HH:mm:ss.SSSZ"
-                    if let date = formatter.date(from: modifiedString) {
+                    if let date = formatter.date(from: dateString + "Z") {
                         return date
                     }
                 }
@@ -97,15 +91,97 @@ final class APIService {
                 )
             }
             
-            // API gibt direkt ein Array zurück
+            // Decode API events
             let apiEvents = try decoder.decode([APIEvent].self, from: data)
             
-            // API Events in App Events konvertieren
+            // Convert to App Events
             let events = apiEvents.compactMap { apiEvent -> Event? in
-                // Prüfe ob Event global oder lokal ist (basierend auf "Z" im Datum-String)
-                // Die API gibt das nicht direkt zurück, also müssen wir es aus dem raw JSON auslesen
-                // Für jetzt: Annahme dass Events ohne "Z" lokal sind
-                let isGlobal = false // TODO: Aus raw JSON auslesen wenn nötig
+                // Check if event has global time (contains Z in date string)
+                // This needs to be checked from raw JSON, for now assume based on end time having Z
+                let isGlobal = apiEvent.rawEndTime?.hasSuffix("Z") ?? false
+                
+                // Parse extraData for detailed info
+                var spotlightDetails: SpotlightDetails?
+                var raidDetails: RaidDetails?
+                var communityDayDetails: CommunityDayDetails?
+                
+                if let extraData = apiEvent.extraData {
+                    // Spotlight Hour
+                    if let spotlight = extraData.spotlight {
+                        let pokemonList = spotlight.list.map { pokemon in
+                            PokemonInfo(
+                                name: pokemon.name,
+                                imageURL: pokemon.image,
+                                canBeShiny: pokemon.canBeShiny
+                            )
+                        }
+                        
+                        spotlightDetails = SpotlightDetails(
+                            featuredPokemonName: spotlight.name,
+                            featuredPokemonImage: spotlight.image,
+                            canBeShiny: spotlight.canBeShiny,
+                            bonus: spotlight.bonus,
+                            allFeaturedPokemon: pokemonList
+                        )
+                    }
+                    
+                    // Raid Battles
+                    if let raidBattles = extraData.raidbattles {
+                        let bosses = raidBattles.bosses.map { boss in
+                            PokemonInfo(
+                                name: boss.name,
+                                imageURL: boss.image,
+                                canBeShiny: boss.canBeShiny
+                            )
+                        }
+                        
+                        let shinies = raidBattles.shinies.map { shiny in
+                            PokemonInfo(
+                                name: shiny.name,
+                                imageURL: shiny.image,
+                                canBeShiny: true
+                            )
+                        }
+                        
+                        raidDetails = RaidDetails(
+                            bosses: bosses,
+                            availableShinies: shinies
+                        )
+                    }
+                    
+                    // Community Day
+                    if let cd = extraData.communityday {
+                        let spawns = cd.spawns.map { spawn in
+                            PokemonInfo(
+                                name: spawn.name,
+                                imageURL: spawn.image,
+                                canBeShiny: true
+                            )
+                        }
+                        
+                        let shinies = cd.shinies.map { shiny in
+                            PokemonInfo(
+                                name: shiny.name,
+                                imageURL: shiny.image,
+                                canBeShiny: true
+                            )
+                        }
+                        
+                        let bonuses = cd.bonuses.map { bonus in
+                            CommunityDayBonus(
+                                text: bonus.text,
+                                iconURL: bonus.image
+                            )
+                        }
+                        
+                        communityDayDetails = CommunityDayDetails(
+                            featuredPokemon: spawns,
+                            shinies: shinies,
+                            bonuses: bonuses,
+                            hasSpecialResearch: cd.specialresearch != nil && !cd.specialresearch!.isEmpty
+                        )
+                    }
+                }
                 
                 return Event(
                     id: apiEvent.eventID,
@@ -118,17 +194,20 @@ final class APIService {
                     isGlobalTime: isGlobal,
                     imageURL: apiEvent.image,
                     hasSpawns: apiEvent.extraData?.generic.hasSpawns ?? false,
-                    hasFieldResearchTasks: apiEvent.extraData?.generic.hasFieldResearchTasks ?? false
+                    hasFieldResearchTasks: apiEvent.extraData?.generic.hasFieldResearchTasks ?? false,
+                    spotlightDetails: spotlightDetails,
+                    raidDetails: raidDetails,
+                    communityDayDetails: communityDayDetails
                 )
             }
             
-            print("✅ \(events.count) Events von API geladen")
+            print("✅ \(events.count) events loaded from API")
             return events
             
         } catch let error as APIError {
             throw error
         } catch let decodingError as DecodingError {
-            print("❌ Decoding Fehler: \(decodingError)")
+            print("❌ Decoding error: \(decodingError)")
             throw APIError.decodingError(decodingError)
         } catch {
             throw APIError.networkError(error)
@@ -138,7 +217,6 @@ final class APIService {
 
 // MARK: - API Response Models
 
-/// Event-Struktur wie sie von der API kommt
 private struct APIEvent: Decodable {
     let eventID: String
     let name: String
@@ -148,14 +226,75 @@ private struct APIEvent: Decodable {
     let image: String?
     let start: Date
     let end: Date
+    let rawEndTime: String?
     let extraData: ExtraData?
     
     struct ExtraData: Decodable {
         let generic: GenericData
+        let spotlight: SpotlightData?
+        let raidbattles: RaidBattlesData?
+        let communityday: CommunityDayData?
         
         struct GenericData: Decodable {
             let hasSpawns: Bool
             let hasFieldResearchTasks: Bool
+        }
+        
+        struct SpotlightData: Decodable {
+            let name: String
+            let image: String
+            let canBeShiny: Bool
+            let bonus: String
+            let list: [PokemonData]
+            
+            struct PokemonData: Decodable {
+                let name: String
+                let image: String
+                let canBeShiny: Bool
+            }
+        }
+        
+        struct RaidBattlesData: Decodable {
+            let bosses: [BossData]
+            let shinies: [ShinyData]
+            
+            struct BossData: Decodable {
+                let name: String
+                let image: String
+                let canBeShiny: Bool
+            }
+            
+            struct ShinyData: Decodable {
+                let name: String
+                let image: String
+            }
+        }
+        
+        struct CommunityDayData: Decodable {
+            let spawns: [SpawnData]
+            let shinies: [ShinyData]
+            let bonuses: [BonusData]
+            let specialresearch: [ResearchData]?
+            
+            struct SpawnData: Decodable {
+                let name: String
+                let image: String
+            }
+            
+            struct ShinyData: Decodable {
+                let name: String
+                let image: String
+            }
+            
+            struct BonusData: Decodable {
+                let text: String
+                let image: String?
+            }
+            
+            struct ResearchData: Decodable {
+                let name: String
+                let step: Int
+            }
         }
     }
     
@@ -170,11 +309,35 @@ private struct APIEvent: Decodable {
         case end
         case extraData
     }
+    
+    init(from decoder: Decoder) throws {
+        let container = try decoder.container(keyedBy: CodingKeys.self)
+        
+        eventID = try container.decode(String.self, forKey: .eventID)
+        name = try container.decode(String.self, forKey: .name)
+        eventType = try container.decode(String.self, forKey: .eventType)
+        heading = try container.decode(String.self, forKey: .heading)
+        link = try container.decodeIfPresent(String.self, forKey: .link)
+        image = try container.decodeIfPresent(String.self, forKey: .image)
+        start = try container.decode(Date.self, forKey: .start)
+        end = try container.decode(Date.self, forKey: .end)
+        extraData = try container.decodeIfPresent(ExtraData.self, forKey: .extraData)
+        
+        // Try to get raw end time string
+        if let rawContainer = try? decoder.container(keyedBy: RawCodingKeys.self) {
+            rawEndTime = try? rawContainer.decode(String.self, forKey: .end)
+        } else {
+            rawEndTime = nil
+        }
+    }
+    
+    enum RawCodingKeys: String, CodingKey {
+        case end
+    }
 }
 
 // MARK: - API Errors
 
-/// Fehlertypen für API-Operationen
 enum APIError: LocalizedError {
     case invalidURL
     case invalidResponse
@@ -186,30 +349,30 @@ enum APIError: LocalizedError {
     var errorDescription: String? {
         switch self {
         case .invalidURL:
-            return "Die API-URL ist ungültig"
+            return "The API URL is invalid"
         case .invalidResponse:
-            return "Ungültige Antwort vom Server"
+            return "Invalid response from server"
         case .httpError(let statusCode):
-            return "HTTP Fehler: \(statusCode)"
+            return "HTTP error: \(statusCode)"
         case .networkError(let error):
-            return "Netzwerkfehler: \(error.localizedDescription)"
+            return "Network error: \(error.localizedDescription)"
         case .decodingError(let error):
-            return "Fehler beim Verarbeiten der Daten: \(error.localizedDescription)"
+            return "Failed to process data: \(error.localizedDescription)"
         case .noData:
-            return "Keine Daten vom Server erhalten"
+            return "No data received from server"
         }
     }
     
     var recoverySuggestion: String? {
         switch self {
         case .invalidURL, .invalidResponse, .decodingError:
-            return "Bitte versuche es später erneut oder kontaktiere den Support"
+            return "Please try again later or contact support"
         case .httpError:
-            return "Der Server ist möglicherweise überlastet. Bitte versuche es später erneut"
+            return "The server may be busy. Please try again later"
         case .networkError:
-            return "Überprüfe deine Internetverbindung und versuche es erneut"
+            return "Check your internet connection and try again"
         case .noData:
-            return "Bitte versuche es später erneut"
+            return "Please try again later"
         }
     }
 }

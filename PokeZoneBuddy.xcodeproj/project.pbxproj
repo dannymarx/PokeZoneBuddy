@@ -24,9 +24,9 @@
 /* End PBXContainerItemProxy section */
 
 /* Begin PBXFileReference section */
-		305FAD732E8D2AF1002CBBDD /* PokeZoneBuddy.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = PokeZoneBuddy.app; sourceTree = BUILT_PRODUCTS_DIR; };
-		305FAD822E8D2AF4002CBBDD /* PokeZoneBuddyTests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = PokeZoneBuddyTests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
-		305FAD8C2E8D2AF4002CBBDD /* PokeZoneBuddyUITests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = PokeZoneBuddyUITests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
+		302CFF952E8EFB6C000E02C5 /* PokeZoneBuddy.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = PokeZoneBuddy.app; sourceTree = BUILT_PRODUCTS_DIR; };
+		302CFF962E8EFB6C000E02C5 /* PokeZoneBuddyTests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = PokeZoneBuddyTests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
+		302CFF972E8EFB6C000E02C5 /* PokeZoneBuddyUITests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = PokeZoneBuddyUITests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
 /* End PBXFileReference section */
 
 /* Begin PBXFileSystemSynchronizedRootGroup section */
@@ -78,6 +78,9 @@
 				305FAD752E8D2AF1002CBBDD /* PokeZoneBuddy */,
 				305FAD852E8D2AF4002CBBDD /* PokeZoneBuddyTests */,
 				305FAD8F2E8D2AF4002CBBDD /* PokeZoneBuddyUITests */,
+				302CFF952E8EFB6C000E02C5 /* PokeZoneBuddy.app */,
+				302CFF962E8EFB6C000E02C5 /* PokeZoneBuddyTests.xctest */,
+				302CFF972E8EFB6C000E02C5 /* PokeZoneBuddyUITests.xctest */,
 			);
 			sourceTree = "<group>";
 		};
@@ -103,7 +106,7 @@
 			packageProductDependencies = (
 			);
 			productName = PokeZoneBuddy;
-			productReference = 305FAD732E8D2AF1002CBBDD /* PokeZoneBuddy.app */;
+			productReference = 302CFF952E8EFB6C000E02C5 /* PokeZoneBuddy.app */;
 			productType = "com.apple.product-type.application";
 		};
 		305FAD812E8D2AF4002CBBDD /* PokeZoneBuddyTests */ = {
@@ -126,7 +129,7 @@
 			packageProductDependencies = (
 			);
 			productName = PokeZoneBuddyTests;
-			productReference = 305FAD822E8D2AF4002CBBDD /* PokeZoneBuddyTests.xctest */;
+			productReference = 302CFF962E8EFB6C000E02C5 /* PokeZoneBuddyTests.xctest */;
 			productType = "com.apple.product-type.bundle.unit-test";
 		};
 		305FAD8B2E8D2AF4002CBBDD /* PokeZoneBuddyUITests */ = {
@@ -149,7 +152,7 @@
 			packageProductDependencies = (
 			);
 			productName = PokeZoneBuddyUITests;
-			productReference = 305FAD8C2E8D2AF4002CBBDD /* PokeZoneBuddyUITests.xctest */;
+			productReference = 302CFF972E8EFB6C000E02C5 /* PokeZoneBuddyUITests.xctest */;
 			productType = "com.apple.product-type.bundle.ui-testing";
 		};
 /* End PBXNativeTarget section */
@@ -181,6 +184,7 @@
 			knownRegions = (
 				en,
 				Base,
+				de,
 			);
 			mainGroup = 305FAD6A2E8D2AF1002CBBDD;
 			minimizedProjectReferenceProxies = 1;
@@ -398,6 +402,7 @@
 				ENABLE_RESOURCE_ACCESS_USB = NO;
 				ENABLE_USER_SELECTED_FILES = readonly;
 				GENERATE_INFOPLIST_FILE = YES;
+				INFOPLIST_KEY_CFBundleDisplayName = PokeZoneBuddy;
 				INFOPLIST_KEY_LSApplicationCategoryType = "public.app-category.productivity";
 				"INFOPLIST_KEY_UIApplicationSceneManifest_Generation[sdk=iphoneos*]" = YES;
 				"INFOPLIST_KEY_UIApplicationSceneManifest_Generation[sdk=iphonesimulator*]" = YES;
@@ -413,7 +418,7 @@
 				LD_RUNPATH_SEARCH_PATHS = "@executable_path/Frameworks";
 				"LD_RUNPATH_SEARCH_PATHS[sdk=macosx*]" = "@executable_path/../Frameworks";
 				MACOSX_DEPLOYMENT_TARGET = 26.0;
-				MARKETING_VERSION = 0.1;
+				MARKETING_VERSION = 0.2;
 				PRODUCT_BUNDLE_IDENTIFIER = DannyHollek.PokeZoneBuddy;
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				REGISTER_APP_GROUPS = YES;
@@ -455,6 +460,7 @@
 				ENABLE_RESOURCE_ACCESS_USB = NO;
 				ENABLE_USER_SELECTED_FILES = readonly;
 				GENERATE_INFOPLIST_FILE = YES;
+				INFOPLIST_KEY_CFBundleDisplayName = PokeZoneBuddy;
 				INFOPLIST_KEY_LSApplicationCategoryType = "public.app-category.productivity";
 				"INFOPLIST_KEY_UIApplicationSceneManifest_Generation[sdk=iphoneos*]" = YES;
 				"INFOPLIST_KEY_UIApplicationSceneManifest_Generation[sdk=iphonesimulator*]" = YES;
@@ -470,7 +476,7 @@
 				LD_RUNPATH_SEARCH_PATHS = "@executable_path/Frameworks";
 				"LD_RUNPATH_SEARCH_PATHS[sdk=macosx*]" = "@executable_path/../Frameworks";
 				MACOSX_DEPLOYMENT_TARGET = 26.0;
-				MARKETING_VERSION = 0.1;
+				MARKETING_VERSION = 0.2;
 				PRODUCT_BUNDLE_IDENTIFIER = DannyHollek.PokeZoneBuddy;
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				REGISTER_APP_GROUPS = YES;

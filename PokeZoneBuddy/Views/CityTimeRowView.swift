@@ -93,7 +93,7 @@ struct CityTimeRowView: View {
             // Event Time in City
             TimeInfoBlock(
                 icon: "building.2.fill",
-                label: "Event-Zeit in \(city.name)",
+                label: String(format: String(localized: "city_time.event_time_in"), city.name),
                 time: timezoneService.formatTimeRange(
                     startDate: event.startTime,
                     endDate: event.endTime,
@@ -116,7 +116,7 @@ struct CityTimeRowView: View {
             // Your Local Time
             TimeInfoBlock(
                 icon: "person.fill",
-                label: "Deine lokale Zeit",
+                label: String(localized: "city_time.your_local_time"),
                 time: timezoneService.formatTimeRange(
                     startDate: event.startTime,
                     endDate: event.endTime,
@@ -158,7 +158,7 @@ struct CityTimeRowView: View {
             Image(systemName: "exclamationmark.triangle.fill")
                 .foregroundStyle(.orange)
             
-            Text("Zeitzone konnte nicht geladen werden")
+            Text(String(localized: "timezone.load_failed"))
                 .secondaryStyle()
         }
         .padding(16)

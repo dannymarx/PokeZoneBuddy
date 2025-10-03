@@ -51,22 +51,19 @@ final class Event {
     /// Hat das Event Field Research Tasks?
     var hasFieldResearchTasks: Bool
     
+    /// Spotlight Hour Details (wenn eventType = "pokemon-spotlight-hour")
+    var spotlightDetails: SpotlightDetails?
+    
+    /// Raid Battle Details (wenn eventType = "raid-battles" oder "raid-hour")
+    var raidDetails: RaidDetails?
+    
+    /// Community Day Details (wenn eventType = "community-day")
+    var communityDayDetails: CommunityDayDetails?
+    
     /// Timestamp wann das Event zuletzt aktualisiert wurde
     var lastUpdated: Date
     
     /// Initializer für neue Events
-    /// - Parameters:
-    ///   - id: Eindeutige Event-ID
-    ///   - name: Event-Name
-    ///   - eventType: Art des Events
-    ///   - heading: Event-Kategorie
-    ///   - link: Link zur Event-Seite
-    ///   - startTime: Startzeitpunkt
-    ///   - endTime: Endzeitpunkt
-    ///   - isGlobalTime: Ob Event global zur selben Zeit startet
-    ///   - imageURL: Optionale Bild-URL
-    ///   - hasSpawns: Hat Pokemon Spawns
-    ///   - hasFieldResearchTasks: Hat Field Research Tasks
     init(
         id: String,
         name: String,
@@ -78,7 +75,10 @@ final class Event {
         isGlobalTime: Bool,
         imageURL: String? = nil,
         hasSpawns: Bool = false,
-        hasFieldResearchTasks: Bool = false
+        hasFieldResearchTasks: Bool = false,
+        spotlightDetails: SpotlightDetails? = nil,
+        raidDetails: RaidDetails? = nil,
+        communityDayDetails: CommunityDayDetails? = nil
     ) {
         self.id = id
         self.name = name
@@ -91,7 +91,96 @@ final class Event {
         self.imageURL = imageURL
         self.hasSpawns = hasSpawns
         self.hasFieldResearchTasks = hasFieldResearchTasks
+        self.spotlightDetails = spotlightDetails
+        self.raidDetails = raidDetails
+        self.communityDayDetails = communityDayDetails
         self.lastUpdated = Date()
+    }
+}
+
+// MARK: - Spotlight Hour Details
+
+@Model
+final class SpotlightDetails {
+    var featuredPokemonName: String
+    var featuredPokemonImage: String
+    var canBeShiny: Bool
+    var bonus: String  // z.B. "2× Catch Stardust"
+    var allFeaturedPokemon: [PokemonInfo]
+    
+    init(
+        featuredPokemonName: String,
+        featuredPokemonImage: String,
+        canBeShiny: Bool,
+        bonus: String,
+        allFeaturedPokemon: [PokemonInfo]
+    ) {
+        self.featuredPokemonName = featuredPokemonName
+        self.featuredPokemonImage = featuredPokemonImage
+        self.canBeShiny = canBeShiny
+        self.bonus = bonus
+        self.allFeaturedPokemon = allFeaturedPokemon
+    }
+}
+
+// MARK: - Raid Battle Details
+
+@Model
+final class RaidDetails {
+    var bosses: [PokemonInfo]
+    var availableShinies: [PokemonInfo]
+    
+    init(bosses: [PokemonInfo], availableShinies: [PokemonInfo]) {
+        self.bosses = bosses
+        self.availableShinies = availableShinies
+    }
+}
+
+// MARK: - Community Day Details
+
+@Model
+final class CommunityDayDetails {
+    var featuredPokemon: [PokemonInfo]
+    var shinies: [PokemonInfo]
+    var bonuses: [CommunityDayBonus]
+    var hasSpecialResearch: Bool
+    
+    init(
+        featuredPokemon: [PokemonInfo],
+        shinies: [PokemonInfo],
+        bonuses: [CommunityDayBonus],
+        hasSpecialResearch: Bool = false
+    ) {
+        self.featuredPokemon = featuredPokemon
+        self.shinies = shinies
+        self.bonuses = bonuses
+        self.hasSpecialResearch = hasSpecialResearch
+    }
+}
+
+// MARK: - Supporting Models
+
+@Model
+final class PokemonInfo {
+    var name: String
+    var imageURL: String
+    var canBeShiny: Bool
+    
+    init(name: String, imageURL: String, canBeShiny: Bool = false) {
+        self.name = name
+        self.imageURL = imageURL
+        self.canBeShiny = canBeShiny
+    }
+}
+
+@Model
+final class CommunityDayBonus {
+    var text: String
+    var iconURL: String?
+    
+    init(text: String, iconURL: String? = nil) {
+        self.text = text
+        self.iconURL = iconURL
     }
 }
 
@@ -125,9 +214,9 @@ extension Event {
         let minutes = Int((durationInHours - Double(hours)) * 60)
         
         if minutes == 0 {
-            return "\(hours)h"
+            return String(format: String(localized: "duration.hours_short"), hours)
         } else {
-            return "\(hours)h \(minutes)min"
+            return String(format: String(localized: "duration.hours_minutes_short"), hours, minutes)
         }
     }
     
@@ -143,7 +232,79 @@ extension Event {
             return "calendar"
         }
     }
+    
+    /// Event Type Color für farbcodierte Badges
+    var eventTypeColor: String {
+        switch eventType {
+        case "community-day":
+            return "green"
+        case "raid-hour", "raid-day", "raid-battles", "raid-weekend":
+            return "red"
+        case "pokemon-spotlight-hour":
+            return "yellow"
+        case "go-battle-league":
+            return "purple"
+        case "research", "ticketed-event":
+            return "blue"
+        case "season":
+            return "orange"
+        default:
+            return "gray"
+        }
+    }
+    
+    /// Countdown Text für kommende Events
+    var countdownText: String? {
+        guard isUpcoming else { return nil }
+        
+        let now = Date()
+        let timeInterval = startTime.timeIntervalSince(now)
+        
+        let days = Int(timeInterval / 86400)
+        let hours = Int((timeInterval.truncatingRemainder(dividingBy: 86400)) / 3600)
+        let minutes = Int((timeInterval.truncatingRemainder(dividingBy: 3600)) / 60)
+        
+        if days > 0 {
+            return String(format: String(localized: "countdown.starts_in_days_hours"), days, hours)
+        } else if hours > 0 {
+            return String(format: String(localized: "countdown.starts_in_hours_minutes"), hours, minutes)
+        } else if minutes > 0 {
+            return String(format: String(localized: "countdown.starts_in_minutes"), minutes)
+        } else {
+            return String(localized: "countdown.starting_soon.short")
+        }
+    }
+    
+    /// Time Remaining Text für laufende Events
+    var timeRemainingText: String? {
+        guard isCurrentlyActive else { return nil }
+        
+        let now = Date()
+        let timeInterval = endTime.timeIntervalSince(now)
+        
+        let hours = Int(timeInterval / 3600)
+        let minutes = Int((timeInterval.truncatingRemainder(dividingBy: 3600)) / 60)
+        
+        if hours > 0 {
+            return String(format: String(localized: "countdown.ends_in_hours_minutes"), hours, minutes)
+        } else if minutes > 0 {
+            return String(format: String(localized: "countdown.ends_in_minutes"), minutes)
+        } else {
+            return String(localized: "countdown.ending_soon")
+        }
+    }
+    
+    /// Progress (0.0 - 1.0) für laufende Events
+    var eventProgress: Double {
+        guard isCurrentlyActive else { return 0.0 }
+        
+        let totalDuration = endTime.timeIntervalSince(startTime)
+        let elapsed = Date().timeIntervalSince(startTime)
+        
+        return min(max(elapsed / totalDuration, 0.0), 1.0)
+    }
 }
 
 // Note: @Model macht die Klasse automatisch Identifiable via persistentModelID
 // Keine manuelle Identifiable Extension nötig!
+

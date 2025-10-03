@@ -35,21 +35,21 @@ struct CitiesManagementView: View {
                 contentSection
             }
             .background(.windowBackground)
-            .navigationTitle("Städte verwalten")
+            .navigationTitle(Text(String(localized: "cities.manage_title")))
             .toolbar {
                 ToolbarItem(placement: .cancellationAction) {
-                    Button("Fertig") {
+                    Button(String(localized: "common.done")) {
                         dismiss()
                     }
                     .buttonStyle(ModernButtonStyle())
                 }
             }
-            .alert("Fehler", isPresented: $viewModel.showError) {
+            .alert(String(localized: "alert.error.title"), isPresented: $viewModel.showError) {
                 Button("OK") {
                     viewModel.showError = false
                 }
             } message: {
-                Text(viewModel.errorMessage ?? "Ein unbekannter Fehler ist aufgetreten")
+                Text(viewModel.errorMessage ?? String(localized: "alert.error.unknown"))
             }
         }
         .frame(minWidth: 600, minHeight: 700)
@@ -75,10 +75,10 @@ struct CitiesManagementView: View {
                 )
             
             VStack(alignment: .leading, spacing: 4) {
-                Text("Städte verwalten")
+                Text(String(localized: "cities.manage_title"))
                     .font(.system(size: 24, weight: .bold, design: .rounded))
                 
-                Text("\(viewModel.favoriteCities.count) von \(Constants.Limits.maxFavoriteCities) Städten")
+                Text("\(viewModel.favoriteCities.count) of \(Constants.Limits.maxFavoriteCities) cities")
                     .secondaryStyle()
             }
             
@@ -96,7 +96,7 @@ struct CitiesManagementView: View {
                     .font(.system(size: 16))
                     .foregroundStyle(.secondary)
                 
-                TextField("Stadt suchen (z.B. Tokyo, Berlin, New York...)", text: $viewModel.searchText)
+                TextField(String(localized: "search.placeholder"), text: $viewModel.searchText)
                     .textFieldStyle(.plain)
                     .font(.system(size: 14))
                 
@@ -117,7 +117,7 @@ struct CitiesManagementView: View {
             )
             
             if viewModel.searchText.isEmpty {
-                Text("Suche nach Städten weltweit")
+                Text(String(localized: "search.hint"))
                     .captionStyle()
             }
         }
@@ -191,10 +191,10 @@ struct CitiesManagementView: View {
                 .foregroundStyle(.quaternary)
             
             VStack(spacing: 8) {
-                Text("Noch keine Städte")
+                Text(String(localized: "placeholder.no_cities_yet.title"))
                     .font(.system(size: 20, weight: .semibold))
                 
-                Text("Suche oben nach einer Stadt und füge sie zu deinen Favoriten hinzu")
+                Text(String(localized: "placeholder.no_cities_yet.subtitle"))
                     .secondaryStyle()
                     .multilineTextAlignment(.center)
                     .frame(maxWidth: 400)
@@ -211,10 +211,10 @@ struct CitiesManagementView: View {
                 .foregroundStyle(.quaternary)
             
             VStack(spacing: 8) {
-                Text("Keine Ergebnisse")
+                Text(String(localized: "placeholder.no_results.title"))
                     .font(.system(size: 20, weight: .semibold))
                 
-                Text("Versuche es mit einem anderen Suchbegriff")
+                Text(String(localized: "placeholder.no_results.subtitle"))
                     .secondaryStyle()
             }
         }
@@ -381,3 +381,4 @@ private struct SearchResultRow: View {
     
     CitiesManagementView(viewModel: viewModel)
 }
+

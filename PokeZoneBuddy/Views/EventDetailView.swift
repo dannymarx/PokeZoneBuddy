@@ -19,13 +19,29 @@ struct EventDetailView: View {
     // MARK: - Body
     
     var body: some View {
-        ScrollView {
-            VStack(spacing: 24) {
+        ScrollViewReader { proxy in
+            ScrollView {
+                VStack(spacing: 24) {
+                    // Anchor for scrolling to top
+                    Color.clear
+                        .frame(height: 0)
+                        .id("top")
+                // Event Image Header
+                if let imageURL = event.imageURL, let url = URL(string: imageURL) {
+                    eventImageHeader(url: url)
+                }
+                
                 // Event Header
                 eventHeaderSection
                 
+                // Countdown/Status
+                EventCountdownView(event: event)
+                
                 // Event Info Cards
                 eventInfoSection
+                
+                // Pokemon Details (Spotlight/Raid/CD)
+                pokemonDetailsSection
                 
                 // Time Zones Section
                 if !favoriteCities.isEmpty {
@@ -34,13 +50,45 @@ struct EventDetailView: View {
                     noCitiesPlaceholder
                 }
                 
-                Spacer(minLength: 40)
+                // Copyright Footer
+                copyrightFooter
+                
+                    Spacer(minLength: 40)
+                }
+                .padding(32)
+                .frame(maxWidth: 800)
             }
-            .padding(32)
-            .frame(maxWidth: 800)
+            .onChange(of: event.id) { _, _ in
+                // Scroll to top when event changes
+                withAnimation(.easeOut(duration: 0.3)) {
+                    proxy.scrollTo("top", anchor: .top)
+                }
+            }
         }
         .frame(maxWidth: .infinity, maxHeight: .infinity)
         .background(.windowBackground)
+    }
+    
+    // MARK: - Event Image Header
+    
+    private func eventImageHeader(url: URL) -> some View {
+        CachedAsyncImage(
+            url: url
+        ) { image in
+            image
+                .resizable()
+                .aspectRatio(contentMode: .fill)
+        } placeholder: {
+            Rectangle()
+                .fill(.quaternary)
+                .overlay(
+                    ProgressView()
+                        .controlSize(.large)
+                )
+        }
+        .frame(height: 240)
+        .clipShape(RoundedRectangle(cornerRadius: 20, style: .continuous))
+        .shadow(color: .black.opacity(0.1), radius: 12, y: 4)
     }
     
     // MARK: - Event Header
@@ -52,7 +100,7 @@ struct EventDetailView: View {
                 ModernBadge(event.eventType, icon: "tag.fill", color: .blue)
                 
                 if event.isCurrentlyActive {
-                    ModernBadge("Live Jetzt", icon: "circle.fill", color: .successGreen)
+                    ModernBadge(String(localized: "badge.live_now"), icon: "circle.fill", color: .successGreen)
                         .shimmer()
                 }
                 
@@ -72,16 +120,16 @@ struct EventDetailView: View {
             // Features Row
             HStack(spacing: 12) {
                 if event.hasSpawns {
-                    FeatureChip(icon: "location.fill", text: "Spawns", color: .green)
+                    FeatureChip(icon: "location.fill", text: String(localized: "badge.spawns"), color: .green)
                 }
                 
                 if event.hasFieldResearchTasks {
-                    FeatureChip(icon: "doc.text.fill", text: "Research Tasks", color: .purple)
+                    FeatureChip(icon: "doc.text.fill", text: String(localized: "badge.research_tasks"), color: .purple)
                 }
                 
                 FeatureChip(
                     icon: event.isGlobalTime ? "globe" : "location.circle",
-                    text: event.isGlobalTime ? "Global Event" : "Lokales Event",
+                    text: event.isGlobalTime ? String(localized: "badge.global_event") : String(localized: "badge.local_event"),
                     color: .orange
                 )
             }
@@ -91,7 +139,7 @@ struct EventDetailView: View {
                 Link(destination: url) {
                     HStack(spacing: 6) {
                         Image(systemName: "link")
-                        Text("Details auf LeekDuck ansehen")
+                        Text(String(localized: "link.view_on_leekduck"))
                     }
                     .font(.system(size: 13, weight: .medium))
                     .foregroundStyle(.blue)
@@ -102,6 +150,26 @@ struct EventDetailView: View {
         .frame(maxWidth: .infinity, alignment: .leading)
     }
     
+    // MARK: - Pokemon Details Section
+    
+    @ViewBuilder
+    private var pokemonDetailsSection: some View {
+        // Spotlight Hour Details
+        if let spotlightDetails = event.spotlightDetails {
+            SpotlightHourDetailView(details: spotlightDetails)
+        }
+        
+        // Raid Battle Details
+        if let raidDetails = event.raidDetails {
+            RaidBattleDetailView(details: raidDetails)
+        }
+        
+        // Community Day Details
+        if let cdDetails = event.communityDayDetails {
+            CommunityDayDetailView(details: cdDetails)
+        }
+    }
+    
     // MARK: - Event Info Section
     
     private var eventInfoSection: some View {
@@ -110,7 +178,7 @@ struct EventDetailView: View {
                 // Duration Card
                 InfoCard(
                     icon: "timer",
-                    title: "Dauer",
+                    title: String(localized: "info.duration"),
                     value: event.formattedDuration,
                     color: .blue
                 )
@@ -118,7 +186,7 @@ struct EventDetailView: View {
                 // Status Card
                 InfoCard(
                     icon: statusIcon,
-                    title: "Status",
+                    title: String(localized: "info.status"),
                     value: statusText,
                     color: statusColor
                 )
@@ -128,7 +196,7 @@ struct EventDetailView: View {
                 // Start Time Card
                 InfoCard(
                     icon: "play.circle.fill",
-                    title: "Start",
+                    title: String(localized: "info.start"),
                     value: timezoneService.formatDateForUser(event.startTime, includeDate: false),
                     color: .green
                 )
@@ -136,7 +204,7 @@ struct EventDetailView: View {
                 // End Time Card
                 InfoCard(
                     icon: "stop.circle.fill",
-                    title: "Ende",
+                    title: String(localized: "info.end"),
                     value: timezoneService.formatDateForUser(event.endTime, includeDate: false),
                     color: .red
                 )
@@ -149,7 +217,7 @@ struct EventDetailView: View {
                         .font(.system(size: 20))
                         .foregroundStyle(.secondary)
                     
-                    Text("Datum")
+                    Text(String(localized: "info.date"))
                         .font(.system(size: 13, weight: .semibold))
                         .foregroundStyle(.secondary)
                         .textCase(.uppercase)
@@ -173,11 +241,11 @@ struct EventDetailView: View {
     
     private var timeZonesSection: some View {
         VStack(alignment: .leading, spacing: 16) {
-            Text("Event-Zeiten in deinen Städten")
+            Text(String(localized: "timezones.title"))
                 .font(.system(size: 20, weight: .semibold, design: .rounded))
                 .foregroundStyle(.primary)
             
-            Text("So kannst du an diesem Event in verschiedenen Zeitzonen teilnehmen:")
+            Text(String(localized: "timezones.subtitle"))
                 .secondaryStyle()
             
             VStack(spacing: 12) {
@@ -197,10 +265,10 @@ struct EventDetailView: View {
                 .foregroundStyle(.quaternary)
             
             VStack(spacing: 8) {
-                Text("Keine Städte hinzugefügt")
+                Text(String(localized: "placeholder.no_cities_added.title"))
                     .font(.system(size: 18, weight: .semibold))
                 
-                Text("Füge Städte hinzu, um Event-Zeiten in verschiedenen Zeitzonen zu sehen")
+                Text(String(localized: "placeholder.no_cities_added.subtitle"))
                     .secondaryStyle()
                     .multilineTextAlignment(.center)
                     .frame(maxWidth: 400)
@@ -228,11 +296,11 @@ struct EventDetailView: View {
     
     private var statusText: String {
         if event.isCurrentlyActive {
-            return "Läuft jetzt"
+            return String(localized: "status.live_now")
         } else if event.isUpcoming {
-            return "Bevorstehend"
+            return String(localized: "status.upcoming")
         } else {
-            return "Beendet"
+            return String(localized: "status.ended")
         }
     }
     
@@ -244,6 +312,23 @@ struct EventDetailView: View {
         } else {
             return .secondary
         }
+    }
+    
+    // MARK: - Copyright Footer
+    
+    private var copyrightFooter: some View {
+        VStack(spacing: 8) {
+            Text(Constants.Legal.footerText)
+                .font(.system(size: 10, weight: .regular))
+                .foregroundStyle(.tertiary)
+                .multilineTextAlignment(.center)
+            
+            Text(Constants.Credits.fullCredit)
+                .font(.system(size: 10, weight: .regular))
+                .foregroundStyle(.tertiary)
+                .multilineTextAlignment(.center)
+        }
+        .padding(.top, 20)
     }
 }
 
@@ -347,7 +432,7 @@ private struct CityTimeCard: View {
                     // Event Time in City (use city timezone, but wall time as local event time)
                     TimeInfoRow(
                         icon: "building.2.fill",
-                        label: "Event-Zeit in \(city.name)",
+                        label: String(format: String(localized: "city_time.event_time_in"), city.name),
                         time: timezoneService.formatTimeRange(
                             startDate: cityStart,
                             endDate: cityEnd,
@@ -359,7 +444,7 @@ private struct CityTimeCard: View {
                     // Your Time (use user timezone, but wall time as local event time)
                     TimeInfoRow(
                         icon: "person.fill",
-                        label: "Deine lokale Zeit",
+                        label: String(localized: "city_time.your_local_time"),
                         time: timezoneService.formatTimeRange(
                             startDate: cityStart,
                             endDate: cityEnd,
@@ -468,3 +553,4 @@ private struct TimeInfoRow: View {
     }
     .frame(width: 900, height: 700)
 }
+

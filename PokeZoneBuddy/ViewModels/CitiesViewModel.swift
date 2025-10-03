@@ -88,7 +88,7 @@ final class CitiesViewModel: ObservableObject {
             favoriteCities = try modelContext.fetch(descriptor)
         } catch {
             print("❌ Fehler beim Laden der Städte: \(error)")
-            errorMessage = "Fehler beim Laden der gespeicherten Städte"
+            errorMessage = "Failed to load saved cities"
             showError = true
         }
     }
@@ -167,7 +167,7 @@ final class CitiesViewModel: ObservableObject {
             showError = true
         } catch {
             print("❌ Unbekannter Fehler: \(error)")
-            errorMessage = "Fehler beim Hinzufügen der Stadt"
+            errorMessage = "Failed to add the city"
             showError = true
         }
         
@@ -185,7 +185,7 @@ final class CitiesViewModel: ObservableObject {
             print("✅ Stadt entfernt: \(city.name)")
         } catch {
             print("❌ Fehler beim Entfernen: \(error)")
-            errorMessage = "Fehler beim Entfernen der Stadt"
+            errorMessage = "Failed to remove the city"
             showError = true
         }
     }
@@ -224,26 +224,26 @@ enum CityError: LocalizedError {
     var errorDescription: String? {
         switch self {
         case .noResultsFound:
-            return "Keine Ergebnisse gefunden"
+            return "No results found"
         case .invalidLocation:
-            return "Ungültiger Standort"
+            return "Invalid location"
         case .timezoneNotFound:
-            return "Zeitzone konnte nicht ermittelt werden"
+            return "Could not determine time zone"
         case .cityAlreadyExists:
-            return "Diese Stadt ist bereits in deinen Favoriten"
+            return "This city is already in your favorites"
         }
     }
     
     var recoverySuggestion: String? {
         switch self {
         case .noResultsFound:
-            return "Versuche einen anderen Suchbegriff"
+            return "Try a different search term"
         case .invalidLocation:
-            return "Wähle einen anderen Ort aus"
+            return "Choose a different place"
         case .timezoneNotFound:
-            return "Versuche es mit einer anderen Stadt"
+            return "Try a different city"
         case .cityAlreadyExists:
-            return "Diese Stadt ist bereits vorhanden"
+            return "This city already exists"
         }
     }
 }

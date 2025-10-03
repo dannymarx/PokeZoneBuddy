@@ -27,10 +27,10 @@ enum Constants {
     
     enum Credits {
         /// Datenquelle-Credit
-        static let dataSource = "Event-Daten von LeekDuck.com"
+        static let dataSource = "Event data from LeekDuck.com"
         
         /// ScrapedDuck-Credit
-        static let scraper = "Via ScrapedDuck by bigfoott"
+        static let scraper = "via ScrapedDuck by bigfoott"
         
         /// Vollständiger Credit-Text
         static let fullCredit = "\(dataSource)\n\(scraper)"
@@ -40,6 +40,33 @@ enum Constants {
         
         /// ScrapedDuck GitHub URL
         static let scrapedDuckURL = "https://github.com/bigfoott/ScrapedDuck"
+    }
+    
+    // MARK: - Legal / Copyright
+    
+    enum Legal {
+        /// Pokemon Copyright Notice
+        static let pokemonCopyright = "©2025 Pokémon. ©1995-2025 Nintendo/Creatures Inc./GAME FREAK inc."
+        
+        /// Pokemon Trademark Notice
+        static let pokemonTrademark = "Pokémon and Pokémon character names are trademarks of Nintendo."
+        
+        /// App Disclaimer
+        static let appDisclaimer = "PokeZoneBuddy is not affiliated with, endorsed, sponsored, or specifically approved by Nintendo, The Pokémon Company, or Niantic."
+        
+        /// Vollständiger Legal-Text für About-Screen
+        static let fullLegalText = """
+        \(pokemonCopyright)
+        
+        \(pokemonTrademark)
+        
+        \(appDisclaimer)
+        
+        All Pokémon images and names are property of their respective owners.
+        """
+        
+        /// Kurzer Footer-Text
+        static let footerText = "Pokémon © Nintendo/Creatures Inc./GAME FREAK inc."
     }
     
     // MARK: - UI
@@ -61,8 +88,8 @@ enum Constants {
     // MARK: - Cache
     
     enum Cache {
-        /// Wie lange Events im Cache bleiben (in Sekunden)
-        static let eventCacheDuration: TimeInterval = 3600 // 1 Stunde
+        /// Wie lange Events im Cache bleiben (in seconds)
+        static let eventCacheDuration: TimeInterval = 3600 // 1 hour
         
         /// Maximale Anzahl an Events im Cache
         static let maxCachedEvents = 100
@@ -71,10 +98,10 @@ enum Constants {
     // MARK: - Limits
     
     enum Limits {
-        /// Maximale Anzahl an Lieblingsstädten
+        /// Maximum number of favorite cities
         static let maxFavoriteCities = 20
         
-        /// Maximale Anzahl an Suchergebnissen
+        /// Maximum number of search results
         static let maxSearchResults = 10
     }
 }
