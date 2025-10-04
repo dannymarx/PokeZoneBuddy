@@ -24,6 +24,23 @@
     <meta name="twitter:image" content="https://dannymarx.github.io/PokeZoneBuddy/apple-touch-icon.png">
     
     <link rel="stylesheet" href="styles.css">
+  <style>
+    /* Screenshots section (inline styles to avoid editing styles.css) */
+    .screenshots { margin: 3rem 0; }
+    .screenshots h2 { text-align: center; margin-bottom: 1.25rem; }
+    .screenshots-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
+      gap: 16px;
+      align-items: start;
+    }
+    .screenshots .screenshot img {
+      width: 100%;
+      height: auto;
+      border-radius: 12px;
+      box-shadow: 0 6px 20px rgba(0,0,0,0.15);
+    }
+  </style>
 </head>
 <body>
     <div class="container">
@@ -83,6 +100,19 @@
                 <div class="feature-icon">📆</div>
                 <h3>Calendar Export</h3>
                 <p>Add events to your macOS calendar with one click</p>
+            </div>
+        </section>
+
+        <!-- Screenshots -->
+        <section class="screenshots">
+            <h2>Screenshots</h2>
+            <div class="screenshots-grid">
+                <a href="appscreenshot1.png" target="_blank" rel="noopener" class="screenshot">
+                    <img src="appscreenshot1.png" alt="PokeZoneBuddy Website Screenshot 1" loading="lazy" width="1280" height="800">
+                </a>
+                <a href="appscreenshot2.png" target="_blank" rel="noopener" class="screenshot">
+                    <img src="appscreenshot2.png" alt="PokeZoneBuddy Website Screenshot 2" loading="lazy" width="1280" height="800">
+                </a>
             </div>
         </section>
 
