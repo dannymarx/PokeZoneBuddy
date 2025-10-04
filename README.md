@@ -25,13 +25,6 @@ Know exactly when you need to be active at home to participate in an event happe
 - 📆 **Calendar Export** - Add events directly to your macOS calendar
 - 💾 **Local Persistence** - Favorites saved with SwiftData
 
-### Version 0.3 Highlights
-- Filter events by Community Day, Raids, Spotlight Hour, etc.
-- Real-time search across all event names
-- Star button to favorite important events
-- One-click calendar integration (macOS only)
-- Automatic timezone conversion for calendar events
-
 🔗 [See Changelog](./CHANGELOG.md) for details on all versions.
 
 ---
