@@ -3,6 +3,7 @@
 //  PokeZoneBuddy
 //
 //  Created by Danny Hollek on 01.10.25.
+//  Version 0.3 - Added FavoriteEvent & CalendarService
 //
 
 import SwiftUI
@@ -12,11 +13,12 @@ import SwiftData
 struct PokeZoneBuddyApp: App {
     
     /// SwiftData ModelContainer for local persistence
-    /// Stores Events and FavoriteCities locally (no CloudKit)
+    /// Stores Events, FavoriteCities, and FavoriteEvents locally (no CloudKit)
     var sharedModelContainer: ModelContainer = {
         let schema = Schema([
             Event.self,
-            FavoriteCity.self
+            FavoriteCity.self,
+            FavoriteEvent.self  // NEW: Version 0.3
         ])
         
         let modelConfiguration = ModelConfiguration(
@@ -30,10 +32,18 @@ struct PokeZoneBuddyApp: App {
             fatalError(String(format: String(localized: "fatal.model_container_creation_failed"), String(describing: error)))
         }
     }()
+    
+    /// Calendar service for EventKit integration (macOS only)
+    #if os(macOS)
+    @State private var calendarService = CalendarService()
+    #endif
 
     var body: some Scene {
         WindowGroup {
             EventsListView()
+                #if os(macOS)
+                .environment(calendarService)  // NEW: Version 0.3
+                #endif
         }
         .modelContainer(sharedModelContainer)
         #if os(macOS)

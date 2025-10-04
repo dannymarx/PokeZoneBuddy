@@ -61,6 +61,9 @@ final class APIService {
                 
                 let formatter = DateFormatter()
                 formatter.locale = Locale(identifier: "en_US_POSIX")
+                
+                // CRITICAL: For local events (no 'Z'), we still parse as UTC
+                // but they will be displayed without timezone conversion (same time everywhere)
                 formatter.timeZone = TimeZone(secondsFromGMT: 0)
                 
                 // Try different date formats
@@ -77,14 +80,6 @@ final class APIService {
                     }
                 }
                 
-                // Try with Z appended
-                if !dateString.hasSuffix("Z") {
-                    formatter.dateFormat = "yyyy-MM-dd'T'HH:mm:ss.SSSZ"
-                    if let date = formatter.date(from: dateString + "Z") {
-                        return date
-                    }
-                }
-                
                 throw DecodingError.dataCorruptedError(
                     in: container,
                     debugDescription: "Cannot decode date string: \(dateString)"
@@ -97,8 +92,10 @@ final class APIService {
             // Convert to App Events
             let events = apiEvents.compactMap { apiEvent -> Event? in
                 // Check if event has global time (contains Z in date string)
-                // This needs to be checked from raw JSON, for now assume based on end time having Z
-                let isGlobal = apiEvent.rawEndTime?.hasSuffix("Z") ?? false
+                // Check both start and end times for 'Z' suffix
+                let startHasZ = apiEvent.rawStartTime?.hasSuffix("Z") ?? false
+                let endHasZ = apiEvent.rawEndTime?.hasSuffix("Z") ?? false
+                let isGlobal = startHasZ || endHasZ
                 
                 // Parse extraData for detailed info
                 var spotlightDetails: SpotlightDetails?
@@ -226,6 +223,7 @@ private struct APIEvent: Decodable {
     let image: String?
     let start: Date
     let end: Date
+    let rawStartTime: String?
     let rawEndTime: String?
     let extraData: ExtraData?
     
@@ -323,15 +321,18 @@ private struct APIEvent: Decodable {
         end = try container.decode(Date.self, forKey: .end)
         extraData = try container.decodeIfPresent(ExtraData.self, forKey: .extraData)
         
-        // Try to get raw end time string
+        // Try to get raw time strings to determine if event is global (has 'Z')
         if let rawContainer = try? decoder.container(keyedBy: RawCodingKeys.self) {
+            rawStartTime = try? rawContainer.decode(String.self, forKey: .start)
             rawEndTime = try? rawContainer.decode(String.self, forKey: .end)
         } else {
+            rawStartTime = nil
             rawEndTime = nil
         }
     }
     
     enum RawCodingKeys: String, CodingKey {
+        case start
         case end
     }
 }

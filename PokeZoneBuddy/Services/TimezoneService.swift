@@ -122,6 +122,99 @@ final class TimezoneService {
         }
     }
     
+    /// Formats a time range for events, considering if they are global or local time
+    /// - Parameters:
+    ///   - startDate: Start time (stored as UTC)
+    ///   - endDate: End time (stored as UTC)
+    ///   - timezone: The target timezone
+    ///   - isGlobalTime: If true, convert timezone. If false, show same time everywhere
+    ///   - includeDate: Whether to include the date
+    /// - Returns: Formatted time range
+    func formatEventTimeRange(
+        startDate: Date,
+        endDate: Date,
+        timezone: TimeZone,
+        isGlobalTime: Bool,
+        includeDate: Bool = false
+    ) -> String {
+        if isGlobalTime {
+            // Global event: Convert to target timezone
+            return formatTimeRange(
+                startDate: startDate,
+                endDate: endDate,
+                timezone: timezone,
+                includeDate: includeDate
+            )
+        } else {
+            // Local event: Show same time everywhere (no timezone conversion)
+            // Use UTC to extract the time components, then display with target timezone name
+            timeFormatter.timeZone = TimeZone(secondsFromGMT: 0) ?? .gmt
+            
+            let startTime = timeFormatter.string(from: startDate)
+            let endTime = timeFormatter.string(from: endDate)
+            let tzAbbreviation = timezone.abbreviation() ?? timezone.identifier
+            
+            if includeDate {
+                dateFormatter.timeZone = TimeZone(secondsFromGMT: 0) ?? .gmt
+                let dateString = dateFormatter.string(from: startDate)
+                return "\(dateString), \(startTime)-\(endTime) \(tzAbbreviation)"
+            } else {
+                return "\(startTime)-\(endTime) \(tzAbbreviation)"
+            }
+        }
+    }
+    
+    /// Converts local event time from one timezone to another
+    /// For events that happen at the same "wall clock time" everywhere (e.g., 14:00 local time)
+    /// - Parameters:
+    ///   - date: The UTC date representing the local time components
+    ///   - fromTimezone: The timezone where the event happens (e.g., Tokyo)
+    ///   - toTimezone: The user's timezone (e.g., Berlin)
+    /// - Returns: The date adjusted to show when to play in user's timezone
+    func convertLocalEventTime(_ date: Date, from fromTimezone: TimeZone, to toTimezone: TimeZone) -> Date {
+        // Extract time components from UTC date
+        var utcCalendar = Calendar(identifier: .gregorian)
+        utcCalendar.timeZone = TimeZone(secondsFromGMT: 0) ?? .gmt
+        let components = utcCalendar.dateComponents([.year, .month, .day, .hour, .minute, .second], from: date)
+        
+        // Interpret these components as being in the city's timezone
+        var cityCalendar = Calendar(identifier: .gregorian)
+        cityCalendar.timeZone = fromTimezone
+        guard let cityDate = cityCalendar.date(from: components) else { return date }
+        
+        // This cityDate is now the absolute time when the event happens in the city
+        // Return it as-is - when formatted with user's timezone, it will show the correct time
+        return cityDate
+    }
+    
+    /// Formats a time range for local events, showing the converted time in user's timezone
+    /// - Parameters:
+    ///   - startDate: Start time (UTC components represent local time)
+    ///   - endDate: End time (UTC components represent local time)
+    ///   - cityTimezone: The timezone where the event happens
+    ///   - userTimezone: The user's timezone
+    ///   - includeDate: Whether to include the date
+    /// - Returns: Formatted time range in user's timezone
+    func formatLocalEventInUserTime(
+        startDate: Date,
+        endDate: Date,
+        cityTimezone: TimeZone,
+        userTimezone: TimeZone,
+        includeDate: Bool = false
+    ) -> String {
+        // Convert the local event times to absolute times
+        let absoluteStart = convertLocalEventTime(startDate, from: cityTimezone, to: userTimezone)
+        let absoluteEnd = convertLocalEventTime(endDate, from: cityTimezone, to: userTimezone)
+        
+        // Format with user's timezone
+        return formatTimeRange(
+            startDate: absoluteStart,
+            endDate: absoluteEnd,
+            timezone: userTimezone,
+            includeDate: includeDate
+        )
+    }
+    
     // MARK: - Comparison Helpers
     
     /// Calculates the time difference between two timezones in hours

@@ -69,6 +69,21 @@
                 <h3>Live Countdowns</h3>
                 <p>Real-time countdowns and status for active events</p>
             </div>
+            <div class="feature">
+                <div class="feature-icon">🔍</div>
+                <h3>Filter & Search</h3>
+                <p>Filter events by type and search by name</p>
+            </div>
+            <div class="feature">
+                <div class="feature-icon">⭐</div>
+                <h3>Favorites</h3>
+                <p>Star important events to find them quickly</p>
+            </div>
+            <div class="feature">
+                <div class="feature-icon">📆</div>
+                <h3>Calendar Export</h3>
+                <p>Add events to your macOS calendar with one click</p>
+            </div>
         </section>
 
         <!-- Example -->
@@ -82,17 +97,39 @@
 
         <!-- What's New -->
         <section class="whats-new">
-            <h2>What's New in Version 0.2</h2>
-            <div class="new-features">
-                <ul>
-                    <li>✨ <strong>Event Images:</strong> Thumbnails in lists and hero images in details</li>
-                    <li>👾 <strong>Pokemon Details:</strong> See featured Pokemon, raid bosses, and Community Day Pokemon with icons</li>
-                    <li>🌟 <strong>Shiny Badges:</strong> Know which Pokemon are available as shinies</li>
-                    <li>⏱️ <strong>Live Countdowns:</strong> Real-time countdowns with progress bars for active events</li>
-                    <li>🎨 <strong>Color-Coded Types:</strong> Quickly identify Community Days, Raids, Spotlight Hours, and more</li>
-                    <li>📝 <strong>About View:</strong> Credits, copyright info, and legal notices</li>
-                </ul>
-            </div>
+            <h2>What's New</h2>
+            
+            <details class="version-details" open>
+                <summary class="version-summary">
+                    <span class="version-title">Version 0.3 - Organization & Export</span>
+                    <span class="toggle-icon">▼</span>
+                </summary>
+                <div class="new-features">
+                    <ul>
+                        <li>🔍 <strong>Filter & Search:</strong> Filter events by type (Community Day, Raids, etc.) and search by name</li>
+                        <li>⭐ <strong>Favorites System:</strong> Star important events to find them quickly - favorites persist between app launches</li>
+                        <li>📆 <strong>Calendar Export (macOS):</strong> Add events directly to your macOS calendar with automatic timezone conversion</li>
+                        <li>💾 <strong>Smart Storage:</strong> Favorites saved locally with SwiftData for privacy and speed</li>
+                        <li>🎯 <strong>Filter Badge:</strong> See how many filters are active at a glance</li>
+                    </ul>
+                </div>
+            </details>
+            
+            <details class="version-details">
+                <summary class="version-summary">
+                    <span class="version-title">Version 0.2 - Pokemon Details & Images</span>
+                    <span class="toggle-icon">▼</span>
+                </summary>
+                <div class="new-features">
+                    <ul>
+                        <li>✨ Event Images with thumbnails in lists and hero images in details</li>
+                        <li>👾 Pokemon Details for featured Pokemon, raid bosses, and Community Day Pokemon</li>
+                        <li>🌟 Shiny Badges showing which Pokemon are available as shinies</li>
+                        <li>⏱️ Live Countdowns with progress bars for active events</li>
+                        <li>🎨 Color-Coded Types for quick identification</li>
+                    </ul>
+                </div>
+            </details>
         </section>
 
         <!-- Download Section -->
@@ -103,7 +140,8 @@
                 <a href="https://github.com/dannymarx/PokeZoneBuddy/releases/latest" class="download-button" target="_blank" rel="noopener">
                     Download Latest Version
                 </a>
-                <p class="download-note">Version 0.2 | Open source and free forever</p>
+                <p class="download-note">Version 0.3 | Open source and free forever</p>
+                <p class="download-note"><em>Note: Calendar integration is macOS-only</em></p>
             </div>
         </section>
 

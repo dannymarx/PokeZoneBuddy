@@ -190,17 +190,54 @@ extension Event {
     /// Prüft ob das Event aktuell läuft
     var isCurrentlyActive: Bool {
         let now = Date()
-        return now >= startTime && now <= endTime
+        let start = actualStartTime
+        let end = actualEndTime
+        return now >= start && now <= end
     }
     
     /// Prüft ob das Event in der Zukunft liegt
     var isUpcoming: Bool {
-        return startTime > Date()
+        return actualStartTime > Date()
     }
     
     /// Prüft ob das Event bereits vorbei ist
     var isPast: Bool {
-        return endTime < Date()
+        return actualEndTime < Date()
+    }
+    
+    /// Die tatsächliche Startzeit unter Berücksichtigung von isGlobalTime
+    var actualStartTime: Date {
+        if isGlobalTime {
+            // Global event: Die Zeit ist bereits in UTC
+            return startTime
+        } else {
+            // Local event: UTC-Komponenten als lokale Zeit interpretieren
+            return convertLocalTimeToUserTime(startTime)
+        }
+    }
+    
+    /// Die tatsächliche Endzeit unter Berücksichtigung von isGlobalTime
+    var actualEndTime: Date {
+        if isGlobalTime {
+            // Global event: Die Zeit ist bereits in UTC
+            return endTime
+        } else {
+            // Local event: UTC-Komponenten als lokale Zeit interpretieren
+            return convertLocalTimeToUserTime(endTime)
+        }
+    }
+    
+    /// Konvertiert UTC-Komponenten zu User's lokaler Zeit
+    private func convertLocalTimeToUserTime(_ date: Date) -> Date {
+        // Extrahiere Zeitkomponenten aus UTC
+        var utcCalendar = Calendar(identifier: .gregorian)
+        utcCalendar.timeZone = TimeZone(secondsFromGMT: 0) ?? .gmt
+        let components = utcCalendar.dateComponents([.year, .month, .day, .hour, .minute, .second], from: date)
+        
+        // Interpretiere diese Komponenten als User's lokale Zeit
+        var userCalendar = Calendar(identifier: .gregorian)
+        userCalendar.timeZone = TimeZone.current
+        return userCalendar.date(from: components) ?? date
     }
     
     /// Dauer des Events in Stunden
@@ -258,7 +295,7 @@ extension Event {
         guard isUpcoming else { return nil }
         
         let now = Date()
-        let timeInterval = startTime.timeIntervalSince(now)
+        let timeInterval = actualStartTime.timeIntervalSince(now)
         
         let days = Int(timeInterval / 86400)
         let hours = Int((timeInterval.truncatingRemainder(dividingBy: 86400)) / 3600)
@@ -280,7 +317,7 @@ extension Event {
         guard isCurrentlyActive else { return nil }
         
         let now = Date()
-        let timeInterval = endTime.timeIntervalSince(now)
+        let timeInterval = actualEndTime.timeIntervalSince(now)
         
         let hours = Int(timeInterval / 3600)
         let minutes = Int((timeInterval.truncatingRemainder(dividingBy: 3600)) / 60)
@@ -298,8 +335,8 @@ extension Event {
     var eventProgress: Double {
         guard isCurrentlyActive else { return 0.0 }
         
-        let totalDuration = endTime.timeIntervalSince(startTime)
-        let elapsed = Date().timeIntervalSince(startTime)
+        let totalDuration = actualEndTime.timeIntervalSince(actualStartTime)
+        let elapsed = Date().timeIntervalSince(actualStartTime)
         
         return min(max(elapsed / totalDuration, 0.0), 1.0)
     }

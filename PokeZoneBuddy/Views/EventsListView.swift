@@ -335,6 +335,8 @@ private struct EventsContentView: View {
     @ObservedObject var viewModel: EventsViewModel
     @Binding var selectedEvent: Event?
     @State private var selectedFilter: EventFilter = .all
+    @State private var filterConfig = FilterConfiguration()
+    @State private var showFilterSheet = false
     
     var body: some View {
         VStack(spacing: 0) {
@@ -358,6 +360,10 @@ private struct EventsContentView: View {
             }
         }
         .background(.windowBackground)
+        .searchable(text: $filterConfig.searchText, prompt: "Search events...")
+        .sheet(isPresented: $showFilterSheet) {
+            FilterSheet(config: filterConfig)
+        }
     }
     
     private var headerView: some View {
@@ -375,6 +381,19 @@ private struct EventsContentView: View {
             
             Spacer()
             
+            // Filter Button
+            Button {
+                showFilterSheet = true
+            } label: {
+                Image(systemName: "line.3.horizontal.decrease.circle")
+                    .font(.system(size: 14, weight: .semibold))
+                    .foregroundStyle(filterConfig.isActive ? .blue : .secondary)
+            }
+            .buttonStyle(.plain)
+            .badge(filterConfig.activeFilterCount > 0 ? filterConfig.activeFilterCount : 0)
+            .help("Filter events by type")
+            
+            // Refresh Button
             Button {
                 Task { await viewModel.refreshEvents() }
             } label: {
@@ -413,16 +432,34 @@ private struct EventsContentView: View {
         .frame(maxWidth: .infinity)
     }
     
+    // MARK: - Filtered Events
+    
+    private var filteredActiveEvents: [Event] {
+        viewModel.activeEvents.filter { filterConfig.matches($0) }
+    }
+    
+    private var filteredUpcomingEvents: [Event] {
+        viewModel.upcomingEvents.filter { filterConfig.matches($0) }
+    }
+    
+    private var filteredPastEvents: [Event] {
+        viewModel.pastEvents.filter { filterConfig.matches($0) }
+    }
+    
+    private var filteredAllEvents: [Event] {
+        viewModel.events.filter { filterConfig.matches($0) }
+    }
+    
     private func eventCount(for filter: EventFilter) -> Int {
         switch filter {
         case .all:
-            return viewModel.events.count
+            return filteredAllEvents.count
         case .live:
-            return viewModel.activeEvents.count
+            return filteredActiveEvents.count
         case .upcoming:
-            return viewModel.upcomingEvents.count
+            return filteredUpcomingEvents.count
         case .past:
-            return viewModel.pastEvents.count
+            return filteredPastEvents.count
         }
     }
     
@@ -447,9 +484,9 @@ private struct EventsContentView: View {
     @ViewBuilder
     private var allEventsView: some View {
         // Active Events
-        if !viewModel.activeEvents.isEmpty {
+        if !filteredActiveEvents.isEmpty {
             Section {
-                ForEach(viewModel.activeEvents) { event in
+                ForEach(filteredActiveEvents) { event in
                     EventRow(event: event, isSelected: selectedEvent?.id == event.id, isActive: true)
                         .contentShape(Rectangle())
                         .onTapGesture {
@@ -462,9 +499,9 @@ private struct EventsContentView: View {
         }
         
         // Upcoming Events
-        if !viewModel.upcomingEvents.isEmpty {
+        if !filteredUpcomingEvents.isEmpty {
             Section {
-                ForEach(viewModel.upcomingEvents) { event in
+                ForEach(filteredUpcomingEvents) { event in
                     EventRow(event: event, isSelected: selectedEvent?.id == event.id)
                         .contentShape(Rectangle())
                         .onTapGesture {
@@ -476,15 +513,15 @@ private struct EventsContentView: View {
                     title: String(localized: "section.upcoming_events"),
                     icon: "clock.fill",
                     color: .orange,
-                    topPadding: viewModel.activeEvents.isEmpty ? 8 : 20
+                    topPadding: filteredActiveEvents.isEmpty ? 8 : 20
                 )
             }
         }
         
         // Past Events
-        if !viewModel.pastEvents.isEmpty {
+        if !filteredPastEvents.isEmpty {
             Section {
-                ForEach(viewModel.pastEvents.prefix(5)) { event in
+                ForEach(filteredPastEvents.prefix(5)) { event in
                     EventRow(event: event, isSelected: selectedEvent?.id == event.id, isPast: true)
                         .contentShape(Rectangle())
                         .onTapGesture {
@@ -499,10 +536,10 @@ private struct EventsContentView: View {
     
     @ViewBuilder
     private var liveEventsView: some View {
-        if viewModel.activeEvents.isEmpty {
+        if filteredActiveEvents.isEmpty {
             emptyFilterState(icon: "circle.fill", message: String(localized: "filter.none.live"), color: .green)
         } else {
-            ForEach(viewModel.activeEvents) { event in
+            ForEach(filteredActiveEvents) { event in
                 EventRow(event: event, isSelected: selectedEvent?.id == event.id, isActive: true)
                     .contentShape(Rectangle())
                     .onTapGesture {
@@ -514,10 +551,10 @@ private struct EventsContentView: View {
     
     @ViewBuilder
     private var upcomingEventsView: some View {
-        if viewModel.upcomingEvents.isEmpty {
+        if filteredUpcomingEvents.isEmpty {
             emptyFilterState(icon: "clock.fill", message: String(localized: "filter.none.upcoming"), color: .orange)
         } else {
-            ForEach(viewModel.upcomingEvents) { event in
+            ForEach(filteredUpcomingEvents) { event in
                 EventRow(event: event, isSelected: selectedEvent?.id == event.id)
                     .contentShape(Rectangle())
                     .onTapGesture {
@@ -529,10 +566,10 @@ private struct EventsContentView: View {
     
     @ViewBuilder
     private var pastEventsView: some View {
-        if viewModel.pastEvents.isEmpty {
+        if filteredPastEvents.isEmpty {
             emptyFilterState(icon: "checkmark.circle.fill", message: String(localized: "filter.none.past"), color: .gray)
         } else {
-            ForEach(viewModel.pastEvents) { event in
+            ForEach(filteredPastEvents) { event in
                 EventRow(event: event, isSelected: selectedEvent?.id == event.id, isPast: true)
                     .contentShape(Rectangle())
                     .onTapGesture {
@@ -645,6 +682,9 @@ private struct EventRow: View {
                     Spacer()
                     
                     CompactCountdownBadge(event: event)
+                    
+                    FavoriteButton(eventID: event.id)
+                        .padding(.leading, 4)
                 }
                 
                 // Badges
@@ -683,6 +723,9 @@ private struct EventRow: View {
         let formatter = DateFormatter()
         formatter.dateStyle = .medium
         formatter.timeStyle = .short
+        // CRITICAL: Show UTC time components without timezone conversion
+        // Events are "local time" everywhere (e.g., 14:00 in every city)
+        formatter.timeZone = TimeZone(secondsFromGMT: 0)
         formatter.locale = Locale.current
         return formatter.string(from: date)
     }

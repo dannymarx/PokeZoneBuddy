@@ -146,7 +146,7 @@ struct EventCountdownView: View {
     // MARK: - Computed Properties
     
     private var timeRemainingText: String {
-        let timeInterval = event.endTime.timeIntervalSince(currentTime)
+        let timeInterval = event.actualEndTime.timeIntervalSince(currentTime)
         
         guard timeInterval > 0 else {
             return String(localized: "countdown.ending_soon")
@@ -166,7 +166,7 @@ struct EventCountdownView: View {
     }
     
     private var countdownText: String {
-        let timeInterval = event.startTime.timeIntervalSince(currentTime)
+        let timeInterval = event.actualStartTime.timeIntervalSince(currentTime)
         
         guard timeInterval > 0 else {
             return String(localized: "countdown.starting_soon.short")

@@ -1,62 +1,98 @@
 # Changelog
 
-Alle relevanten Änderungen an **PokeZoneBuddy** werden hier dokumentiert.  
-Dieses Projekt folgt (noch) keinem strengen [Semantic Versioning](https://semver.org/), aber Versionssprünge orientieren sich grob daran.
+All notable changes to **PokeZoneBuddy** are documented here.  
+This project doesn't strictly follow [Semantic Versioning](https://semver.org/) yet, but version increments are roughly oriented towards it.
+
+---
+
+## [0.3.0] – 2025-10-04
+### Added
+- **Filter & Sort System**: 
+  - Event filtering by event type (Community Day, Raids, Spotlight Hour, etc.)
+  - Real-time search across event names
+  - Filter badge shows number of active filters
+  - Reset function for all filters
+- **Favorites System**:
+  - Star button to mark important events
+  - Persistent storage with SwiftData
+  - Bounce animation when favoriting
+  - Favorites persist after app restart
+- **Calendar Integration** (macOS only):
+  - One-click export to macOS calendar via EventKit
+  - Automatic timezone conversion for selected city
+  - Write-only calendar permission for privacy
+  - Error handling for missing permissions
+
+### Changed
+- Events list now with filter and search functionality
+- Event details with favorite button and calendar export
+- Improved toolbar with filter badge
+
+### Technical
+- New `FilterConfiguration` model class
+- `FavoritesManager` service with SwiftData
+- `CalendarService` for EventKit integration
+- Write-only calendar access for better privacy
+- @Observable instead of ObservableObject (modern Swift Concurrency)
+
+### Platform
+- **Important:** Calendar integration only available on macOS
+- iOS version does not show calendar button
 
 ---
 
 ## [0.2.0] – 2025-10-03
 ### Added
-- **Event-Bilder**: Event-Thumbnails in Listen und Hero-Images in Details
-- **Pokemon-Details**: Detaillierte Anzeige von Featured Pokemon, Raid-Bossen und Shinies
-  - Spotlight Hours: Featured Pokemon mit Shiny-Status und Bonusse
-  - Raid Battles: Raid-Boss-Galerie mit verfügbaren Shinies
-  - Community Days: Featured Pokemon, Special Research Status und Bonusse
-- **Shiny-Badges**: Auffällige Anzeige welche Pokemon als Shiny verfügbar sind
-- **Live-Countdown**: 
-  - Live-Timer für laufende Events mit Progress-Bar
-  - Countdown für kommende Events
-  - Kompakte Badges in Event-Listen
-- **Status-Anzeige**: "Läuft jetzt" (grün), "Startet bald" (orange), "Beendet" (grau)
-- **Farbcodierte Event-Types**: 
-  - Community Day (Grün), Raids (Rot), Spotlight Hour (Gelb)
-  - GO Battle League (Lila), Research (Blau), Sonstige (Grau)
-- **About-View**: Credits, Copyright-Hinweise und rechtliche Informationen
-- **Image-Caching**: Automatisches Caching für bessere Performance
+- **Event Images**: Event thumbnails in lists and hero images in details
+- **Pokemon Details**: Detailed display of featured Pokemon, raid bosses, and shinies
+  - Spotlight Hours: Featured Pokemon with shiny status and bonuses
+  - Raid Battles: Raid boss gallery with available shinies
+  - Community Days: Featured Pokemon, special research status, and bonuses
+- **Shiny Badges**: Eye-catching display of which Pokemon are available as shinies
+- **Live Countdown**: 
+  - Live timer for active events with progress bar
+  - Countdown for upcoming events
+  - Compact badges in event lists
+- **Status Display**: "Active Now" (green), "Starting Soon" (orange), "Ended" (gray)
+- **Color-Coded Event Types**: 
+  - Community Day (Green), Raids (Red), Spotlight Hour (Yellow)
+  - GO Battle League (Purple), Research (Blue), Other (Gray)
+- **About View**: Credits, copyright notices, and legal information
+- **Image Caching**: Automatic caching for better performance
 
 ### Changed
-- Event-Listen jetzt mit Thumbnails und kompakten Countdowns
-- Event-Details mit vollständigem Hero-Image-Header
-- Verbesserte visuelle Hierarchie und Scanability
+- Event lists now with thumbnails and compact countdowns
+- Event details with full hero image header
+- Improved visual hierarchy and scanability
 
 ### Technical
-- Neuer ImageCacheService für effizientes Image-Management
-- Actor-basiertes Caching für Thread-Safety
-- Neue Component-Bibliothek für Pokemon-Details
-- Cross-Platform Image-Handling (macOS/iOS)
+- New ImageCacheService for efficient image management
+- Actor-based caching for thread safety
+- New component library for Pokemon details
+- Cross-platform image handling (macOS/iOS)
 
 ---
 
 ## [0.1.0] – 2025-10-01
 ### Added
-- Erste lauffähige MVP-Version
-- Anzeige kommender Pokémon GO Events
-- Favorisierte Städte hinzufügen und speichern
-- Automatische Umrechnung der Eventzeiten in die lokale Zeit
-- Persistente Speicherung mit **SwiftData** (kein CloudKit)
-- macOS: Menüleisten-Befehl zum Aktualisieren (**⌘R**)
-- Multiplattform-Unterstützung (macOS-first, lauffähig auch auf iOS)
+- First working MVP version
+- Display of upcoming Pokémon GO events
+- Add and save favorite cities
+- Automatic conversion of event times to local time
+- Persistent storage with **SwiftData** (no CloudKit)
+- macOS: Menu bar command to refresh (**⌘R**)
+- Multi-platform support (macOS-first, also runs on iOS)
 
 ### Known Limitations
-- Keine iCloud-Synchronisation
-- Keine Push Notifications
-- Kein Kalender-Export (ICS)
-- Nur deutsche UI-Sprache
+- No iCloud synchronization
+- No push notifications
 
 ---
 
 ## Format
-- **Added** – neue Features  
-- **Changed** – Änderungen an bestehender Funktionalität  
-- **Fixed** – Bugs und Fehlerbehebungen  
-- **Removed** – entfernte Features
+- **Added** – new features  
+- **Changed** – changes to existing functionality  
+- **Fixed** – bug fixes  
+- **Removed** – removed features
+
+---

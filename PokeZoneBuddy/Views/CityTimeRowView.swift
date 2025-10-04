@@ -90,42 +90,81 @@ struct CityTimeRowView: View {
     
     private func timeConversionContent(cityTimezone: TimeZone) -> some View {
         VStack(alignment: .leading, spacing: 12) {
-            // Event Time in City
-            TimeInfoBlock(
-                icon: "building.2.fill",
-                label: String(format: String(localized: "city_time.event_time_in"), city.name),
-                time: timezoneService.formatTimeRange(
-                    startDate: event.startTime,
-                    endDate: event.endTime,
-                    timezone: cityTimezone,
-                    includeDate: true
-                ),
-                color: .blue
-            )
-            
-            // Arrow
-            HStack {
-                Spacer()
-                Image(systemName: "arrow.down")
-                    .font(.system(size: 16))
-                    .foregroundStyle(.tertiary)
-                Spacer()
+            if event.isGlobalTime {
+                // Global event: Both times are converted normally
+                TimeInfoBlock(
+                    icon: "building.2.fill",
+                    label: String(format: String(localized: "city_time.event_time_in"), city.name),
+                    time: timezoneService.formatTimeRange(
+                        startDate: event.startTime,
+                        endDate: event.endTime,
+                        timezone: cityTimezone,
+                        includeDate: true
+                    ),
+                    color: .blue
+                )
+                
+                // Arrow
+                HStack {
+                    Spacer()
+                    Image(systemName: "arrow.down")
+                        .font(.system(size: 16))
+                        .foregroundStyle(.tertiary)
+                    Spacer()
+                }
+                .padding(.vertical, 4)
+                
+                TimeInfoBlock(
+                    icon: "person.fill",
+                    label: String(localized: "city_time.your_local_time"),
+                    time: timezoneService.formatTimeRange(
+                        startDate: event.startTime,
+                        endDate: event.endTime,
+                        timezone: timezoneService.userTimezone,
+                        includeDate: true
+                    ),
+                    color: .green,
+                    highlighted: true
+                )
+            } else {
+                // Local event: Show same time in city, converted time for user
+                TimeInfoBlock(
+                    icon: "building.2.fill",
+                    label: String(format: String(localized: "city_time.event_time_in"), city.name),
+                    time: timezoneService.formatEventTimeRange(
+                        startDate: event.startTime,
+                        endDate: event.endTime,
+                        timezone: cityTimezone,
+                        isGlobalTime: false,
+                        includeDate: true
+                    ),
+                    color: .blue
+                )
+                
+                // Arrow
+                HStack {
+                    Spacer()
+                    Image(systemName: "arrow.down")
+                        .font(.system(size: 16))
+                        .foregroundStyle(.tertiary)
+                    Spacer()
+                }
+                .padding(.vertical, 4)
+                
+                TimeInfoBlock(
+                    icon: "person.fill",
+                    label: String(localized: "city_time.your_local_time"),
+                    time: timezoneService.formatLocalEventInUserTime(
+                        startDate: event.startTime,
+                        endDate: event.endTime,
+                        cityTimezone: cityTimezone,
+                        userTimezone: timezoneService.userTimezone,
+                        includeDate: true
+                    ),
+                    color: .green,
+                    highlighted: true
+                )
             }
-            .padding(.vertical, 4)
-            
-            // Your Local Time
-            TimeInfoBlock(
-                icon: "person.fill",
-                label: String(localized: "city_time.your_local_time"),
-                time: timezoneService.formatTimeRange(
-                    startDate: event.startTime,
-                    endDate: event.endTime,
-                    timezone: timezoneService.userTimezone,
-                    includeDate: true
-                ),
-                color: .green,
-                highlighted: true
-            )
             
             // Time Difference Info
             timeDifferenceInfo(cityTimezone: cityTimezone)

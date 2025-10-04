@@ -165,13 +165,68 @@ h1 {
     margin-bottom: 24px;
 }
 
-.new-features {
+/* Collapsible Version Details */
+.version-details {
     background: var(--white);
-    padding: 32px;
     border-radius: 12px;
     border: 1px solid var(--border);
-    max-width: 640px;
-    margin: 0 auto;
+    margin-bottom: 16px;
+    overflow: hidden;
+    transition: box-shadow 0.2s;
+}
+
+.version-details:hover {
+    box-shadow: 0 4px 12px rgba(182, 148, 247, 0.08);
+}
+
+.version-details:last-child {
+    margin-bottom: 0;
+}
+
+.version-summary {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 20px 24px;
+    cursor: pointer;
+    user-select: none;
+    list-style: none;
+    transition: background 0.2s;
+}
+
+.version-summary::-webkit-details-marker {
+    display: none;
+}
+
+.version-summary:hover {
+    background: rgba(182, 148, 247, 0.04);
+}
+
+.version-title {
+    font-size: 17px;
+    font-weight: 600;
+    color: var(--primary);
+    text-align: left;
+}
+
+.toggle-icon {
+    font-size: 14px;
+    color: var(--primary);
+    transition: transform 0.3s ease;
+    flex-shrink: 0;
+    margin-left: 12px;
+}
+
+.version-details[open] .toggle-icon {
+    transform: rotate(180deg);
+}
+
+.new-features {
+    padding: 0 32px 32px 32px;
+    max-width: 100%;
+    margin: 0;
+    border: none;
+    background: transparent;
 }
 
 .new-features ul {
@@ -368,8 +423,16 @@ h1 {
         padding: 20px;
     }
     
+    .version-summary {
+        padding: 16px 20px;
+    }
+    
+    .version-title {
+        font-size: 15px;
+    }
+    
     .new-features {
-        padding: 24px;
+        padding: 0 24px 24px 24px;
     }
     
     .new-features li {

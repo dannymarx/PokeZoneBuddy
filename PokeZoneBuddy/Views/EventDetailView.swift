@@ -197,7 +197,7 @@ struct EventDetailView: View {
                 InfoCard(
                     icon: "play.circle.fill",
                     title: String(localized: "info.start"),
-                    value: timezoneService.formatDateForUser(event.startTime, includeDate: false),
+                    value: formatEventTime(event.startTime),
                     color: .green
                 )
                 
@@ -205,7 +205,7 @@ struct EventDetailView: View {
                 InfoCard(
                     icon: "stop.circle.fill",
                     title: String(localized: "info.end"),
-                    value: timezoneService.formatDateForUser(event.endTime, includeDate: false),
+                    value: formatEventTime(event.endTime),
                     color: .red
                 )
             }
@@ -224,7 +224,7 @@ struct EventDetailView: View {
                         .kerning(0.5)
                 }
                 
-                Text(timezoneService.formatDateForUser(event.startTime, includeDate: true))
+                Text(formatEventDateTime(event.startTime))
                     .font(.system(size: 16, weight: .medium))
                     .foregroundStyle(.primary)
             }
@@ -330,6 +330,28 @@ struct EventDetailView: View {
         }
         .padding(.top, 20)
     }
+    
+    // MARK: - Helper Methods
+    
+    /// Formats event time (shows UTC time components without conversion)
+    private func formatEventTime(_ date: Date) -> String {
+        let formatter = DateFormatter()
+        formatter.dateStyle = .none
+        formatter.timeStyle = .short
+        formatter.timeZone = TimeZone(secondsFromGMT: 0)  // UTC components
+        formatter.locale = Locale.current
+        return formatter.string(from: date)
+    }
+    
+    /// Formats event date and time (shows UTC components without conversion)
+    private func formatEventDateTime(_ date: Date) -> String {
+        let formatter = DateFormatter()
+        formatter.dateStyle = .medium
+        formatter.timeStyle = .short
+        formatter.timeZone = TimeZone(secondsFromGMT: 0)  // UTC components
+        formatter.locale = Locale.current
+        return formatter.string(from: date)
+    }
 }
 
 // MARK: - Feature Chip
@@ -399,17 +421,6 @@ private struct CityTimeCard: View {
     let city: FavoriteCity
     
     private let timezoneService = TimezoneService.shared
-
-    // Helper: Reinterpret a Date to another timezone, keeping the wall-clock components identical
-    private func relocalizeKeepingWallTime(_ date: Date, from: TimeZone, to: TimeZone) -> Date {
-        var sourceCal = Calendar(identifier: .gregorian)
-        sourceCal.timeZone = from
-        let comps = sourceCal.dateComponents([.year, .month, .day, .hour, .minute, .second], from: date)
-        var targetCal = Calendar(identifier: .gregorian)
-        targetCal.timeZone = to
-        return targetCal.date(from: comps) ?? date
-    }
-
     
     var body: some View {
         VStack(alignment: .leading, spacing: 16) {
@@ -422,37 +433,35 @@ private struct CityTimeCard: View {
             
             Divider()
             
-            // Time Information
+            // Time Information - Only show "Your Local Time"
             if let cityTimezone = city.timeZone {
                 VStack(alignment: .leading, spacing: 12) {
-                    let userTZ = timezoneService.userTimezone
-                    let cityStart = relocalizeKeepingWallTime(event.startTime, from: userTZ, to: cityTimezone)
-                    let cityEnd = relocalizeKeepingWallTime(event.endTime, from: userTZ, to: cityTimezone)
-
-                    // Event Time in City (use city timezone, but wall time as local event time)
-                    TimeInfoRow(
-                        icon: "building.2.fill",
-                        label: String(format: String(localized: "city_time.event_time_in"), city.name),
-                        time: timezoneService.formatTimeRange(
-                            startDate: cityStart,
-                            endDate: cityEnd,
-                            timezone: cityTimezone,
-                            includeDate: true
+                    if event.isGlobalTime {
+                        // Global event: Convert normally
+                        ImprovedTimeDisplay(
+                            startDate: event.startTime,
+                            endDate: event.endTime,
+                            timezone: timezoneService.userTimezone
                         )
-                    )
-                    
-                    // Your Time (use user timezone, but wall time as local event time)
-                    TimeInfoRow(
-                        icon: "person.fill",
-                        label: String(localized: "city_time.your_local_time"),
-                        time: timezoneService.formatTimeRange(
-                            startDate: cityStart,
-                            endDate: cityEnd,
-                            timezone: userTZ,
-                            includeDate: true
-                        ),
-                        highlighted: true
-                    )
+                    } else {
+                        // Local event: Convert from city timezone to user timezone
+                        let absoluteStart = timezoneService.convertLocalEventTime(
+                            event.startTime,
+                            from: cityTimezone,
+                            to: timezoneService.userTimezone
+                        )
+                        let absoluteEnd = timezoneService.convertLocalEventTime(
+                            event.endTime,
+                            from: cityTimezone,
+                            to: timezoneService.userTimezone
+                        )
+                        
+                        ImprovedTimeDisplay(
+                            startDate: absoluteStart,
+                            endDate: absoluteEnd,
+                            timezone: timezoneService.userTimezone
+                        )
+                    }
                     
                     // Time Difference
                     HStack(spacing: 8) {
@@ -469,6 +478,15 @@ private struct CityTimeCard: View {
                         .foregroundStyle(.secondary)
                     }
                     .padding(.top, 4)
+                    
+                    // Add to Calendar Button (macOS only)
+                    #if os(macOS)
+                    Divider()
+                        .padding(.vertical, 8)
+                    
+                    AddToCalendarButton(event: event, city: city)
+                        .frame(maxWidth: .infinity)
+                    #endif
                 }
             }
         }
@@ -515,6 +533,84 @@ private struct TimeInfoRow: View {
     }
 }
 
+// MARK: - Improved Time Display
+
+private struct ImprovedTimeDisplay: View {
+    let startDate: Date
+    let endDate: Date
+    let timezone: TimeZone
+    
+    private var timeFormatter: DateFormatter {
+        let formatter = DateFormatter()
+        formatter.dateStyle = .none
+        formatter.timeStyle = .short
+        formatter.timeZone = timezone
+        formatter.locale = Locale.current
+        return formatter
+    }
+    
+    private var dateFormatter: DateFormatter {
+        let formatter = DateFormatter()
+        formatter.dateStyle = .long
+        formatter.timeStyle = .none
+        formatter.timeZone = timezone
+        formatter.locale = Locale.current
+        return formatter
+    }
+    
+    private var timeString: String {
+        let start = timeFormatter.string(from: startDate)
+        let end = timeFormatter.string(from: endDate)
+        return "\(start) - \(end)"
+    }
+    
+    private var dateString: String {
+        dateFormatter.string(from: startDate)
+    }
+    
+    private var timezoneString: String {
+        timezone.abbreviation() ?? timezone.identifier
+    }
+    
+    var body: some View {
+        VStack(alignment: .leading, spacing: 8) {
+            // Header
+            HStack {
+                Image(systemName: "person.fill")
+                    .foregroundStyle(.blue)
+                    .imageScale(.small)
+                Text(String(localized: "city_time.your_local_time"))
+                    .font(.subheadline)
+                    .foregroundStyle(.secondary)
+            }
+            
+            // TIME - Most prominent
+            Text(timeString)
+                .font(.system(size: 34, weight: .bold, design: .rounded))
+                .foregroundStyle(.blue)
+                .monospacedDigit()
+            
+            // DATE - Secondary
+            HStack(spacing: 4) {
+                Text(dateString)
+                    .font(.body)
+                    .foregroundStyle(.secondary)
+                
+                Text("•")
+                    .foregroundStyle(.tertiary)
+                
+                Text(timezoneString)
+                    .font(.subheadline)
+                    .foregroundStyle(.tertiary)
+            }
+        }
+        .padding()
+        .frame(maxWidth: .infinity, alignment: .leading)
+        .background(Color.blue.opacity(0.1))
+        .clipShape(RoundedRectangle(cornerRadius: 12))
+    }
+}
+
 // MARK: - Preview
 
 #Preview {
@@ -553,4 +649,3 @@ private struct TimeInfoRow: View {
     }
     .frame(width: 900, height: 700)
 }
-
