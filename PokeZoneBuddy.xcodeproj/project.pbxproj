@@ -25,8 +25,8 @@
 
 /* Begin PBXFileReference section */
 		302CFF952E8EFB6C000E02C5 /* PokeZoneBuddy.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = PokeZoneBuddy.app; sourceTree = BUILT_PRODUCTS_DIR; };
-		302CFF962E8EFB6C000E02C5 /* PokeZoneBuddyTests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = PokeZoneBuddyTests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
-		302CFF972E8EFB6C000E02C5 /* PokeZoneBuddyUITests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = PokeZoneBuddyUITests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
+		302CFF962E8EFB6C000E02C5 /* PokeZoneBuddyTests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; name = PokeZoneBuddyTests.xctest; path = /Users/danny/Documents/Coding/PokeZoneBuddy/build/Debug/PokeZoneBuddy.app/Contents/PlugIns/PokeZoneBuddyTests.xctest; sourceTree = "<absolute>"; };
+		302CFF972E8EFB6C000E02C5 /* PokeZoneBuddyUITests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; name = PokeZoneBuddyUITests.xctest; path = "/Users/danny/Documents/Coding/PokeZoneBuddy/build/Debug/PokeZoneBuddyUITests-Runner.app/Contents/PlugIns/PokeZoneBuddyUITests.xctest"; sourceTree = "<absolute>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFileSystemSynchronizedRootGroup section */
@@ -67,8 +67,6 @@
 			children = (
 				305FAD752E8D2AF1002CBBDD /* PokeZoneBuddy */,
 				302CFF952E8EFB6C000E02C5 /* PokeZoneBuddy.app */,
-				302CFF962E8EFB6C000E02C5 /* PokeZoneBuddyTests.xctest */,
-				302CFF972E8EFB6C000E02C5 /* PokeZoneBuddyUITests.xctest */,
 			);
 			sourceTree = "<group>";
 		};
