@@ -252,38 +252,48 @@ private struct CityCard: View {
     let city: FavoriteCity
     
     var body: some View {
-        VStack(alignment: .leading, spacing: 8) {
-            HStack {
-                Image(systemName: "mappin.circle.fill")
-                    .font(.system(size: 20))
-                    .foregroundStyle(.blue.gradient)
-                
-                VStack(alignment: .leading, spacing: 2) {
-                    Text(city.name)
+        NavigationLink {
+            // We need a CitiesViewModel to drive CityDetailView. Attempt to get it from environment using modelContext.
+            CityDetailWrapper(city: city)
+        } label: {
+            VStack(alignment: .leading, spacing: 8) {
+                HStack {
+                    Image(systemName: "mappin.circle.fill")
+                        .font(.system(size: 20))
+                        .foregroundStyle(.blue.gradient)
+                    VStack(alignment: .leading, spacing: 2) {
+                        Text(city.name)
+                    }
+                    Spacer()
                 }
-                
-                Spacer()
+                HStack(spacing: 6) {
+                    Text(city.abbreviatedTimeZone)
+                        .font(.system(size: 11, weight: .medium))
+                        .foregroundStyle(.secondary)
+                    Text("•")
+                        .foregroundStyle(.tertiary)
+                    Text(city.formattedUTCOffset)
+                        .font(.system(size: 11, weight: .medium))
+                        .foregroundStyle(.blue)
+                }
             }
-            
-            HStack(spacing: 6) {
-                Text(city.abbreviatedTimeZone)
-                    .font(.system(size: 11, weight: .medium))
-                    .foregroundStyle(.secondary)
-                
-                Text("•")
-                    .foregroundStyle(.tertiary)
-                
-                Text(city.formattedUTCOffset)
-                    .font(.system(size: 11, weight: .medium))
-                    .foregroundStyle(.blue)
-            }
+            .padding(12)
+            .frame(maxWidth: .infinity, alignment: .leading)
+            .background(
+                RoundedRectangle(cornerRadius: 12, style: .continuous)
+                    .fill(Color.gray.opacity(0.15))
+            )
         }
-        .padding(12)
-        .frame(maxWidth: .infinity, alignment: .leading)
-        .background(
-            RoundedRectangle(cornerRadius: 12, style: .continuous)
-                .fill(Color.gray.opacity(0.15))
-        )
+        .buttonStyle(.plain)
+    }
+}
+
+private struct CityDetailWrapper: View {
+    @Environment(\.modelContext) private var modelContext
+    let city: FavoriteCity
+    var body: some View {
+        let viewModel = CitiesViewModel(modelContext: modelContext)
+        CityDetailView(city: city, viewModel: viewModel)
     }
 }
 
@@ -856,4 +866,3 @@ private struct EventDetailContainerView: View {
         .modelContainer(for: [Event.self, FavoriteCity.self], inMemory: true)
         .frame(width: 1200, height: 800)
 }
-
