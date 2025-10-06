@@ -45,6 +45,16 @@ Many thanks to the maintainers of these projects!
 
 ---
 
+## ⚠️ Legal Notice
+
+**This app is not officially affiliated with Pokémon GO** and is intended to fall under Fair Use doctrine, similar to any other informational site such as a wiki.
+
+Pokémon and its trademarks are ©1995-2025 Nintendo, Creatures, and GAMEFREAK. All images and names owned and trademarked by Nintendo, Niantic, The Pokémon Company, and GAMEFREAK are property of their respective owners.
+
+Event data courtesy of [Leek Duck](https://leekduck.com) via [ScrapedDuck API](https://github.com/bigfoott/ScrapedDuck). All rights reserved by their respective owners.
+
+---
+
 ##### This app was created 99% by AI and 1% by a human who brought it all together.
 
 ---
