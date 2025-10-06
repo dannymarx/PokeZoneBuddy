@@ -14,6 +14,9 @@ final class TimezoneService {
     static let shared = TimezoneService()
     private init() {}
     
+    /// Serial queue to synchronize access to DateFormatter (not thread-safe)
+    private let formatterQueue = DispatchQueue(label: "TimezoneService.formatter")
+    
     // MARK: - Date Formatters
     
     /// Formatter for date + time (e.g. "Oct 05, 2025, 2:00 PM")
@@ -47,17 +50,19 @@ final class TimezoneService {
 
     /// Unified format helper that respects the current Locale and a provided timezone
     func format(_ date: Date, style: FormatStyle, in timeZone: TimeZone) -> String {
-        let formatter: DateFormatter
-        switch style {
-        case .date:
-            formatter = dateFormatter
-        case .time:
-            formatter = timeFormatter
-        case .dateTime:
-            formatter = dateTimeFormatter
+        return formatterQueue.sync {
+            let formatter: DateFormatter
+            switch style {
+            case .date:
+                formatter = dateFormatter
+            case .time:
+                formatter = timeFormatter
+            case .dateTime:
+                formatter = dateTimeFormatter
+            }
+            formatter.timeZone = timeZone
+            return formatter.string(from: date)
         }
-        formatter.timeZone = timeZone
-        return formatter.string(from: date)
     }
     
     // MARK: - Timezone Conversion
@@ -95,13 +100,13 @@ final class TimezoneService {
     ///   - includeDate: Whether to include the date (default: true)
     /// - Returns: Formatted string (e.g. "Oct 05, 2025, 2:00 PM JST")
     func formatDateForTimezone(_ date: Date, timezone: TimeZone, includeDate: Bool = true) -> String {
-        let formatter = includeDate ? dateTimeFormatter : timeFormatter
-        formatter.timeZone = timezone
-        
-        let timeString = formatter.string(from: date)
-        let tzAbbreviation = timezone.abbreviation() ?? timezone.identifier
-        
-        return "\(timeString) \(tzAbbreviation)"
+        return formatterQueue.sync {
+            let formatter = includeDate ? dateTimeFormatter : timeFormatter
+            formatter.timeZone = timezone
+            let timeString = formatter.string(from: date)
+            let tzAbbreviation = timezone.abbreviation() ?? timezone.identifier
+            return "\(timeString) \(tzAbbreviation)"
+        }
     }
     
     /// Formats only the time for a timezone
@@ -110,8 +115,10 @@ final class TimezoneService {
     ///   - timezone: The timezone
     /// - Returns: Time only (e.g. "2:00 PM")
     func formatTimeOnly(_ date: Date, timezone: TimeZone) -> String {
-        timeFormatter.timeZone = timezone
-        return timeFormatter.string(from: date)
+        return formatterQueue.sync {
+            timeFormatter.timeZone = timezone
+            return timeFormatter.string(from: date)
+        }
     }
     
     /// Formats only the date for a timezone
@@ -120,8 +127,10 @@ final class TimezoneService {
     ///   - timezone: The timezone
     /// - Returns: Date only (e.g. "October 5, 2025")
     func formatDateOnly(_ date: Date, timezone: TimeZone) -> String {
-        dateFormatter.timeZone = timezone
-        return dateFormatter.string(from: date)
+        return formatterQueue.sync {
+            dateFormatter.timeZone = timezone
+            return dateFormatter.string(from: date)
+        }
     }
     
     // MARK: - Time Range Formatting
@@ -186,19 +195,19 @@ final class TimezoneService {
             )
         } else {
             // Local event: Show same time everywhere (no timezone conversion)
-            // Use UTC to extract the time components, then display with target timezone name
-            timeFormatter.timeZone = TimeZone(secondsFromGMT: 0) ?? .gmt
-            
-            let startTime = timeFormatter.string(from: startDate)
-            let endTime = timeFormatter.string(from: endDate)
-            let tzAbbreviation = timezone.abbreviation() ?? timezone.identifier
-            
-            if includeDate {
-                dateFormatter.timeZone = TimeZone(secondsFromGMT: 0) ?? .gmt
-                let dateString = dateFormatter.string(from: startDate)
-                return "\(dateString), \(startTime)-\(endTime) \(tzAbbreviation)"
-            } else {
-                return "\(startTime)-\(endTime) \(tzAbbreviation)"
+            return formatterQueue.sync {
+                let utc = TimeZone(secondsFromGMT: 0) ?? .gmt
+                timeFormatter.timeZone = utc
+                let startTime = timeFormatter.string(from: startDate)
+                let endTime = timeFormatter.string(from: endDate)
+                let tzAbbreviation = timezone.abbreviation() ?? timezone.identifier
+                if includeDate {
+                    dateFormatter.timeZone = utc
+                    let dateString = dateFormatter.string(from: startDate)
+                    return "\(dateString), \(startTime)-\(endTime) \(tzAbbreviation)"
+                } else {
+                    return "\(startTime)-\(endTime) \(tzAbbreviation)"
+                }
             }
         }
     }

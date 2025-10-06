@@ -35,16 +35,6 @@
 			path = PokeZoneBuddy;
 			sourceTree = "<group>";
 		};
-		305FAD852E8D2AF4002CBBDD /* PokeZoneBuddyTests */ = {
-			isa = PBXFileSystemSynchronizedRootGroup;
-			path = PokeZoneBuddyTests;
-			sourceTree = "<group>";
-		};
-		305FAD8F2E8D2AF4002CBBDD /* PokeZoneBuddyUITests */ = {
-			isa = PBXFileSystemSynchronizedRootGroup;
-			path = PokeZoneBuddyUITests;
-			sourceTree = "<group>";
-		};
 /* End PBXFileSystemSynchronizedRootGroup section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -76,8 +66,6 @@
 			isa = PBXGroup;
 			children = (
 				305FAD752E8D2AF1002CBBDD /* PokeZoneBuddy */,
-				305FAD852E8D2AF4002CBBDD /* PokeZoneBuddyTests */,
-				305FAD8F2E8D2AF4002CBBDD /* PokeZoneBuddyUITests */,
 				302CFF952E8EFB6C000E02C5 /* PokeZoneBuddy.app */,
 				302CFF962E8EFB6C000E02C5 /* PokeZoneBuddyTests.xctest */,
 				302CFF972E8EFB6C000E02C5 /* PokeZoneBuddyUITests.xctest */,
@@ -122,9 +110,6 @@
 			dependencies = (
 				305FAD842E8D2AF4002CBBDD /* PBXTargetDependency */,
 			);
-			fileSystemSynchronizedGroups = (
-				305FAD852E8D2AF4002CBBDD /* PokeZoneBuddyTests */,
-			);
 			name = PokeZoneBuddyTests;
 			packageProductDependencies = (
 			);
@@ -144,9 +129,6 @@
 			);
 			dependencies = (
 				305FAD8E2E8D2AF4002CBBDD /* PBXTargetDependency */,
-			);
-			fileSystemSynchronizedGroups = (
-				305FAD8F2E8D2AF4002CBBDD /* PokeZoneBuddyUITests */,
 			);
 			name = PokeZoneBuddyUITests;
 			packageProductDependencies = (
