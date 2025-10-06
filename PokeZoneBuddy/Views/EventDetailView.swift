@@ -113,12 +113,12 @@ struct EventDetailView: View {
             }
             
             // Event Name
-            Text(event.name)
+            Text(event.displayName)
                 .font(.system(size: 36, weight: .bold, design: .rounded))
                 .foregroundStyle(.primary)
-            
+
             // Event Heading
-            Text(event.heading)
+            Text(event.displayHeading)
                 .font(.system(size: 16, weight: .medium))
                 .foregroundStyle(.secondary)
             
