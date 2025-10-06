@@ -103,13 +103,17 @@ struct EventDetailView: View {
             // Event Type Badge
             HStack {
                 ModernBadge(event.eventType, icon: "tag.fill", color: .blue)
-                
+
                 if event.isCurrentlyActive {
                     ModernBadge(String(localized: "badge.live_now"), icon: "circle.fill", color: .successGreen)
                         .shimmer()
                 }
-                
+
                 Spacer()
+
+                // Favorite Button
+                FavoriteButton(eventID: event.id)
+                    .font(.system(size: 24))
             }
             
             // Event Name

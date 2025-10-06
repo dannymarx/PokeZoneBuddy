@@ -50,9 +50,11 @@ struct EventsListView: View {
             // SIDEBAR: Cities
             CitiesSidebarView(
                 viewModel: citiesVM,
+                eventsViewModel: eventsVM,
                 showManagement: $showCitiesManagement,
                 showAbout: $showAbout,
-                showCacheManagement: $showCacheManagement
+                showCacheManagement: $showCacheManagement,
+                selectedEvent: $selectedEvent
             )
             .navigationSplitViewColumnWidth(min: 220, ideal: 260, max: 300)
             
@@ -126,9 +128,25 @@ struct EventsListView: View {
 private struct CitiesSidebarView: View {
     // With @Observable, no property wrapper needed for read-only access!
     let viewModel: CitiesViewModel
+    let eventsViewModel: EventsViewModel
     @Binding var showManagement: Bool
     @Binding var showAbout: Bool
     @Binding var showCacheManagement: Bool
+    @Binding var selectedEvent: Event?
+
+    // SwiftData Query to observe favorite changes in real-time
+    @Query(sort: \FavoriteEvent.addedDate, order: .reverse) private var favoriteEventModels: [FavoriteEvent]
+
+    // Computed property for favorite events (reactive to SwiftData changes)
+    private var favoriteEvents: [Event] {
+        let favoriteIDs = Set(favoriteEventModels.map { $0.eventID })
+        return eventsViewModel.events
+            .filter { event in
+                guard favoriteIDs.contains(event.id) else { return false }
+                return event.isUpcoming || event.isCurrentlyActive
+            }
+            .sorted { $0.startTime < $1.startTime }
+    }
     
     var body: some View {
         VStack(spacing: 0) {
@@ -165,16 +183,50 @@ private struct CitiesSidebarView: View {
                     .padding(16)
                 }
             }
-            
+
+            // Favorite Events Section
+            if !favoriteEvents.isEmpty {
+                Divider()
+
+                VStack(spacing: 0) {
+                    // Header
+                    HStack {
+                        Text(String(localized: "sidebar.favorite_events"))
+                            .titleStyle()
+                        Spacer()
+                    }
+                    .padding(.horizontal, 20)
+                    .padding(.vertical, 16)
+
+                    Divider()
+
+                    // Favorites List
+                    ScrollView {
+                        LazyVStack(spacing: 8) {
+                            ForEach(favoriteEvents) { event in
+                                FavoriteEventCard(event: event)
+                                    .contentShape(Rectangle())
+                                    .onTapGesture {
+                                        selectedEvent = event
+                                    }
+                            }
+                        }
+                        .padding(16)
+                    }
+                }
+                .transition(.opacity.combined(with: .move(edge: .top)))
+            }
+
             Divider()
-            
+
             // Settings Button
             settingsButton
-            
+
             // About Button
             aboutButton
         }
         .background(.windowBackground)
+        .animation(.default, value: favoriteEvents.isEmpty)
     }
     
     private var aboutButton: some View {
