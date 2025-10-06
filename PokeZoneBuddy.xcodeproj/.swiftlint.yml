@@ -1,0 +1,46 @@
+# SwiftLint Configuration for PokeZoneBuddy
+# Enforces consistent style and discourages risky patterns.
+
+# Paths to exclude from linting
+excluded:
+  - Carthage
+  - Pods
+  - DerivedData
+
+# Disable or tune rules as needed
+disabled_rules:
+  - line_length            # Allow flexible line lengths for SwiftUI modifiers
+  - trailing_whitespace    # Often acceptable in multiline string literals
+
+opt_in_rules:
+  - empty_count
+  - explicit_init
+  - fatal_error_message
+  - redundant_optional_initialization
+  - unused_declaration
+  - vertical_parameter_alignment
+  - attributes
+  - closure_spacing
+
+# Custom Rules
+custom_rules:
+  discouraged_print:
+    name: "Discouraged Print"
+    regex: "(^|\\n)\\s*print\\s*\\("
+    message: "Use os.Logger via AppLogger instead of print()"
+    severity: error
+
+# Identifier and type name length guidelines
+identifier_name:
+  min_length: 2
+  max_length: 60
+  excluded: [id, x, y, i, j]
+
+type_name:
+  max_length: 60
+
+# Enforce access control declarations when applicable
+explicit_acl: warning
+
+# Report style
+reporter: xcode
