@@ -84,9 +84,9 @@ final class Event {
         communityDayDetails: CommunityDayDetails? = nil
     ) {
         self.id = id
-        self.name = name
+        self.name = name.htmlDecodedFast
         self.eventType = eventType
-        self.heading = heading
+        self.heading = heading.htmlDecodedFast
         self.link = link
         self.startTime = startTime
         self.endTime = endTime
@@ -118,10 +118,10 @@ final class SpotlightDetails {
         bonus: String,
         allFeaturedPokemon: [PokemonInfo]
     ) {
-        self.featuredPokemonName = featuredPokemonName
+        self.featuredPokemonName = featuredPokemonName.htmlDecodedFast
         self.featuredPokemonImage = featuredPokemonImage
         self.canBeShiny = canBeShiny
-        self.bonus = bonus
+        self.bonus = bonus.htmlDecodedFast
         self.allFeaturedPokemon = allFeaturedPokemon
     }
 }
@@ -170,7 +170,7 @@ final class PokemonInfo {
     var canBeShiny: Bool
     
     init(name: String, imageURL: String, canBeShiny: Bool = false) {
-        self.name = name
+        self.name = name.htmlDecodedFast
         self.imageURL = imageURL
         self.canBeShiny = canBeShiny
     }
@@ -182,7 +182,7 @@ final class CommunityDayBonus {
     var iconURL: String?
     
     init(text: String, iconURL: String? = nil) {
-        self.text = text
+        self.text = text.htmlDecodedFast
         self.iconURL = iconURL
     }
 }
@@ -190,6 +190,18 @@ final class CommunityDayBonus {
 // MARK: - Convenience Extensions
 
 extension Event {
+    /// Display name with HTML entities decoded (for UI display)
+    /// Always decodes to ensure compatibility with old cached data
+    var displayName: String {
+        return name.htmlDecodedFast
+    }
+
+    /// Display heading with HTML entities decoded (for UI display)
+    /// Always decodes to ensure compatibility with old cached data
+    var displayHeading: String {
+        return heading.htmlDecodedFast
+    }
+
     /// Prüft ob das Event aktuell läuft
     var isCurrentlyActive: Bool {
         let now = Date()

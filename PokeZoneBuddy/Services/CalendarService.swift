@@ -77,7 +77,7 @@ class CalendarService {
         }
         
         // Set event details
-        ekEvent.title = "\(event.name) - \(city.name)"
+        ekEvent.title = "\(event.displayName) - \(city.name)"
         ekEvent.location = city.name
         ekEvent.notes = buildEventNotes(event: event)
         
@@ -98,9 +98,9 @@ class CalendarService {
     /// Builds detailed notes for the calendar event
     private func buildEventNotes(event: Event) -> String {
         var notes = [String]()
-        
+
         // Event heading
-        notes.append(event.heading)
+        notes.append(event.displayHeading)
         
         // Event type
         notes.append("Type: \(event.eventType)")
