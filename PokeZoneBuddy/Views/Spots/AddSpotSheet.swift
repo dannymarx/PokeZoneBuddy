@@ -14,7 +14,6 @@ struct AddSpotSheet: View {
     // MARK: - Environment
 
     @Environment(\.dismiss) private var dismiss
-    @Environment(\.modelContext) private var modelContext
 
     // MARK: - Properties
 
@@ -159,7 +158,7 @@ struct AddSpotSheet: View {
         } header: {
             Text(String(localized: "spots.detail.coordinates"))
         } footer: {
-            Text(String(localized: "spots.add.coordinates"))
+            Text(String(localized: "spots.add.coordinates.hint"))
                 .font(.caption)
                 .foregroundStyle(.secondary)
         }

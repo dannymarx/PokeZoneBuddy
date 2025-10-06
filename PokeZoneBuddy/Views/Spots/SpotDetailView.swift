@@ -22,7 +22,6 @@ struct SpotDetailView: View {
 
     // MARK: - State
 
-    @State private var showEditSheet: Bool = false
     @State private var showCopiedAlert: Bool = false
 
     // MARK: - Body
@@ -43,9 +42,6 @@ struct SpotDetailView: View {
                 Button(String(localized: "common.ok"), role: .cancel) {}
             } message: {
                 Text(String(localized: "spots.copied"))
-            }
-            .sheet(isPresented: $showEditSheet) {
-                EditSpotSheet(spot: spot, viewModel: viewModel)
             }
         }
     }
@@ -150,12 +146,6 @@ struct SpotDetailView: View {
 
         ToolbarItem(placement: .primaryAction) {
             Menu {
-                Button {
-                    showEditSheet = true
-                } label: {
-                    Label(String(localized: "spots.action.edit"), systemImage: "pencil")
-                }
-
                 Button {
                     shareSpot()
                 } label: {

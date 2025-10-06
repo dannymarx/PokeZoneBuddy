@@ -11,7 +11,7 @@ import SwiftData
 /// Repräsentiert einen gespeicherten Spot (Koordinate) innerhalb einer Stadt
 /// Ermöglicht das Speichern von wichtigen Locations wie Gyms, PokéStops oder Treffpunkten
 @Model
-final class CitySpot {
+final class CitySpot: Identifiable {
     /// Eindeutige ID für den Spot
     var id: UUID
 
