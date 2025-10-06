@@ -26,13 +26,27 @@ final class CitiesViewModel {
     /// Aktueller Suchtext
     var searchText: String = "" {
         didSet {
+            // Cancel any pending debounce task
+            searchTask?.cancel()
+
             let trimmed = searchText.trimmingCharacters(in: .whitespacesAndNewlines)
             if trimmed.isEmpty {
+                // Immediately clear results when empty
                 searchResults = []
                 searchCompleter.cancel()
-            } else {
-                // MKLocalSearchCompleter verarbeitet den Query-Fragment selbstständig
-                searchCompleter.queryFragment = trimmed
+                return
+            }
+
+            // Debounce updates to reduce query frequency
+            searchTask = Task { [weak self] in
+                // 250ms debounce
+                try? await Task.sleep(nanoseconds: 250_000_000)
+                // Exit if cancelled
+                if Task.isCancelled { return }
+                await MainActor.run {
+                    // MKLocalSearchCompleter verarbeitet den Query-Fragment selbstständig
+                    self?.searchCompleter.queryFragment = trimmed
+                }
             }
         }
     }
@@ -45,6 +59,9 @@ final class CitiesViewModel {
     
     /// Zeigt ob ein Fehler aufgetreten ist
     var showError = false
+    
+    /// Debounce task for search input to reduce unnecessary queries
+    private var searchTask: Task<Void, Never>?
     
     // MARK: - Dependencies
     
@@ -75,10 +92,7 @@ final class CitiesViewModel {
         loadFavoriteCitiesFromDatabase()
     }
     
-    deinit {
-        searchCompleter.delegate = nil
-    }
-    
+
     // MARK: - Public Methods
     
     /// Lädt Lieblingsstädte aus der lokalen Datenbank
@@ -180,7 +194,7 @@ final class CitiesViewModel {
     /// - Parameter city: Die zu entfernende Stadt
     func removeCity(_ city: FavoriteCity) {
         modelContext.delete(city)
-        
+
         do {
             try modelContext.save()
             loadFavoriteCitiesFromDatabase()
@@ -191,7 +205,156 @@ final class CitiesViewModel {
             showError = true
         }
     }
-    
+
+    // MARK: - Spot Management
+
+    /// Fügt einen neuen Spot zu einer Stadt hinzu
+    /// - Parameters:
+    ///   - city: Die Stadt, zu der der Spot hinzugefügt werden soll
+    ///   - name: Name des Spots
+    ///   - notes: Notizen zum Spot
+    ///   - latitude: Breitengrad
+    ///   - longitude: Längengrad
+    ///   - category: Kategorie des Spots
+    /// - Returns: true bei Erfolg, false bei Fehler
+    func addSpot(
+        to city: FavoriteCity,
+        name: String,
+        notes: String,
+        latitude: Double,
+        longitude: Double,
+        category: SpotCategory
+    ) -> Bool {
+        // Validierung der Koordinaten
+        guard CoordinateParsingService.parseCoordinates(
+            from: "\(latitude),\(longitude)"
+        ) != nil else {
+            AppLogger.viewModel.error("Spot-Validierung fehlgeschlagen: Ungültige Koordinaten")
+            errorMessage = "Invalid coordinates"
+            showError = true
+            return false
+        }
+
+        // Prüfe auf Duplikate (gleiche Koordinaten in gleicher Stadt)
+        let isDuplicate = city.spots.contains { spot in
+            abs(spot.latitude - latitude) < 0.000001 &&
+            abs(spot.longitude - longitude) < 0.000001
+        }
+
+        if isDuplicate {
+            AppLogger.viewModel.error(
+                "Spot-Duplikat erkannt: Koordinaten existieren bereits in \(city.name)"
+            )
+            errorMessage = "A spot with these coordinates already exists in this city"
+            showError = true
+            return false
+        }
+
+        // Neuen Spot erstellen
+        let newSpot = CitySpot(
+            name: name,
+            notes: notes,
+            latitude: latitude,
+            longitude: longitude,
+            category: category,
+            city: city
+        )
+
+        modelContext.insert(newSpot)
+
+        do {
+            try modelContext.save()
+            AppLogger.viewModel.info(
+                "Spot hinzugefügt: \(name) in \(city.name) (\(category.localizedName))"
+            )
+            return true
+        } catch {
+            AppLogger.viewModel.error(
+                "Fehler beim Speichern des Spots: \(String(describing: error))"
+            )
+            errorMessage = "Failed to save the spot"
+            showError = true
+            return false
+        }
+    }
+
+    /// Löscht einen Spot
+    /// - Parameter spot: Der zu löschende Spot
+    func deleteSpot(_ spot: CitySpot) {
+        let spotName = spot.name
+        let cityName = spot.city?.name ?? "Unknown"
+
+        modelContext.delete(spot)
+
+        do {
+            try modelContext.save()
+            AppLogger.viewModel.info("Spot gelöscht: \(spotName) aus \(cityName)")
+        } catch {
+            AppLogger.viewModel.error(
+                "Fehler beim Löschen des Spots: \(String(describing: error))"
+            )
+            errorMessage = "Failed to delete the spot"
+            showError = true
+        }
+    }
+
+    /// Aktualisiert einen bestehenden Spot
+    /// - Parameters:
+    ///   - spot: Der zu aktualisierende Spot
+    ///   - name: Neuer Name
+    ///   - notes: Neue Notizen
+    ///   - category: Neue Kategorie
+    func updateSpot(
+        _ spot: CitySpot,
+        name: String,
+        notes: String,
+        category: SpotCategory
+    ) {
+        spot.name = name
+        spot.notes = notes
+        spot.category = category
+
+        do {
+            try modelContext.save()
+            AppLogger.viewModel.info(
+                "Spot aktualisiert: \(name) (\(category.localizedName))"
+            )
+        } catch {
+            AppLogger.viewModel.error(
+                "Fehler beim Aktualisieren des Spots: \(String(describing: error))"
+            )
+            errorMessage = "Failed to update the spot"
+            showError = true
+        }
+    }
+
+    /// Toggelt den Favoriten-Status eines Spots
+    /// - Parameter spot: Der Spot, dessen Favoriten-Status geändert werden soll
+    func toggleSpotFavorite(_ spot: CitySpot) {
+        let newStatus = !spot.isFavorite
+        spot.setFavorite(newStatus)
+
+        do {
+            try modelContext.save()
+            AppLogger.viewModel.info(
+                "Spot Favoriten-Status geändert: \(spot.name) -> \(newStatus)"
+            )
+        } catch {
+            AppLogger.viewModel.error(
+                "Fehler beim Ändern des Favoriten-Status: \(String(describing: error))"
+            )
+            errorMessage = "Failed to update favorite status"
+            showError = true
+        }
+    }
+
+    /// Lädt alle Spots für eine Stadt, sortiert nach Erstellungsdatum (neueste zuerst)
+    /// - Parameter city: Die Stadt, deren Spots geladen werden sollen
+    /// - Returns: Array von CitySpots, sortiert nach createdAt descending
+    func getSpots(for city: FavoriteCity) -> [CitySpot] {
+        return city.spots.sorted { $0.createdAt > $1.createdAt }
+    }
+
     // MARK: - Internal Methods (for SearchCompleterDelegate)
     
     /// Updates search results - called by delegate
