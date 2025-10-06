@@ -747,12 +747,12 @@ private struct EventRow: View {
                 // Event Name & Countdown
                 HStack(alignment: .top) {
                     VStack(alignment: .leading, spacing: 4) {
-                        Text(event.name)
+                        Text(event.displayName)
                             .font(.system(size: 15, weight: .semibold))
                             .foregroundStyle(isPast ? .secondary : .primary)
                             .lineLimit(2)
-                        
-                        Text(event.heading)
+
+                        Text(event.displayHeading)
                             .captionStyle()
                     }
                     
@@ -766,7 +766,7 @@ private struct EventRow: View {
                 
                 // Badges
                 HStack(spacing: 6) {
-                    ModernBadge(event.heading, icon: "tag.fill", color: eventTypeColor)
+                    ModernBadge(event.displayHeading, icon: "tag.fill", color: eventTypeColor)
                     
                     if event.hasSpawns {
                         ModernBadge(String(localized: "badge.spawns"), icon: "location.fill", color: .green)
