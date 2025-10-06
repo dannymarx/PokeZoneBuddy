@@ -3284,6 +3284,74 @@
         }
       }
     },
+    "sidebar.favorite_events": {
+      "extractionState": "manual",
+      "localizations": {
+        "de": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Favorisierte Events"
+          }
+        },
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Favorite Events"
+          }
+        }
+      }
+    },
+    "placeholder.no_favorites.title": {
+      "extractionState": "manual",
+      "localizations": {
+        "de": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Noch keine Favoriten"
+          }
+        },
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "No Favorites Yet"
+          }
+        }
+      }
+    },
+    "placeholder.no_favorites.subtitle": {
+      "extractionState": "manual",
+      "localizations": {
+        "de": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Markiere Events mit ⭐️"
+          }
+        },
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Mark events with ⭐️"
+          }
+        }
+      }
+    },
+    "favorite_event.tap_to_view": {
+      "extractionState": "manual",
+      "localizations": {
+        "de": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Antippen für Details"
+          }
+        },
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Tap to view details"
+          }
+        }
+      }
+    },
     "special_research_available": {
       "comment": "A description of a feature that is only available during a Community Day.",
       "extractionState": "manual",
