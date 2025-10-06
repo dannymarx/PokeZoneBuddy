@@ -28,10 +28,19 @@ final class FavoriteCity {
     
     /// Wann wurde diese Stadt hinzugefügt
     var addedDate: Date
-    
+
+    /// Gespeicherte Spots (Koordinaten) für diese Stadt
+    /// Cascade-Delete: Wenn die Stadt gelöscht wird, werden auch alle Spots gelöscht
+    @Relationship(deleteRule: .cascade) var spots: [CitySpot] = []
+
     /// Berechnete Property für das TimeZone-Objekt
     var timeZone: TimeZone? {
         return TimeZone(identifier: timeZoneIdentifier)
+    }
+
+    /// Anzahl der gespeicherten Spots für diese Stadt
+    var spotCount: Int {
+        return spots.count
     }
     
     /// Initializer für neue Lieblingsstädte

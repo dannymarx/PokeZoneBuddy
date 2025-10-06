@@ -20,6 +20,7 @@ struct PokeZoneBuddyApp: App {
         let schema = Schema([
             Event.self,
             FavoriteCity.self,
+            CitySpot.self,
             FavoriteEvent.self,
             SpotlightDetails.self,
             RaidDetails.self,
