@@ -33,10 +33,10 @@ struct EditSpotSheet: View {
                 coordinatesSection
             }
             .formStyle(.grouped)
-            .navigationTitle("Edit Spot")
+            .navigationTitle(String(localized: "spots.edit.title"))
             .toolbar { toolbarContent }
-            .alert("Error", isPresented: $showError) {
-                Button("OK", role: .cancel) {}
+            .alert(String(localized: "alert.error.title"), isPresented: $showError) {
+                Button(String(localized: "common.ok"), role: .cancel) {}
             } message: {
                 Text(errorMessage)
             }
@@ -47,12 +47,12 @@ struct EditSpotSheet: View {
     @ViewBuilder
     private var spotDetailsSection: some View {
         Section {
-            TextField("Name", text: $name, prompt: Text("e.g., Central Park"))
+            TextField(String(localized: "spots.add.name"), text: $name, prompt: Text(String(localized: "spots.add.name.placeholder")))
                 .accessibilityLabel("Spot name")
                 .textFieldStyle(.plain)
 
             VStack(alignment: .leading, spacing: 8) {
-                Text("Notes")
+                Text(String(localized: "spots.add.notes"))
                     .font(.subheadline)
                     .foregroundStyle(.secondary)
                 TextEditor(text: $notes)
@@ -63,7 +63,7 @@ struct EditSpotSheet: View {
                     .accessibilityLabel("Spot notes")
             }
 
-            Picker("Category", selection: $category) {
+            Picker(String(localized: "spots.add.category"), selection: $category) {
                 ForEach(SpotCategory.allCases, id: \.self) { category in
                     HStack(spacing: 8) {
                         Image(systemName: category.icon)
@@ -75,14 +75,14 @@ struct EditSpotSheet: View {
             .pickerStyle(.menu)
             .accessibilityLabel("Spot category")
         } header: {
-            Text("Spot Details")
+            Text(String(localized: "spots.detail.section"))
         }
     }
 
     @ViewBuilder
     private var coordinatesSection: some View {
         Section {
-            LabeledContent("Coordinates") {
+            LabeledContent(String(localized: "spots.detail.coordinates")) {
                 Text(spot.formattedCoordinates)
                     .foregroundStyle(.secondary)
                     .textSelection(.enabled)
@@ -91,7 +91,7 @@ struct EditSpotSheet: View {
             Button {
                 copyCoordinates()
             } label: {
-                Label("Copy Coordinates", systemImage: "doc.on.doc")
+                Label(String(localized: "spots.detail.copyCoordinates"), systemImage: "doc.on.doc")
                     .frame(maxWidth: .infinity)
             }
             .buttonStyle(.bordered)
@@ -104,10 +104,10 @@ struct EditSpotSheet: View {
     @ToolbarContentBuilder
     private var toolbarContent: some ToolbarContent {
         ToolbarItem(placement: .cancellationAction) {
-            Button("Cancel") { dismiss() }
+            Button(String(localized: "spots.add.cancel")) { dismiss() }
         }
         ToolbarItem(placement: .confirmationAction) {
-            Button("Save") { save() }
+            Button(String(localized: "spots.add.save")) { save() }
         }
     }
 

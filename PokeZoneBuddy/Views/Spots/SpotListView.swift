@@ -19,8 +19,6 @@ struct SpotListView: View {
     // MARK: - State
 
     @State private var selectedSpot: CitySpot?
-    @State private var showSpotDetail: Bool = false
-    @State private var spotToEdit: CitySpot?
 
     // MARK: - Body
 
@@ -32,13 +30,14 @@ struct SpotListView: View {
                 spotsList
             }
         }
-        .sheet(isPresented: $showSpotDetail) {
-            if let spot = selectedSpot {
+        .sheet(item: $selectedSpot) { spot in
+            VStack(spacing: 0) {
+                // Overview
                 SpotDetailView(spot: spot, viewModel: viewModel)
+                Divider()
+                // Edit
+                EditSpotSheet(spot: spot, viewModel: viewModel)
             }
-        }
-        .sheet(item: $spotToEdit) { spot in
-            EditSpotSheet(spot: spot, viewModel: viewModel)
         }
     }
 
@@ -64,12 +63,11 @@ struct SpotListView: View {
             ForEach(spots) { spot in
                 Button {
                     selectedSpot = spot
-                    showSpotDetail = true
                 } label: {
                     SpotRowView(
                         spot: spot,
                         onEdit: {
-                            spotToEdit = spot
+                            selectedSpot = spot
                         },
                         onDelete: {
                             deleteSpot(spot)

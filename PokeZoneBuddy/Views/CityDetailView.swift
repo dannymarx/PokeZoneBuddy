@@ -24,6 +24,7 @@ struct CityDetailView: View {
     // MARK: - State
 
     @State private var showingAddSpotSheet = false
+    @State private var editingSpot: CitySpot? = nil
 
     // MARK: - Body
 
@@ -40,6 +41,9 @@ struct CityDetailView: View {
             }
             .sheet(isPresented: $showingAddSpotSheet) {
                 AddSpotSheet(city: city, viewModel: viewModel)
+            }
+            .sheet(item: $editingSpot) { spot in
+                EditSpotSheet(spot: spot, viewModel: viewModel)
             }
         }
     }
@@ -94,7 +98,7 @@ struct CityDetailView: View {
                         SpotRowView(
                             spot: spot,
                             onEdit: {
-                                // TODO: Edit functionality
+                                editingSpot = spot
                             },
                             onDelete: {
                                 viewModel.deleteSpot(spot)
