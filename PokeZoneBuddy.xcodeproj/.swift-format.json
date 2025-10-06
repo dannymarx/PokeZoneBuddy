@@ -1,0 +1,18 @@
+{
+  "indentation": {
+    "spaces": 4
+  },
+  "lineLength": 120,
+  "maximumBlankLines": 1,
+  "respectsExistingLineBreaks": true,
+  "spacesAroundRangeFormationOperators": true,
+  "indentSwitchCaseLabels": true,
+  "trimTrailingWhitespace": true,
+  "insertFinalNewline": true,
+  "rules": {
+    "SortImports": true,
+    "NoTrailingWhitespace": true,
+    "Indentation": true,
+    "LineLength": true
+  }
+}

@@ -1,0 +1,27 @@
+# Xcode / Derived
+DerivedData/
+build/
+*.xcworkspace/xcshareddata/WorkspaceSettings.xcsettings
+
+# User-spezifisch
+*.xcuserdatad/
+*.xcuserdata/
+*.xcodeproj/project.xcworkspace/xcuserdata/
+*.xcodeproj/xcuserdata/
+
+# Artefakte
+dist/
+ReleaseDisk/
+scripts/
+*.app
+*.dmg
+*.ipa
+*.xcarchive
+*.zip
+
+
+# macOS
+.DS_Store
+
+# Local development
+assets/AppIcon.icon
