@@ -5,7 +5,12 @@ This project follows [Semantic Versioning](https://semver.org/).
 
 ---
 
-## [Unreleased]
+## [1.1.0] – 2025-10-08
+
+### Added
+- Introduced **City Spots** so every favorite city can store gyms, PokéStops, meetup points, and custom coordinates with notes, categories, and favorites.
+- Added a **Favorite Events** sidebar section that surfaces starred events with thumbnails, times, and one-click navigation to details.
+- Built a **coordinate parsing service** that accepts plain GPS pairs, Google/Apple Maps URLs, and DMS formats with live validation and clipboard-friendly exports.
 
 ### Changed
 - Polished the About view layout with platform-specific padding so it centers cleanly on every device.
