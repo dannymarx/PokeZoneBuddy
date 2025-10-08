@@ -108,6 +108,15 @@ extension Color {
 #else
     static let subtleBackground = Color(uiColor: .secondarySystemBackground).opacity(0.5)
 #endif
+    
+    /// Cross-platform default background color
+    static var appBackground: Color {
+#if os(macOS)
+        Color(nsColor: .windowBackgroundColor)
+#else
+        Color(uiColor: .systemBackground)
+#endif
+    }
 }
 
 // MARK: - Button Styles
@@ -230,3 +239,50 @@ extension View {
     }
 }
 
+#if os(macOS)
+private struct MacScrollIndicatorHider: ViewModifier {
+    func body(content: Content) -> some View {
+        content.background(ScrollViewHider())
+    }
+}
+
+private struct ScrollViewHider: NSViewRepresentable {
+    func makeNSView(context: Context) -> NSView {
+        let view = NSView(frame: .zero)
+        DispatchQueue.main.async {
+            view.hideScrollIndicatorsRecursively()
+        }
+        return view
+    }
+    func updateNSView(_ nsView: NSView, context: Context) {
+        DispatchQueue.main.async {
+            nsView.hideScrollIndicatorsRecursively()
+        }
+    }
+}
+
+private extension NSView {
+    func hideScrollIndicatorsRecursively() {
+        if let scrollView = enclosingScrollView {
+            scrollView.scrollerStyle = .overlay
+            scrollView.verticalScroller?.alphaValue = 0
+            scrollView.horizontalScroller?.alphaValue = 0
+        }
+        for subview in subviews {
+            subview.hideScrollIndicatorsRecursively()
+        }
+    }
+}
+
+extension View {
+    func hideScrollIndicatorsCompat() -> some View {
+        self.modifier(MacScrollIndicatorHider())
+    }
+}
+#else
+extension View {
+    func hideScrollIndicatorsCompat() -> some View {
+        self
+    }
+}
+#endif
