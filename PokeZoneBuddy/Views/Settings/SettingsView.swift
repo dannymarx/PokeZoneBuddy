@@ -98,7 +98,9 @@ struct SettingsView: View {
                     Button(String(localized: "common.done")) {
                         dismiss()
                     }
-                    .buttonStyle(ModernButtonStyle())
+#if os(macOS)
+                    .keyboardShortcut(.cancelAction)
+#endif
                 }
             }
             .onAppear {

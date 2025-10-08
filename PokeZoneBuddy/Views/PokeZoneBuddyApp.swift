@@ -73,6 +73,7 @@ struct PokeZoneBuddyApp: App {
         .modelContainer(sharedModelContainer)
         #if os(macOS)
         .defaultSize(width: 1200, height: 800)
+        .windowStyle(.hiddenTitleBar)
         .commands {
             // Refresh Command for macOS Menu Bar
             CommandGroup(after: .newItem) {
