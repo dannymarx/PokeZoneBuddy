@@ -16,6 +16,8 @@ struct CitiesManagementView: View {
     // With @Observable, use @Bindable for two-way bindings!
     @Bindable var viewModel: CitiesViewModel
     @Environment(\.dismiss) private var dismiss
+    @State private var activeCityForSpots: FavoriteCity?
+    @State private var activeSpotForSpots: CitySpot?
     
     // MARK: - Body
     
@@ -53,6 +55,24 @@ struct CitiesManagementView: View {
                 }
             } message: {
                 Text(viewModel.errorMessage ?? String(localized: "alert.error.unknown"))
+            }
+        }
+        .sheet(item: $activeCityForSpots) { city in
+            SpotListView(
+                viewModel: viewModel,
+                city: city,
+                initialSpot: activeSpotForSpots
+            )
+#if os(iOS)
+            .presentationDetents([.fraction(0.9), .large])
+            .presentationDragIndicator(.visible)
+#elseif os(macOS)
+            .presentationSizing(.fitted)
+#endif
+        }
+        .onChange(of: activeCityForSpots) { newValue in
+            if case .none = newValue {
+                activeSpotForSpots = nil
             }
         }
 #if os(macOS)
@@ -151,8 +171,9 @@ struct CitiesManagementView: View {
             } else {
                 LazyVStack(spacing: 12) {
                     ForEach(viewModel.favoriteCities) { city in
-                        NavigationLink {
-                            CityDetailWrapperFromManagement(city: city)
+                        Button {
+                            activeSpotForSpots = viewModel.getSpots(for: city).first
+                            activeCityForSpots = city
                         } label: {
                             FavoriteCityRow(city: city) {
                                 withAnimation(.spring(response: 0.3)) {
@@ -384,15 +405,6 @@ private struct SearchResultRow: View {
                         .strokeBorder(isHovering ? Color.blue.opacity(0.3) : Color.clear, lineWidth: 2)
                 )
         )
-    }
-}
-
-private struct CityDetailWrapperFromManagement: View {
-    @Environment(\.modelContext) private var modelContext
-    let city: FavoriteCity
-    var body: some View {
-        let vm = CitiesViewModel(modelContext: modelContext)
-        CityDetailView(city: city, viewModel: vm)
     }
 }
 

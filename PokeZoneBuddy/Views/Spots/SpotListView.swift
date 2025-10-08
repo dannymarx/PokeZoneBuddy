@@ -7,85 +7,231 @@
 
 import SwiftUI
 import SwiftData
+import Observation
 
-/// Liste aller Spots einer Stadt
+/// Zeigt alle Spots einer Stadt und erlaubt Details in einem einheitlichen Flow
 struct SpotListView: View {
+
+    // MARK: - Environment
+
+    @Environment(\.dismiss) private var dismiss
+    #if !os(macOS)
+    @Environment(\.horizontalSizeClass) private var horizontalSizeClass
+    #endif
 
     // MARK: - Properties
 
-    let spots: [CitySpot]
-    let viewModel: CitiesViewModel
+    @Bindable var viewModel: CitiesViewModel
+    let city: FavoriteCity
+    let initialSpot: CitySpot?
 
     // MARK: - State
 
-    @State private var selectedSpot: CitySpot?
+    @State private var activeSpotID: CitySpot.ID?
+    @State private var navigationPath: [CitySpot.ID] = []
+    @State private var showingAddSpot = false
+    @State private var editingSpot: CitySpot?
+    @State private var didSeedSelection = false
+
+    // MARK: - Types
+
+    private enum LayoutStyle {
+        case split
+        case stack
+    }
 
     // MARK: - Body
 
     var body: some View {
+        let style = layoutStyle
+
         Group {
-            if spots.isEmpty {
-                emptyStateView
-            } else {
-                spotsList
+            switch style {
+            case .split:
+                splitLayout
+            case .stack:
+                stackLayout
             }
         }
-        .sheet(item: $selectedSpot) { spot in
-            VStack(spacing: 0) {
-                // Overview
-                SpotDetailView(spot: spot, viewModel: viewModel)
-                Divider()
-                // Edit
-                EditSpotSheet(spot: spot, viewModel: viewModel)
+#if os(macOS)
+        .frame(minWidth: 760, minHeight: 640)
+#endif
+        .sheet(isPresented: $showingAddSpot) {
+            AddSpotSheet(city: city, viewModel: viewModel)
+        }
+        .sheet(item: $editingSpot) { spot in
+            EditSpotSheet(spot: spot, viewModel: viewModel)
+        }
+        .onAppear {
+            seedSelectionIfNeeded(for: style)
+        }
+        .onChange(of: style) { _, newStyle in
+            syncSelection(for: newStyle)
+        }
+        .onChange(of: spots) { _, _ in
+            cleanupSelection(for: style)
+        }
+        .onChange(of: navigationPath) { _, newPath in
+            guard style == .stack else { return }
+            let currentID = newPath.last
+            if activeSpotID != currentID {
+                activeSpotID = currentID
+            }
+        }
+        .onChange(of: activeSpotID) { _, newValue in
+            guard style == .stack else { return }
+            if navigationPath.last != newValue {
+                navigationPath = newValue.map { [$0] } ?? []
             }
         }
     }
 
-    // MARK: - View Components
+    // MARK: - Layout Variants
 
-    /// Empty State wenn keine Spots vorhanden
-    @ViewBuilder
-    private var emptyStateView: some View {
-        ContentUnavailableView {
-            Label(String(localized: "spots.section.empty"), systemImage: "mappin.slash")
-        } description: {
-            Text(String(localized: "spots.section.empty.description"))
-                .multilineTextAlignment(.center)
-        }
-        .accessibilityElement(children: .combine)
-        .accessibilityLabel(String(localized: "spots.section.empty") + ". " + String(localized: "spots.section.empty.description"))
-    }
+    /// Split-Layout für macOS und breite iPad-Layouts
+    private var splitLayout: some View {
+        GeometryReader { proxy in
+            let availableWidth = proxy.size.width
+            let columnWidth = max(340, min(availableWidth * 0.35, 540))
 
-    /// Liste aller Spots
-    @ViewBuilder
-    private var spotsList: some View {
-        List {
-            ForEach(spots) { spot in
-                Button {
-                    selectedSpot = spot
-                } label: {
-                    SpotRowView(
-                        spot: spot,
-                        onEdit: {
-                            selectedSpot = spot
-                        },
-                        onDelete: {
-                            deleteSpot(spot)
-                        }
-                    )
+            NavigationSplitView {
+                Group {
+                    if spots.isEmpty {
+                        emptyStateView
+                    } else {
+                        splitList(columnWidth: columnWidth)
+                    }
                 }
-                .buttonStyle(.plain)
+                .navigationTitle(city.displayName)
+            } detail: {
+                if let spot = spot(for: activeSpotID) {
+                    SpotDetailView(spot: spot, viewModel: viewModel) { editingSpot = $0 }
+                } else if spots.isEmpty {
+                    emptyStateView
+                } else {
+                    selectionPlaceholder
+                }
+            }
+            .toolbar {
+                ToolbarItem(placement: .cancellationAction) {
+                    Button(String(localized: "common.done")) {
+                        dismiss()
+                    }
+                }
+
+                ToolbarItem(placement: .primaryAction) {
+                    addSpotButton
+                }
+            }
+            .navigationSplitViewColumnWidth(
+                min: columnWidth,
+                ideal: columnWidth,
+                max: columnWidth
+            )
+            .navigationSplitViewStyle(.balanced)
+        }
+    }
+
+    /// Stack-Layout für iPhone
+    private var stackLayout: some View {
+        NavigationStack(path: $navigationPath) {
+            Group {
+                if spots.isEmpty {
+                    emptyStateView
+                } else {
+                    stackList
+                }
+            }
+            .navigationTitle(city.displayName)
+            .navigationDestination(for: CitySpot.ID.self) { id in
+                if let spot = spot(for: id) {
+                    SpotDetailView(spot: spot, viewModel: viewModel) { editingSpot = $0 }
+                } else {
+                    selectionPlaceholder
+                }
+            }
+            .toolbar {
+                ToolbarItem(placement: .cancellationAction) {
+                    Button(String(localized: "common.done")) {
+                        dismiss()
+                    }
+                }
+
+                ToolbarItem(placement: .primaryAction) {
+                    addSpotButton
+                }
+            }
+        }
+    }
+
+    // MARK: - List Variants
+
+    /// Liste für Split-Layout mit Selection-Binding
+    @ViewBuilder
+    private func splitList(columnWidth: CGFloat) -> some View {
+        List(selection: bindingToActiveSpot) {
+            ForEach(spots) { spot in
+                SpotRowView(
+                    spot: spot,
+                    onEdit: { editingSpot = spot },
+                    onDelete: { deleteSpot(spot) }
+                )
+                .tag(spot.id)
+                .contentShape(Rectangle())
                 .swipeActions(edge: .trailing, allowsFullSwipe: false) {
                     deleteButton(for: spot)
                     favoriteButton(for: spot)
                 }
-                .accessibilityElement(children: .contain)
-                .accessibilityLabel("\(spot.name), \(spot.category.localizedName)")
+                .onTapGesture {
+                    activeSpotID = spot.id
+                }
             }
         }
         .scrollIndicators(.hidden)
         .hideScrollIndicatorsCompat()
+        #if os(macOS)
         .listStyle(.inset)
+        #else
+        .listStyle(.insetGrouped)
+        #endif
+        .listRowInsets(EdgeInsets(top: 10, leading: 14, bottom: 10, trailing: 12))
+        .frame(width: columnWidth)
+    }
+
+    /// Liste für Stack-Layout mit NavigationLinks
+    private var stackList: some View {
+        List {
+            ForEach(spots) { spot in
+                NavigationLink(value: spot.id) {
+                    SpotRowView(
+                        spot: spot,
+                        onEdit: { editingSpot = spot },
+                        onDelete: { deleteSpot(spot) }
+                    )
+                }
+                .swipeActions(edge: .trailing, allowsFullSwipe: false) {
+                    deleteButton(for: spot)
+                    favoriteButton(for: spot)
+                }
+            }
+        }
+        .scrollIndicators(.hidden)
+        .hideScrollIndicatorsCompat()
+        #if os(macOS)
+        .listStyle(.inset)
+        #else
+        .listStyle(.insetGrouped)
+        #endif
+        .listRowInsets(EdgeInsets(top: 10, leading: 14, bottom: 10, trailing: 12))
+    }
+
+    // MARK: - Buttons
+
+    /// Add Button für Toolbar
+    private var addSpotButton: some View {
+        Button(String(localized: "spots.add.title")) {
+            showingAddSpot = true
+        }
     }
 
     /// Delete Button für Swipe Actions
@@ -114,10 +260,70 @@ struct SpotListView: View {
         .tint(.yellow)
     }
 
+    // MARK: - View Components
+
+    /// Empty State für leere Spots
+    @ViewBuilder
+    private var emptyStateView: some View {
+        ContentUnavailableView {
+            Label(String(localized: "spots.section.empty"), systemImage: "mappin.slash")
+        } description: {
+            Text(String(localized: "spots.section.empty.description"))
+                .multilineTextAlignment(.center)
+        }
+        .accessibilityElement(children: .combine)
+        .accessibilityLabel(String(localized: "spots.section.empty") + ". " + String(localized: "spots.section.empty.description"))
+    }
+
+    /// Placeholder wenn ein Spot ausgewählt werden soll
+    private var selectionPlaceholder: some View {
+        ContentUnavailableView {
+            Label(String(localized: "spots.section.title"), systemImage: "mappin.and.ellipse")
+        } description: {
+            Text(String(localized: "spots.section.empty.description"))
+                .multilineTextAlignment(.center)
+        }
+    }
+
+    // MARK: - Computed Properties
+
+    /// Aktuelle Liste der Spots für die Stadt
+    private var spots: [CitySpot] {
+        viewModel.getSpots(for: city)
+    }
+
+    /// Layout-Style basierend auf Plattform und Size Class
+    private var layoutStyle: LayoutStyle {
+        #if os(macOS)
+        return .split
+        #else
+        if horizontalSizeClass == .regular {
+            return .split
+        } else {
+            return .stack
+        }
+        #endif
+    }
+
+    /// Binding für List-Selection im Split-Layout
+    private var bindingToActiveSpot: Binding<CitySpot.ID?> {
+        Binding {
+            activeSpotID
+        } set: { newValue in
+            activeSpotID = newValue
+        }
+    }
+
     // MARK: - Methods
 
-    /// Löscht einen Spot
+    /// Löscht einen Spot und aktualisiert Selektionen
     private func deleteSpot(_ spot: CitySpot) {
+        if activeSpotID == spot.id {
+            activeSpotID = nil
+        }
+        if navigationPath.last == spot.id {
+            navigationPath.removeAll()
+        }
         viewModel.deleteSpot(spot)
     }
 
@@ -125,11 +331,91 @@ struct SpotListView: View {
     private func toggleFavorite(_ spot: CitySpot) {
         viewModel.toggleSpotFavorite(spot)
     }
+
+    /// Liefert den Spot für eine ID, falls vorhanden
+    private func spot(for id: CitySpot.ID?) -> CitySpot? {
+        guard let id else { return nil }
+        return spots.first(where: { $0.id == id })
+    }
+
+    /// Prüft ob eine ID in der aktuellen Liste existiert
+    private func resolveExistingID(from id: CitySpot.ID?) -> CitySpot.ID? {
+        guard let id else { return nil }
+        return spots.contains(where: { $0.id == id }) ? id : nil
+    }
+
+    /// Initialisiert die Auswahl nur einmal
+    private func seedSelectionIfNeeded(for style: LayoutStyle) {
+        guard !didSeedSelection else { return }
+
+        let initialID = resolveExistingID(from: initialSpot?.id)
+        let fallbackID = initialID ?? spots.first?.id
+
+        switch style {
+        case .split:
+            activeSpotID = fallbackID
+        case .stack:
+            activeSpotID = fallbackID
+            if let fallbackID {
+                navigationPath = [fallbackID]
+            }
+        }
+
+        didSeedSelection = true
+    }
+
+    /// Synchronisiert Auswahl beim Layout-Wechsel
+    private func syncSelection(for style: LayoutStyle) {
+        switch style {
+        case .split:
+            if let pathID = navigationPath.last,
+               let resolved = resolveExistingID(from: pathID) {
+                activeSpotID = resolved
+            } else if activeSpotID == nil {
+                activeSpotID = spots.first?.id
+            }
+        case .stack:
+            if let activeSpotID,
+               resolveExistingID(from: activeSpotID) != nil {
+                if navigationPath.last != activeSpotID {
+                    navigationPath = [activeSpotID]
+                }
+            } else if let firstID = spots.first?.id {
+                activeSpotID = firstID
+                navigationPath = [firstID]
+            } else {
+                navigationPath.removeAll()
+            }
+        }
+    }
+
+    /// Entfernt ungültige Selektionen wenn Spots sich ändern
+    private func cleanupSelection(for style: LayoutStyle) {
+        if resolveExistingID(from: activeSpotID) == nil {
+            if style == .split {
+                activeSpotID = spots.first?.id
+            } else if let firstID = spots.first?.id {
+                activeSpotID = firstID
+                navigationPath = [firstID]
+            } else {
+                activeSpotID = nil
+            }
+        }
+
+        if let last = navigationPath.last,
+           resolveExistingID(from: last) == nil {
+            if let firstID = spots.first?.id {
+                navigationPath = [firstID]
+            } else {
+                navigationPath.removeAll()
+            }
+        }
+    }
 }
 
 // MARK: - Preview
 
-#Preview("Spot List - With Spots") {
+#Preview("Spot Flow - Regular Width") {
     let config = ModelConfiguration(isStoredInMemoryOnly: true)
     let container = try! ModelContainer(
         for: FavoriteCity.self,
@@ -152,7 +438,8 @@ struct SpotListView: View {
             latitude: 35.661852,
             longitude: 139.700514,
             category: .pokestop,
-            isFavorite: true
+            isFavorite: true,
+            city: mockCity
         ),
         CitySpot(
             name: "Tokyo Tower Gym",
@@ -160,28 +447,22 @@ struct SpotListView: View {
             latitude: 35.658517,
             longitude: 139.745438,
             category: .gym,
-            isFavorite: false
-        ),
-        CitySpot(
-            name: "Yoyogi Park Meeting",
-            notes: "Community Day meetup spot",
-            latitude: 35.671598,
-            longitude: 139.696930,
-            category: .meetingPoint,
-            isFavorite: true
+            city: mockCity
         ),
     ]
 
-    let viewModel = CitiesViewModel(modelContext: context)
+    context.insert(mockCity)
+    mockSpots.forEach { context.insert($0) }
+    try? context.save()
 
-    NavigationStack {
-        SpotListView(spots: mockSpots, viewModel: viewModel)
-            .navigationTitle(String(localized: "spots.section.title"))
-    }
-    .modelContainer(container)
+    let viewModel = CitiesViewModel(modelContext: context)
+    viewModel.loadFavoriteCitiesFromDatabase()
+
+    return SpotListView(viewModel: viewModel, city: mockCity, initialSpot: mockSpots.first)
+        .modelContainer(container)
 }
 
-#Preview("Spot List - Empty") {
+#Preview("Spot Flow - Compact Width") {
     let config = ModelConfiguration(isStoredInMemoryOnly: true)
     let container = try! ModelContainer(
         for: FavoriteCity.self,
@@ -190,11 +471,31 @@ struct SpotListView: View {
     )
 
     let context = container.mainContext
-    let viewModel = CitiesViewModel(modelContext: context)
 
-    NavigationStack {
-        SpotListView(spots: [], viewModel: viewModel)
-            .navigationTitle(String(localized: "spots.section.title"))
+    let mockCity = FavoriteCity(
+        name: "Berlin",
+        timeZoneIdentifier: "Europe/Berlin",
+        fullName: "Berlin, Germany"
+    )
+
+    let mockSpot = CitySpot(
+        name: "Brandenburger Tor",
+        latitude: 52.5163,
+        longitude: 13.3777,
+        category: .gym,
+        isFavorite: false,
+        city: mockCity
+    )
+
+    context.insert(mockCity)
+    context.insert(mockSpot)
+    try? context.save()
+
+    let viewModel = CitiesViewModel(modelContext: context)
+    viewModel.loadFavoriteCitiesFromDatabase()
+
+    return NavigationStack {
+        SpotListView(viewModel: viewModel, city: mockCity, initialSpot: nil)
     }
     .modelContainer(container)
 }

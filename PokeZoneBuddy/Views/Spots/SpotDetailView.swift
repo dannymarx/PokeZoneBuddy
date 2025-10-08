@@ -11,18 +11,25 @@ import SwiftData
 /// Detail-Ansicht für einen einzelnen Spot
 struct SpotDetailView: View {
 
-    // MARK: - Environment
-
-    @Environment(\.dismiss) private var dismiss
-
     // MARK: - Properties
 
     let spot: CitySpot
     let viewModel: CitiesViewModel
+    let onEdit: (CitySpot) -> Void
 
     // MARK: - State
 
     @State private var showCopiedAlert: Bool = false
+
+    init(
+        spot: CitySpot,
+        viewModel: CitiesViewModel,
+        onEdit: @escaping (CitySpot) -> Void = { _ in }
+    ) {
+        self.spot = spot
+        self.viewModel = viewModel
+        self.onEdit = onEdit
+    }
 
     // MARK: - Body
 
@@ -136,20 +143,18 @@ struct SpotDetailView: View {
     /// Toolbar mit Edit und Share Buttons
     @ToolbarContentBuilder
     private var toolbarContent: some ToolbarContent {
-        ToolbarItem(placement: .confirmationAction) {
-            Button {
-                dismiss()
-            } label: {
-                Text(String(localized: "common.done"))
-            }
-        }
-
         ToolbarItem(placement: .primaryAction) {
             Menu {
                 Button {
                     shareSpot()
                 } label: {
                     Label(String(localized: "spots.action.share"), systemImage: "square.and.arrow.up")
+                }
+
+                Button {
+                    onEdit(spot)
+                } label: {
+                    Label(String(localized: "spots.action.edit"), systemImage: "pencil")
                 }
 
                 Divider()
@@ -284,4 +289,3 @@ struct SpotDetailView: View {
     SpotDetailView(spot: mockSpot, viewModel: viewModel)
         .modelContainer(container)
 }
-
