@@ -45,7 +45,7 @@ struct FavoriteEventsSidebarSection: View {
             Divider()
 
             // Events List
-            ScrollView {
+            ScrollView(.vertical, showsIndicators: false) {
                 if favoriteEvents.isEmpty {
                     placeholderView
                 } else {
@@ -61,7 +61,10 @@ struct FavoriteEventsSidebarSection: View {
                     .padding(16)
                 }
             }
+            .scrollIndicators(.hidden, axes: .vertical)
+            .hideScrollIndicatorsCompat()
         }
+        .hideScrollIndicatorsCompat()
     }
 
     // MARK: - Placeholder View

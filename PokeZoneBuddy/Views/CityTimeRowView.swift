@@ -268,5 +268,5 @@ private struct TimeInfoBlock: View {
             .padding(20)
     }
     .frame(width: 600, height: 400)
-    .background(.windowBackground)
+    .background(Color.appBackground)
 }

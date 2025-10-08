@@ -175,3 +175,4 @@ coverage/
 *.sqlite
 *.sqlite3
 *.db
+AGENTS.md

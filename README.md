@@ -39,6 +39,7 @@
 - **Accessibility**: VoiceOver, Dynamic Type, semantic labels
 - **Multi-language**: English and German
 - **Visual Clarity**: Color-coded event types, status badges
+- **Polished Feel**: Hidden scroll indicators and platform-aware sheets keep the UI distraction-free
 
 ---
 

@@ -1,5 +1,11 @@
 import SwiftUI
 import SwiftData
+#if canImport(AppKit)
+import AppKit
+#endif
+#if canImport(UIKit)
+import UIKit
+#endif
 
 struct EditSpotSheet: View {
     // MARK: - Environment
@@ -58,7 +64,7 @@ struct EditSpotSheet: View {
                 TextEditor(text: $notes)
                     .frame(minHeight: 80, maxHeight: 120)
                     .scrollContentBackground(.hidden)
-                    .background(Color(nsColor: .controlBackgroundColor))
+                    .background(editorBackgroundColor)
                     .cornerRadius(6)
                     .accessibilityLabel("Spot notes")
             }
@@ -130,6 +136,15 @@ struct EditSpotSheet: View {
         #else
         UIPasteboard.general.string = spot.formattedCoordinates
         #endif
+    }
+    
+    // MARK: - Helpers
+    private var editorBackgroundColor: Color {
+    #if os(macOS)
+        Color(nsColor: .controlBackgroundColor)
+    #else
+        Color(uiColor: .secondarySystemBackground)
+    #endif
     }
 }
 
