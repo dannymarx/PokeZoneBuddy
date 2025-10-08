@@ -13,6 +13,7 @@ import SwiftData
 struct PokeZoneBuddyApp: App {
     
     // MARK: - SwiftData Container
+    @AppStorage(ThemePreference.storageKey) private var themePreferenceRaw = ThemePreference.system.rawValue
     
     /// SwiftData ModelContainer for local persistence
     /// Stores Events, FavoriteCities, and FavoriteEvents locally (no CloudKit)
@@ -20,6 +21,7 @@ struct PokeZoneBuddyApp: App {
         let schema = Schema([
             Event.self,
             FavoriteCity.self,
+            CitySpot.self,
             FavoriteEvent.self,
             SpotlightDetails.self,
             RaidDetails.self,
@@ -49,6 +51,10 @@ struct PokeZoneBuddyApp: App {
     #if os(macOS)
     @State private var calendarService = CalendarService()
     #endif
+    
+    private var currentTheme: ThemePreference {
+        ThemePreference(rawValue: themePreferenceRaw) ?? .system
+    }
 
     // MARK: - Scene
     
@@ -59,6 +65,7 @@ struct PokeZoneBuddyApp: App {
                 #if os(macOS)
                 .environment(calendarService)
                 #endif
+                .preferredColorScheme(currentTheme.colorScheme)
                 .onAppear {
                     setupBackgroundRefresh()
                 }
@@ -98,4 +105,3 @@ extension Notification.Name {
     /// Notification to refresh events
     static let refreshEvents = Notification.Name("refreshEvents")
 }
-

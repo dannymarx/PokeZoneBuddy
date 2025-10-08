@@ -1,16 +1,59 @@
 //
-//  CacheManagementView.swift
+//  SettingsView.swift
 //  PokeZoneBuddy
 //
-//  Settings view for cache management
+//  Settings view for preferences & cache
 //  Version 0.4 - Modern UI Design
 //
 
 import SwiftUI
 import SwiftData
 
-/// View for managing app cache and data
-struct CacheManagementView: View {
+enum ThemePreference: String, CaseIterable, Identifiable {
+    static let storageKey = "settings.themePreference"
+    
+    case system
+    case light
+    case dark
+    
+    var id: String { rawValue }
+    
+    var label: LocalizedStringKey {
+        switch self {
+        case .system:
+            return "System"
+        case .light:
+            return "Light"
+        case .dark:
+            return "Dark"
+        }
+    }
+    
+    var icon: String {
+        switch self {
+        case .system:
+            return "circle.lefthalf.filled"
+        case .light:
+            return "sun.max.fill"
+        case .dark:
+            return "moon.fill"
+        }
+    }
+    
+    var colorScheme: ColorScheme? {
+        switch self {
+        case .system:
+            return nil
+        case .light:
+            return .light
+        case .dark:
+            return .dark
+        }
+    }
+}
+
+/// View for managing general settings and cache data
+struct SettingsView: View {
     
     // MARK: - Environment
     
@@ -19,8 +62,8 @@ struct CacheManagementView: View {
     
     // MARK: - State
     
+    @AppStorage(ThemePreference.storageKey) private var themePreferenceRaw = ThemePreference.system.rawValue
     @State private var eventCount = 0
-    @State private var imageMemorySize = 0
     @State private var diskCacheSize = 0
     @State private var showClearConfirmation = false
     @State private var showDeleteOldConfirmation = false
@@ -37,16 +80,19 @@ struct CacheManagementView: View {
                 Divider()
                 
                 // Content
-                ScrollView {
+                ScrollView(.vertical, showsIndicators: false) {
                     VStack(spacing: 24) {
+                        appearanceSection
                         cacheStatisticsSection
                         cacheActionsSection
                     }
                     .padding(24)
                 }
+                .scrollIndicators(.hidden, axes: .vertical)
+                .hideScrollIndicatorsCompat()
             }
-            .background(.windowBackground)
-            .navigationTitle(String(localized: "cache.title"))
+            .background(Color.appBackground)
+            
             .toolbar {
                 ToolbarItem(placement: .confirmationAction) {
                     Button(String(localized: "common.done")) {
@@ -83,7 +129,9 @@ struct CacheManagementView: View {
                 Text(String(localized: "cache.confirm.delete_old.message"))
             }
         }
+#if os(macOS)
         .frame(minWidth: 600, minHeight: 500)
+#endif
     }
     
     // MARK: - Header Section
@@ -93,23 +141,23 @@ struct CacheManagementView: View {
             Circle()
                 .fill(
                     LinearGradient(
-                        colors: [.orange, .red],
+                        colors: [.blue, .purple],
                         startPoint: .topLeading,
                         endPoint: .bottomTrailing
                     )
                 )
                 .frame(width: 56, height: 56)
                 .overlay(
-                    Image(systemName: "internaldrive.fill")
+                    Image(systemName: "gearshape.fill")
                         .font(.system(size: 24))
                         .foregroundStyle(.white)
                 )
             
             VStack(alignment: .leading, spacing: 4) {
-                Text(String(localized: "cache.title"))
+                Text(String(localized: "settings.title"))
                     .font(.system(size: 24, weight: .bold, design: .rounded))
                 
-                Text(String(localized: "cache.subtitle"))
+                Text("Manage preferences and storage")
                     .font(.system(size: 13))
                     .foregroundStyle(.secondary)
             }
@@ -122,6 +170,41 @@ struct CacheManagementView: View {
             }
         }
         .padding(24)
+    }
+    
+    // MARK: - Appearance Section
+    
+    private var appearanceSection: some View {
+        VStack(spacing: 16) {
+            HStack {
+                Label("Appearance", systemImage: "paintbrush")
+                    .font(.system(size: 16, weight: .semibold))
+                    .foregroundStyle(.primary)
+                Spacer()
+            }
+            
+            Picker("", selection: themePreferenceBinding) {
+                ForEach(ThemePreference.allCases) { preference in
+                    Label {
+                        Text(preference.label)
+                    } icon: {
+                        Image(systemName: preference.icon)
+                    }
+                    .tag(preference)
+                }
+            }
+            .pickerStyle(.segmented)
+            
+            Text("Choose a display mode or follow the device setting.")
+                .font(.footnote)
+                .foregroundStyle(.secondary)
+                .frame(maxWidth: .infinity, alignment: .leading)
+        }
+        .padding(16)
+        .background(
+            RoundedRectangle(cornerRadius: 12, style: .continuous)
+                .fill(.quaternary.opacity(0.3))
+        )
     }
     
     // MARK: - Cache Statistics Section
@@ -146,14 +229,6 @@ struct CacheManagementView: View {
                     title: String(localized: "cache.stats.events.title"),
                     value: "\(eventCount)",
                     subtitle: String(localized: "cache.stats.events.subtitle")
-                )
-                
-                StatCard(
-                    icon: "photo.stack",
-                    iconColor: .green,
-                    title: String(localized: "cache.stats.image_memory.title"),
-                    value: formatBytes(imageMemorySize),
-                    subtitle: String(localized: "cache.stats.image_memory.subtitle")
                 )
                 
                 StatCard(
@@ -217,7 +292,6 @@ struct CacheManagementView: View {
         let stats = service.getCacheSize()
         
         eventCount = stats.events
-        imageMemorySize = 0
         diskCacheSize = stats.imageDisk
         
         isRefreshing = false
@@ -247,6 +321,13 @@ struct CacheManagementView: View {
         formatter.allowedUnits = [.useKB, .useMB]
         formatter.countStyle = .file
         return formatter.string(fromByteCount: Int64(bytes))
+    }
+    
+    private var themePreferenceBinding: Binding<ThemePreference> {
+        Binding(
+            get: { ThemePreference(rawValue: themePreferenceRaw) ?? .system },
+            set: { themePreferenceRaw = $0.rawValue }
+        )
     }
 }
 
@@ -369,7 +450,6 @@ private struct ActionCard: View {
 // MARK: - Preview
 
 #Preview {
-    CacheManagementView()
+    SettingsView()
         .modelContainer(for: Event.self, inMemory: true)
 }
-

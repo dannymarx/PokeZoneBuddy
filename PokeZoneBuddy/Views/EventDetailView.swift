@@ -21,7 +21,7 @@ struct EventDetailView: View {
     
     var body: some View {
         ScrollViewReader { proxy in
-            ScrollView {
+            ScrollView(.vertical, showsIndicators: false) {
                 VStack(spacing: 24) {
                     // Anchor for scrolling to top
                     Color.clear
@@ -59,6 +59,8 @@ struct EventDetailView: View {
                 .padding(32)
                 .frame(maxWidth: 800)
             }
+            .scrollIndicators(.hidden, axes: .vertical)
+            .hideScrollIndicatorsCompat()
             .onChange(of: event.id) { _, _ in
                 // Scroll to top when event changes
                 withAnimation(.easeOut(duration: 0.3)) {
@@ -67,7 +69,7 @@ struct EventDetailView: View {
             }
         }
         .frame(maxWidth: .infinity, maxHeight: .infinity)
-        .background(.windowBackground)
+        .background(Color.appBackground)
     }
     
     // MARK: - Event Image Header
@@ -103,13 +105,17 @@ struct EventDetailView: View {
             // Event Type Badge
             HStack {
                 ModernBadge(event.eventType, icon: "tag.fill", color: .blue)
-                
+
                 if event.isCurrentlyActive {
                     ModernBadge(String(localized: "badge.live_now"), icon: "circle.fill", color: .successGreen)
                         .shimmer()
                 }
-                
+
                 Spacer()
+
+                // Favorite Button
+                FavoriteButton(eventID: event.id)
+                    .font(.system(size: 24))
             }
             
             // Event Name
@@ -646,4 +652,3 @@ private struct ImprovedTimeDisplay: View {
     }
     .frame(width: 900, height: 700)
 }
-

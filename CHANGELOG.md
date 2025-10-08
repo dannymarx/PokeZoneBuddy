@@ -5,6 +5,22 @@ This project follows [Semantic Versioning](https://semver.org/).
 
 ---
 
+## [1.1.0] – 2025-10-08
+
+### Added
+- Introduced **City Spots** so every favorite city can store gyms, PokéStops, meetup points, and custom coordinates with notes, categories, and favorites.
+- Added a **Favorite Events** sidebar section that surfaces starred events with thumbnails, times, and one-click navigation to details.
+- Built a **coordinate parsing service** that accepts plain GPS pairs, Google/Apple Maps URLs, and DMS formats with live validation and clipboard-friendly exports.
+
+### Changed
+- Polished the About view layout with platform-specific padding so it centers cleanly on every device.
+
+### Fixed
+- Hid remaining scroll indicators across lists and sidebars to prevent stray scrollbars on macOS.
+- Present the About view as a full-screen cover on iOS to eliminate the draggable sheet behavior.
+
+---
+
 ## [1.0.0] – 2025-10-06
 
 Initial release of PokeZoneBuddy – Your companion for tracking Pokémon GO events across timezones.
@@ -76,4 +92,3 @@ Initial release of PokeZoneBuddy – Your companion for tracking Pokémon GO eve
 - **Fixed** – bug fixes  
 - **Removed** – removed features  
 - **Security** – security-related changes
-

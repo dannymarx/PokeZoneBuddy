@@ -212,7 +212,23 @@ final class EventsViewModel {
     var pastEvents: [Event] {
         events.filter { $0.isPast }
     }
-    
+
+    /// Favorisierte Events (nur zukünftige/aktive, sortiert nach StartTime)
+    /// PERFORMANCE: Uses Set for O(1) ID lookup
+    var favoriteEvents: [Event] {
+        let favoritesManager = FavoritesManager(modelContext: modelContext)
+        let favoriteIDs = Set(favoritesManager.getAllFavoriteEventIDs())
+
+        return events
+            .filter { event in
+                // Must be favorited
+                guard favoriteIDs.contains(event.id) else { return false }
+                // Must be upcoming or active (not past)
+                return event.isUpcoming || event.isCurrentlyActive
+            }
+            .sorted { $0.startTime < $1.startTime }
+    }
+
     /// Events gruppiert nach Typ
     var eventsByType: [String: [Event]] {
         Dictionary(grouping: events, by: { $0.eventType })
@@ -233,4 +249,3 @@ extension EventsViewModel {
         return String(format: String(localized: "events.last_updated"), formatter.localizedString(for: updateTime, relativeTo: Date()))
     }
 }
-
