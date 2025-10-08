@@ -249,4 +249,3 @@ extension EventsViewModel {
         return String(format: String(localized: "events.last_updated"), formatter.localizedString(for: updateTime, relativeTo: Date()))
     }
 }
-

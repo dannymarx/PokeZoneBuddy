@@ -24,9 +24,9 @@
 /* End PBXContainerItemProxy section */
 
 /* Begin PBXFileReference section */
+		300E9CFE2E96539100BE15B4 /* PokeZoneBuddyTests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; name = PokeZoneBuddyTests.xctest; path = /Users/danny/Documents/Coding/PokeZoneBuddy/build/Debug/PokeZoneBuddy.app/Contents/PlugIns/PokeZoneBuddyTests.xctest; sourceTree = "<absolute>"; };
+		300E9CFF2E96539100BE15B4 /* PokeZoneBuddyUITests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; name = PokeZoneBuddyUITests.xctest; path = "/Users/danny/Documents/Coding/PokeZoneBuddy/build/Debug/PokeZoneBuddyUITests-Runner.app/Contents/PlugIns/PokeZoneBuddyUITests.xctest"; sourceTree = "<absolute>"; };
 		302CFF952E8EFB6C000E02C5 /* PokeZoneBuddy.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = PokeZoneBuddy.app; sourceTree = BUILT_PRODUCTS_DIR; };
-		302CFF962E8EFB6C000E02C5 /* PokeZoneBuddyTests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; name = PokeZoneBuddyTests.xctest; path = /Users/danny/Documents/Coding/PokeZoneBuddy/build/Debug/PokeZoneBuddy.app/Contents/PlugIns/PokeZoneBuddyTests.xctest; sourceTree = "<absolute>"; };
-		302CFF972E8EFB6C000E02C5 /* PokeZoneBuddyUITests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; name = PokeZoneBuddyUITests.xctest; path = "/Users/danny/Documents/Coding/PokeZoneBuddy/build/Debug/PokeZoneBuddyUITests-Runner.app/Contents/PlugIns/PokeZoneBuddyUITests.xctest"; sourceTree = "<absolute>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFileSystemSynchronizedRootGroup section */
@@ -112,7 +112,7 @@
 			packageProductDependencies = (
 			);
 			productName = PokeZoneBuddyTests;
-			productReference = 302CFF962E8EFB6C000E02C5 /* PokeZoneBuddyTests.xctest */;
+			productReference = 300E9CFE2E96539100BE15B4 /* PokeZoneBuddyTests.xctest */;
 			productType = "com.apple.product-type.bundle.unit-test";
 		};
 		305FAD8B2E8D2AF4002CBBDD /* PokeZoneBuddyUITests */ = {
@@ -132,7 +132,7 @@
 			packageProductDependencies = (
 			);
 			productName = PokeZoneBuddyUITests;
-			productReference = 302CFF972E8EFB6C000E02C5 /* PokeZoneBuddyUITests.xctest */;
+			productReference = 300E9CFF2E96539100BE15B4 /* PokeZoneBuddyUITests.xctest */;
 			productType = "com.apple.product-type.bundle.ui-testing";
 		};
 /* End PBXNativeTarget section */

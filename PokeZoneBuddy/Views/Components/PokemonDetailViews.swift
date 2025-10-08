@@ -98,6 +98,8 @@ struct SpotlightHourDetailView: View {
                             }
                         }
                     }
+                    .scrollIndicators(.hidden, axes: .horizontal)
+                    .hideScrollIndicatorsCompat()
                 }
             }
         }
@@ -135,6 +137,8 @@ struct RaidBattleDetailView: View {
                     }
                 }
             }
+            .scrollIndicators(.hidden, axes: .horizontal)
+            .hideScrollIndicatorsCompat()
             
             // Available Shinies
             if !details.availableShinies.isEmpty {
@@ -150,6 +154,8 @@ struct RaidBattleDetailView: View {
                             }
                         }
                     }
+                    .scrollIndicators(.hidden, axes: .horizontal)
+                    .hideScrollIndicatorsCompat()
                 }
             }
         }
@@ -193,6 +199,8 @@ struct CommunityDayDetailView: View {
                             }
                         }
                     }
+                    .scrollIndicators(.hidden, axes: .horizontal)
+                    .hideScrollIndicatorsCompat()
                 }
             }
             
@@ -213,6 +221,8 @@ struct CommunityDayDetailView: View {
                             }
                         }
                     }
+                    .scrollIndicators(.hidden, axes: .horizontal)
+                    .hideScrollIndicatorsCompat()
                 }
             }
             
@@ -450,6 +460,8 @@ struct BonusRowView: View {
         )
         .padding()
     }
+    .scrollIndicators(.hidden, axes: .vertical)
+    .hideScrollIndicatorsCompat()
 }
 
 #Preview("Raid Battles") {
@@ -479,4 +491,6 @@ struct BonusRowView: View {
         )
         .padding()
     }
+    .scrollIndicators(.hidden, axes: .vertical)
+    .hideScrollIndicatorsCompat()
 }

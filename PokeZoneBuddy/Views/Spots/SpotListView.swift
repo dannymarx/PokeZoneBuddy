@@ -83,6 +83,8 @@ struct SpotListView: View {
                 .accessibilityLabel("\(spot.name), \(spot.category.localizedName)")
             }
         }
+        .scrollIndicators(.hidden)
+        .hideScrollIndicatorsCompat()
         .listStyle(.inset)
     }
 

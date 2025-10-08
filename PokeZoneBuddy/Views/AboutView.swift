@@ -56,6 +56,22 @@ private func applicationIcon() -> NSImage? {
 struct AboutView: View {
     @Environment(\.dismiss) private var dismiss
 
+    private var horizontalPadding: CGFloat {
+        #if os(iOS)
+        24
+        #else
+        40
+        #endif
+    }
+
+    private var verticalPadding: CGFloat {
+        #if os(iOS)
+        32
+        #else
+        40
+        #endif
+    }
+
     // MARK: - Close Button
 
     private var closeButton: some View {
@@ -72,7 +88,7 @@ struct AboutView: View {
     }
 
     var body: some View {
-        ScrollView {
+        ScrollView(.vertical, showsIndicators: false) {
             VStack(spacing: 32) {
                 // App Icon & Info
                 appHeaderSection
@@ -94,12 +110,17 @@ struct AboutView: View {
 
                 Spacer(minLength: 40)
             }
-            .padding(40)
+            .padding(.horizontal, horizontalPadding)
+            .padding(.vertical, verticalPadding)
             .frame(maxWidth: 600)
+            .frame(maxWidth: .infinity, alignment: .center)
         }
         .frame(maxWidth: .infinity, maxHeight: .infinity)
-        .background(.windowBackground)
+        .background(Color.appBackground)
         .overlay(alignment: .topTrailing) { closeButton }
+        .scrollIndicators(.hidden)
+        .hideScrollIndicatorsCompat()
+        .scrollBounceBehavior(.basedOnSize)
         #if os(macOS)
         .frame(width: 600, height: 700)
         #endif

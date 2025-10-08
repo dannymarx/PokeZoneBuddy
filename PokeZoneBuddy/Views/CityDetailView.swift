@@ -34,6 +34,8 @@ struct CityDetailView: View {
                 cityInfoSection
                 spotsSection
             }
+            .scrollIndicators(.hidden)
+            .hideScrollIndicatorsCompat()
             .listStyle(.inset)
             .navigationTitle(city.displayName)
             .toolbar {
@@ -251,4 +253,3 @@ struct CityDetailView: View {
     return CityDetailView(city: mockCity, viewModel: viewModel)
         .modelContainer(container)
 }
-
