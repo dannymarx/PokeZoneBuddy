@@ -130,6 +130,7 @@
       }
     },
     "about.close" : {
+      "extractionState" : "stale",
       "localizations" : {
         "de" : {
           "stringUnit" : {
