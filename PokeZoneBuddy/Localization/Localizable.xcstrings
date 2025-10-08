@@ -39,6 +39,7 @@
       }
     },
     "%@, %@" : {
+      "extractionState" : "stale",
       "localizations" : {
         "de" : {
           "stringUnit" : {
@@ -1067,6 +1068,7 @@
       }
     },
     "city.info.added" : {
+      "extractionState" : "stale",
       "localizations" : {
         "de" : {
           "stringUnit" : {
@@ -1083,6 +1085,7 @@
       }
     },
     "city.info.fullName" : {
+      "extractionState" : "stale",
       "localizations" : {
         "de" : {
           "stringUnit" : {
@@ -1099,6 +1102,7 @@
       }
     },
     "city.info.section" : {
+      "extractionState" : "stale",
       "localizations" : {
         "de" : {
           "stringUnit" : {
@@ -1115,6 +1119,7 @@
       }
     },
     "city.info.timeZone" : {
+      "extractionState" : "stale",
       "localizations" : {
         "de" : {
           "stringUnit" : {
@@ -1131,6 +1136,7 @@
       }
     },
     "city.info.utcOffset" : {
+      "extractionState" : "stale",
       "localizations" : {
         "de" : {
           "stringUnit" : {
@@ -4057,7 +4063,6 @@
       }
     },
     "spots.action.edit" : {
-      "extractionState" : "stale",
       "localizations" : {
         "de" : {
           "stringUnit" : {
@@ -4090,6 +4095,7 @@
       }
     },
     "spots.action.showAll" : {
+      "extractionState" : "stale",
       "localizations" : {
         "de" : {
           "stringUnit" : {
