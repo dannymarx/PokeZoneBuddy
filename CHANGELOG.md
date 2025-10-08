@@ -5,6 +5,17 @@ This project follows [Semantic Versioning](https://semver.org/).
 
 ---
 
+## [Unreleased]
+
+### Changed
+- Polished the About view layout with platform-specific padding so it centers cleanly on every device.
+
+### Fixed
+- Hid remaining scroll indicators across lists and sidebars to prevent stray scrollbars on macOS.
+- Present the About view as a full-screen cover on iOS to eliminate the draggable sheet behavior.
+
+---
+
 ## [1.0.0] – 2025-10-06
 
 Initial release of PokeZoneBuddy – Your companion for tracking Pokémon GO events across timezones.
@@ -76,4 +87,3 @@ Initial release of PokeZoneBuddy – Your companion for tracking Pokémon GO eve
 - **Fixed** – bug fixes  
 - **Removed** – removed features  
 - **Security** – security-related changes
-

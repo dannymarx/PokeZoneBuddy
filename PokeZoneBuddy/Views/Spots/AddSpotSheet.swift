@@ -7,6 +7,12 @@
 
 import SwiftUI
 import SwiftData
+#if canImport(AppKit)
+import AppKit
+#endif
+#if canImport(UIKit)
+import UIKit
+#endif
 
 /// Sheet zum Hinzufügen eines neuen Spots zu einer Stadt
 struct AddSpotSheet: View {
@@ -88,7 +94,7 @@ struct AddSpotSheet: View {
                 TextEditor(text: $notes)
                     .frame(minHeight: 80, maxHeight: 120)
                     .scrollContentBackground(.hidden)
-                    .background(Color(nsColor: .controlBackgroundColor))
+                    .background(editorBackgroundColor)
                     .cornerRadius(6)
                     .accessibilityLabel("Spot notes")
             }
@@ -251,6 +257,15 @@ struct AddSpotSheet: View {
             errorMessage = viewModel.errorMessage ?? String(localized: "alert.error.unknown")
             showError = true
         }
+    }
+    
+    // MARK: - Helpers
+    private var editorBackgroundColor: Color {
+    #if os(macOS)
+        Color(nsColor: .controlBackgroundColor)
+    #else
+        Color(uiColor: .secondarySystemBackground)
+    #endif
     }
 }
 

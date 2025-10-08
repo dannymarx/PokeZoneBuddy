@@ -20,11 +20,6 @@ struct EventsListView: View {
     
     @State private var eventsViewModel: EventsViewModel?
     @State private var citiesViewModel: CitiesViewModel?
-    @State private var selectedEvent: Event?
-    @State private var showCitiesManagement = false
-    @State private var showAbout = false
-    @State private var showCacheManagement = false
-    @State private var columnVisibility: NavigationSplitViewVisibility = .all
     
     // MARK: - Body
     
@@ -46,56 +41,10 @@ struct EventsListView: View {
     // MARK: - Main Content
     
     private func mainContent(eventsVM: EventsViewModel, citiesVM: CitiesViewModel) -> some View {
-        NavigationSplitView(columnVisibility: $columnVisibility) {
-            // SIDEBAR: Cities
-            CitiesSidebarView(
-                viewModel: citiesVM,
-                eventsViewModel: eventsVM,
-                showManagement: $showCitiesManagement,
-                showAbout: $showAbout,
-                showCacheManagement: $showCacheManagement,
-                selectedEvent: $selectedEvent
-            )
-            .navigationSplitViewColumnWidth(min: 220, ideal: 260, max: 300)
-            
-        } content: {
-            // CONTENT: Events
-            EventsContentView(
-                viewModel: eventsVM,
-                selectedEvent: $selectedEvent
-            )
-            .navigationSplitViewColumnWidth(min: 420, ideal: 460, max: 540)
-            
-        } detail: {
-            // DETAIL: Event Details
-            EventDetailContainerView(
-                event: selectedEvent,
-                cities: citiesVM.favoriteCities
-            )
-        }
-        .navigationSplitViewStyle(.balanced)
-        .onReceive(NotificationCenter.default.publisher(for: .refreshEvents)) { _ in
-            Task { await eventsVM.refreshEvents() }
-        }
-        .sheet(isPresented: $showCitiesManagement) {
-            CitiesManagementView(viewModel: citiesVM)
-        }
-        .sheet(isPresented: $showAbout) {
-            AboutView()
-        }
-        .sheet(isPresented: $showCacheManagement) {
-            CacheManagementView()
-        }
-        .alert(String(localized: "alert.error.title"), isPresented: Binding(
-            get: { eventsVM.showError },
-            set: { eventsVM.showError = $0 }
-        )) {
-            Button(String(localized: "common.ok")) {
-                eventsVM.showError = false
-            }
-        } message: {
-            Text(eventsVM.errorMessage ?? String(localized: "alert.error.unknown"))
-        }
+        AdaptiveEventsView(
+            eventsViewModel: eventsVM,
+            citiesViewModel: citiesVM
+        )
     }
     
     // MARK: - Loading View
@@ -108,7 +57,7 @@ struct EventsListView: View {
                 .secondaryStyle()
         }
         .frame(maxWidth: .infinity, maxHeight: .infinity)
-        .background(.windowBackground)
+        .background(Color.appBackground)
     }
     
     // MARK: - Initialize ViewModels
@@ -119,6 +68,177 @@ struct EventsListView: View {
         
         if let eventsVM = eventsViewModel, eventsVM.events.isEmpty {
             Task { await eventsVM.syncEvents() }
+        }
+    }
+}
+
+// MARK: - Adaptive Layout Container
+
+private struct AdaptiveEventsView: View {
+    let eventsViewModel: EventsViewModel
+    let citiesViewModel: CitiesViewModel
+    
+    @State private var selectedEvent: Event?
+    @State private var showCitiesManagement = false
+    @State private var showAbout = false
+    @State private var showCacheManagement = false
+    @State private var columnVisibility: NavigationSplitViewVisibility = .all
+    @State private var navigationPath: [String] = []
+    
+    @Environment(\.horizontalSizeClass) private var horizontalSizeClass
+    @Environment(\.verticalSizeClass) private var verticalSizeClass
+    
+    private var shouldUseSplitLayout: Bool {
+#if os(iOS)
+        if horizontalSizeClass == .compact {
+            return false
+        }
+        return true
+#else
+        return true
+#endif
+    }
+    
+    var body: some View {
+        adaptiveLayout
+            .onReceive(NotificationCenter.default.publisher(for: .refreshEvents)) { _ in
+                Task { await eventsViewModel.refreshEvents() }
+            }
+            .alert(String(localized: "alert.error.title"), isPresented: Binding(
+                get: { eventsViewModel.showError },
+                set: { eventsViewModel.showError = $0 }
+            )) {
+                Button(String(localized: "common.ok")) {
+                    eventsViewModel.showError = false
+                }
+            } message: {
+                Text(eventsViewModel.errorMessage ?? String(localized: "alert.error.unknown"))
+            }
+    }
+    
+    private var adaptiveLayout: some View {
+        Group {
+            if shouldUseSplitLayout {
+                splitLayout
+            } else {
+                compactLayout
+            }
+        }
+        .sheet(isPresented: $showCitiesManagement) {
+            CitiesManagementView(viewModel: citiesViewModel)
+        }
+#if os(iOS)
+        .fullScreenCover(isPresented: $showAbout) {
+            AboutView()
+        }
+#else
+        .sheet(isPresented: $showAbout) {
+            AboutView()
+        }
+#endif
+        .sheet(isPresented: $showCacheManagement) {
+            SettingsView()
+        }
+    }
+    
+    private var splitLayout: some View {
+        NavigationSplitView(columnVisibility: $columnVisibility) {
+            CitiesSidebarView(
+                viewModel: citiesViewModel,
+                eventsViewModel: eventsViewModel,
+                showManagement: $showCitiesManagement,
+                showAbout: $showAbout,
+                showCacheManagement: $showCacheManagement,
+                selectedEvent: $selectedEvent
+            )
+            .navigationSplitViewColumnWidth(min: 220, ideal: 260, max: 300)
+            
+        } content: {
+            EventsContentView(
+                viewModel: eventsViewModel,
+                selectedEvent: $selectedEvent,
+                layout: .split,
+                onEventSelected: { event in
+                    selectedEvent = event
+                }
+            )
+            .navigationSplitViewColumnWidth(min: 420, ideal: 460, max: 540)
+            
+        } detail: {
+            EventDetailContainerView(
+                event: selectedEvent,
+                cities: citiesViewModel.favoriteCities
+            )
+        }
+        .navigationSplitViewStyle(.balanced)
+    }
+    
+    private var compactLayout: some View {
+        NavigationStack(path: $navigationPath) {
+            EventsContentView(
+                viewModel: eventsViewModel,
+                selectedEvent: $selectedEvent,
+                layout: .compact,
+                onEventSelected: handleCompactSelection
+            )
+            .navigationDestination(for: String.self) { eventID in
+                if let event = eventsViewModel.events.first(where: { $0.id == eventID }) {
+                    EventDetailView(event: event, favoriteCities: citiesViewModel.favoriteCities)
+                } else {
+                    MissingEventView()
+                }
+            }
+#if os(iOS)
+            .toolbar { compactToolbar }
+#endif
+        }
+    }
+    
+    private func handleCompactSelection(_ event: Event) {
+        selectedEvent = event
+        if navigationPath.last != event.id {
+            navigationPath.append(event.id)
+        }
+    }
+    
+#if os(iOS)
+    @ToolbarContentBuilder
+    private var compactToolbar: some ToolbarContent {
+        ToolbarItem(placement: .topBarLeading) {
+            Button {
+                showCitiesManagement = true
+            } label: {
+                Label(String(localized: "sidebar.your_cities"), systemImage: "mappin.circle")
+            }
+        }
+        
+        ToolbarItem(placement: .topBarTrailing) {
+            Menu {
+                Button(String(localized: "settings.title")) {
+                    showCacheManagement = true
+                }
+                Button(String(localized: "about.title")) {
+                    showAbout = true
+                }
+            } label: {
+                Image(systemName: "ellipsis.circle")
+            }
+        }
+    }
+#endif
+    
+    private struct MissingEventView: View {
+        var body: some View {
+            VStack(spacing: 16) {
+                Image(systemName: "exclamationmark.circle")
+                    .font(.system(size: 48))
+                    .foregroundStyle(.tertiary)
+                
+                Text(String(localized: "alert.error.unknown"))
+                    .secondaryStyle()
+            }
+            .frame(maxWidth: .infinity, maxHeight: .infinity)
+            .background(Color.appBackground)
         }
     }
 }
@@ -171,7 +291,7 @@ private struct CitiesSidebarView: View {
             Divider()
             
             // Cities List
-            ScrollView {
+            ScrollView(.vertical, showsIndicators: false) {
                 if viewModel.favoriteCities.isEmpty {
                     noCitiesPlaceholder
                 } else {
@@ -183,6 +303,8 @@ private struct CitiesSidebarView: View {
                     .padding(16)
                 }
             }
+            .scrollIndicators(.hidden, axes: .vertical)
+            .hideScrollIndicatorsCompat()
 
             // Favorite Events Section
             if !favoriteEvents.isEmpty {
@@ -201,7 +323,7 @@ private struct CitiesSidebarView: View {
                     Divider()
 
                     // Favorites List
-                    ScrollView {
+                    ScrollView(.vertical, showsIndicators: false) {
                         LazyVStack(spacing: 8) {
                             ForEach(favoriteEvents) { event in
                                 FavoriteEventCard(event: event)
@@ -213,6 +335,8 @@ private struct CitiesSidebarView: View {
                         }
                         .padding(16)
                     }
+                    .scrollIndicators(.hidden, axes: .vertical)
+                    .hideScrollIndicatorsCompat()
                 }
                 .transition(.opacity.combined(with: .move(edge: .top)))
             }
@@ -225,7 +349,8 @@ private struct CitiesSidebarView: View {
             // About Button
             aboutButton
         }
-        .background(.windowBackground)
+        .background(Color.appBackground)
+        .hideScrollIndicatorsCompat()
         .animation(.default, value: favoriteEvents.isEmpty)
     }
     
@@ -378,6 +503,11 @@ enum EventFilter: String, CaseIterable {
     var localizedKey: LocalizedStringKey { .init(self.rawValue) }
 }
 
+private enum EventsLayoutStyle {
+    case split
+    case compact
+}
+
 // MARK: - Filter Button
 
 private struct FilterButton: View {
@@ -428,6 +558,8 @@ private struct EventsContentView: View {
     // With @Observable, no property wrapper needed for read-only access!
     let viewModel: EventsViewModel
     @Binding var selectedEvent: Event?
+    let layout: EventsLayoutStyle
+    let onEventSelected: (Event) -> Void
     @State private var selectedFilter: EventFilter = .all
     @State private var filterConfig = FilterConfiguration()
     @State private var showFilterSheet = false
@@ -446,7 +578,7 @@ private struct EventsContentView: View {
             
             // Filter
             filterView
-            
+
             Divider()
             
             // Content
@@ -458,7 +590,7 @@ private struct EventsContentView: View {
                 eventsList
             }
         }
-        .background(.windowBackground)
+        .background(Color.appBackground)
         .searchable(text: $filterConfig.searchText, prompt: String(localized: "search.events.prompt"))
         .sheet(isPresented: $showFilterSheet) {
             FilterSheet(config: filterConfig)
@@ -549,6 +681,8 @@ private struct EventsContentView: View {
                 .padding(.horizontal, 20)
                 .padding(.vertical, 12)
             }
+            .scrollIndicators(.hidden, axes: .horizontal)
+            .hideScrollIndicatorsCompat()
         }
         .frame(maxWidth: .infinity)
     }
@@ -585,7 +719,7 @@ private struct EventsContentView: View {
     }
     
     private var eventsList: some View {
-        ScrollView {
+        ScrollView(.vertical, showsIndicators: false) {
             LazyVStack(spacing: 12) {
                 switch selectedFilter {
                 case .all:
@@ -600,6 +734,8 @@ private struct EventsContentView: View {
             }
             .padding(.vertical, 12)
         }
+        .scrollIndicators(.hidden, axes: .vertical)
+        .hideScrollIndicatorsCompat()
     }
     
     @ViewBuilder
@@ -608,10 +744,10 @@ private struct EventsContentView: View {
         if !filteredActiveEvents.isEmpty {
             Section {
                 ForEach(filteredActiveEvents) { event in
-                    EventRow(event: event, isSelected: selectedEvent?.id == event.id, isActive: true)
+                    EventRow(event: event, isSelected: layout == .split && selectedEvent?.id == event.id, isActive: true)
                         .contentShape(Rectangle())
                         .onTapGesture {
-                            selectedEvent = event
+                            onEventSelected(event)
                         }
                 }
             } header: {
@@ -623,10 +759,10 @@ private struct EventsContentView: View {
         if !filteredUpcomingEvents.isEmpty {
             Section {
                 ForEach(filteredUpcomingEvents) { event in
-                    EventRow(event: event, isSelected: selectedEvent?.id == event.id)
+                    EventRow(event: event, isSelected: layout == .split && selectedEvent?.id == event.id)
                         .contentShape(Rectangle())
                         .onTapGesture {
-                            selectedEvent = event
+                            onEventSelected(event)
                         }
                 }
             } header: {
@@ -643,10 +779,10 @@ private struct EventsContentView: View {
         if !filteredPastEvents.isEmpty {
             Section {
                 ForEach(filteredPastEvents.prefix(5)) { event in
-                    EventRow(event: event, isSelected: selectedEvent?.id == event.id, isPast: true)
+                    EventRow(event: event, isSelected: layout == .split && selectedEvent?.id == event.id, isPast: true)
                         .contentShape(Rectangle())
                         .onTapGesture {
-                            selectedEvent = event
+                            onEventSelected(event)
                         }
                 }
             } header: {
@@ -661,10 +797,10 @@ private struct EventsContentView: View {
             emptyFilterState(icon: "circle.fill", message: String(localized: "filter.none.live"), color: .green)
         } else {
             ForEach(filteredActiveEvents) { event in
-                EventRow(event: event, isSelected: selectedEvent?.id == event.id, isActive: true)
+                EventRow(event: event, isSelected: layout == .split && selectedEvent?.id == event.id, isActive: true)
                     .contentShape(Rectangle())
                     .onTapGesture {
-                        selectedEvent = event
+                        onEventSelected(event)
                     }
             }
         }
@@ -676,10 +812,10 @@ private struct EventsContentView: View {
             emptyFilterState(icon: "clock.fill", message: String(localized: "filter.none.upcoming"), color: .orange)
         } else {
             ForEach(filteredUpcomingEvents) { event in
-                EventRow(event: event, isSelected: selectedEvent?.id == event.id)
+                EventRow(event: event, isSelected: layout == .split && selectedEvent?.id == event.id)
                     .contentShape(Rectangle())
                     .onTapGesture {
-                        selectedEvent = event
+                        onEventSelected(event)
                     }
             }
         }
@@ -691,10 +827,10 @@ private struct EventsContentView: View {
             emptyFilterState(icon: "checkmark.circle.fill", message: String(localized: "filter.none.past"), color: .gray)
         } else {
             ForEach(filteredPastEvents) { event in
-                EventRow(event: event, isSelected: selectedEvent?.id == event.id, isPast: true)
+                EventRow(event: event, isSelected: layout == .split && selectedEvent?.id == event.id, isPast: true)
                     .contentShape(Rectangle())
                     .onTapGesture {
-                        selectedEvent = event
+                        onEventSelected(event)
                     }
             }
         }
@@ -907,7 +1043,7 @@ private struct EventDetailContainerView: View {
             }
         }
         .frame(maxWidth: .infinity, maxHeight: .infinity)
-        .background(.windowBackground)
+        .background(Color.appBackground)
     }
 }
 
