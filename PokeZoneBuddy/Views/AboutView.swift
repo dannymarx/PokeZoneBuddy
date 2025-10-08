@@ -72,58 +72,54 @@ struct AboutView: View {
         #endif
     }
 
-    // MARK: - Close Button
-
-    private var closeButton: some View {
-        Button(action: { dismiss() }) {
-            Label(L("about.close", "Close"), systemImage: "xmark.circle.fill")
-                .labelStyle(.iconOnly)
-                .font(.system(size: 18, weight: .semibold))
-                .symbolRenderingMode(.hierarchical)
-                .padding(8)
-        }
-        .buttonStyle(.plain)
-        .accessibilityLabel(Text(L("about.close", "Close")))
-        .keyboardShortcut(.cancelAction)
-    }
-
     var body: some View {
-        ScrollView(.vertical, showsIndicators: false) {
-            VStack(spacing: 32) {
-                // App Icon & Info
-                appHeaderSection
+        NavigationStack {
+            ScrollView(.vertical, showsIndicators: false) {
+                VStack(spacing: 32) {
+                    // App Icon & Info
+                    appHeaderSection
 
-                Divider()
+                    Divider()
 
-                // Credits Section
-                creditsSection
+                    // Credits Section
+                    creditsSection
 
-                Divider()
+                    Divider()
 
-                // Legal Section
-                legalSection
+                    // Legal Section
+                    legalSection
 
-                Divider()
+                    Divider()
 
-                // Links
-                linksSection
+                    // Links
+                    linksSection
 
-                Spacer(minLength: 40)
+                    Spacer(minLength: 40)
+                }
+                .padding(.horizontal, horizontalPadding)
+                .padding(.vertical, verticalPadding)
+                .frame(maxWidth: 600)
+                .frame(maxWidth: .infinity, alignment: .center)
             }
-            .padding(.horizontal, horizontalPadding)
-            .padding(.vertical, verticalPadding)
-            .frame(maxWidth: 600)
-            .frame(maxWidth: .infinity, alignment: .center)
+            .frame(maxWidth: .infinity, maxHeight: .infinity)
+            .background(Color.appBackground.ignoresSafeArea())
+            .scrollIndicators(.hidden)
+            .hideScrollIndicatorsCompat()
+            .scrollBounceBehavior(.basedOnSize)
+            .toolbar {
+                ToolbarItem(placement: .confirmationAction) {
+                    Button(String(localized: "common.done")) {
+                        dismiss()
+                    }
+#if os(macOS)
+                    .keyboardShortcut(.cancelAction)
+#endif
+                }
+            }
         }
-        .frame(maxWidth: .infinity, maxHeight: .infinity)
-        .background(Color.appBackground)
-        .overlay(alignment: .topTrailing) { closeButton }
-        .scrollIndicators(.hidden)
-        .hideScrollIndicatorsCompat()
-        .scrollBounceBehavior(.basedOnSize)
-        #if os(macOS)
+#if os(macOS)
         .frame(width: 600, height: 700)
-        #endif
+#endif
     }
 
     // MARK: - App Header

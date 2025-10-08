@@ -38,12 +38,12 @@ struct CitiesManagementView: View {
             .background(Color.appBackground)
             
             .toolbar {
-                ToolbarItem(placement: .cancellationAction) {
+                ToolbarItem(placement: .confirmationAction) {
                     Button(String(localized: "common.done")) {
                         dismiss()
                     }
 #if os(macOS)
-                    .buttonStyle(ModernButtonStyle())
+                    .keyboardShortcut(.cancelAction)
 #endif
                 }
             }

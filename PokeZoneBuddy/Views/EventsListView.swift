@@ -270,83 +270,19 @@ private struct CitiesSidebarView: View {
     
     var body: some View {
         VStack(spacing: 0) {
-            // Header
-            HStack {
-                Text(String(localized: "sidebar.your_cities"))
-                    .titleStyle()
-                Spacer()
-                Button {
-                    showManagement = true
-                } label: {
-                    Image(systemName: "plus")
-                        .font(.system(size: 14, weight: .semibold))
-                        .foregroundStyle(.secondary)
-                }
-                .buttonStyle(.plain)
-                .help(String(localized: "sidebar.add_city"))
-            }
-            .padding(.horizontal, 20)
-            .padding(.vertical, 16)
+            header
             
             Divider()
+            citiesList
             
-            // Cities List
-            ScrollView(.vertical, showsIndicators: false) {
-                if viewModel.favoriteCities.isEmpty {
-                    noCitiesPlaceholder
-                } else {
-                    LazyVStack(spacing: 8) {
-                        ForEach(viewModel.favoriteCities) { city in
-                            CityCard(city: city)
-                        }
-                    }
-                    .padding(16)
-                }
-            }
-            .scrollIndicators(.hidden, axes: .vertical)
-            .hideScrollIndicatorsCompat()
-
-            // Favorite Events Section
             if !favoriteEvents.isEmpty {
                 Divider()
-
-                VStack(spacing: 0) {
-                    // Header
-                    HStack {
-                        Text(String(localized: "sidebar.favorite_events"))
-                            .titleStyle()
-                        Spacer()
-                    }
-                    .padding(.horizontal, 20)
-                    .padding(.vertical, 16)
-
-                    Divider()
-
-                    // Favorites List
-                    ScrollView(.vertical, showsIndicators: false) {
-                        LazyVStack(spacing: 8) {
-                            ForEach(favoriteEvents) { event in
-                                FavoriteEventCard(event: event)
-                                    .contentShape(Rectangle())
-                                    .onTapGesture {
-                                        selectedEvent = event
-                                    }
-                            }
-                        }
-                        .padding(16)
-                    }
-                    .scrollIndicators(.hidden, axes: .vertical)
-                    .hideScrollIndicatorsCompat()
-                }
-                .transition(.opacity.combined(with: .move(edge: .top)))
+                favoriteEventsSection
             }
-
+            
             Divider()
-
-            // Settings Button
+            
             settingsButton
-
-            // About Button
             aboutButton
         }
         .background(Color.appBackground)
@@ -354,6 +290,72 @@ private struct CitiesSidebarView: View {
         .animation(.default, value: favoriteEvents.isEmpty)
     }
     
+    private var header: some View {
+        HStack {
+            Text(String(localized: "sidebar.your_cities"))
+                .titleStyle()
+            Spacer()
+            Button {
+                showManagement = true
+            } label: {
+                Image(systemName: "plus")
+                    .font(.system(size: 14, weight: .semibold))
+                    .foregroundStyle(.secondary)
+            }
+            .buttonStyle(.plain)
+            .help(String(localized: "sidebar.add_city"))
+        }
+        .padding(.horizontal, 20)
+        .padding(.vertical, 16)
+    }
+    
+    private var citiesList: some View {
+        ScrollView(.vertical, showsIndicators: false) {
+            if viewModel.favoriteCities.isEmpty {
+                noCitiesPlaceholder
+            } else {
+                LazyVStack(spacing: 8) {
+                    ForEach(viewModel.favoriteCities) { city in
+                        CityCard(city: city)
+                    }
+                }
+                .padding(16)
+            }
+        }
+        .scrollIndicators(.hidden, axes: .vertical)
+        .hideScrollIndicatorsCompat()
+    }
+    
+    private var favoriteEventsSection: some View {
+        VStack(spacing: 0) {
+            HStack {
+                Text(String(localized: "sidebar.favorite_events"))
+                    .titleStyle()
+                Spacer()
+            }
+            .padding(.horizontal, 20)
+            .padding(.vertical, 16)
+
+            Divider()
+
+            ScrollView(.vertical, showsIndicators: false) {
+                LazyVStack(spacing: 8) {
+                    ForEach(favoriteEvents) { event in
+                        FavoriteEventCard(event: event)
+                            .contentShape(Rectangle())
+                            .onTapGesture {
+                                selectedEvent = event
+                            }
+                    }
+                }
+                .padding(16)
+            }
+            .scrollIndicators(.hidden, axes: .vertical)
+            .hideScrollIndicatorsCompat()
+        }
+        .transition(.opacity.combined(with: .move(edge: .top)))
+    }
+
     private var aboutButton: some View {
         Button {
             showAbout = true
