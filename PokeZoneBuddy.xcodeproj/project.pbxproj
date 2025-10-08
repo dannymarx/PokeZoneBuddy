@@ -25,24 +25,14 @@
 
 /* Begin PBXFileReference section */
 		302CFF952E8EFB6C000E02C5 /* PokeZoneBuddy.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = PokeZoneBuddy.app; sourceTree = BUILT_PRODUCTS_DIR; };
-		302CFF962E8EFB6C000E02C5 /* PokeZoneBuddyTests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = PokeZoneBuddyTests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
-		302CFF972E8EFB6C000E02C5 /* PokeZoneBuddyUITests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = PokeZoneBuddyUITests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
+		30DB6E9B2E966BA7003DEF3A /* PokeZoneBuddyTests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = PokeZoneBuddyTests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
+		30DB6E9C2E966BA7003DEF3A /* PokeZoneBuddyUITests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = PokeZoneBuddyUITests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
 /* End PBXFileReference section */
 
 /* Begin PBXFileSystemSynchronizedRootGroup section */
 		305FAD752E8D2AF1002CBBDD /* PokeZoneBuddy */ = {
 			isa = PBXFileSystemSynchronizedRootGroup;
 			path = PokeZoneBuddy;
-			sourceTree = "<group>";
-		};
-		305FAD852E8D2AF4002CBBDD /* PokeZoneBuddyTests */ = {
-			isa = PBXFileSystemSynchronizedRootGroup;
-			path = PokeZoneBuddyTests;
-			sourceTree = "<group>";
-		};
-		305FAD8F2E8D2AF4002CBBDD /* PokeZoneBuddyUITests */ = {
-			isa = PBXFileSystemSynchronizedRootGroup;
-			path = PokeZoneBuddyUITests;
 			sourceTree = "<group>";
 		};
 /* End PBXFileSystemSynchronizedRootGroup section */
@@ -76,11 +66,9 @@
 			isa = PBXGroup;
 			children = (
 				305FAD752E8D2AF1002CBBDD /* PokeZoneBuddy */,
-				305FAD852E8D2AF4002CBBDD /* PokeZoneBuddyTests */,
-				305FAD8F2E8D2AF4002CBBDD /* PokeZoneBuddyUITests */,
 				302CFF952E8EFB6C000E02C5 /* PokeZoneBuddy.app */,
-				302CFF962E8EFB6C000E02C5 /* PokeZoneBuddyTests.xctest */,
-				302CFF972E8EFB6C000E02C5 /* PokeZoneBuddyUITests.xctest */,
+				30DB6E9B2E966BA7003DEF3A /* PokeZoneBuddyTests.xctest */,
+				30DB6E9C2E966BA7003DEF3A /* PokeZoneBuddyUITests.xctest */,
 			);
 			sourceTree = "<group>";
 		};
@@ -122,14 +110,11 @@
 			dependencies = (
 				305FAD842E8D2AF4002CBBDD /* PBXTargetDependency */,
 			);
-			fileSystemSynchronizedGroups = (
-				305FAD852E8D2AF4002CBBDD /* PokeZoneBuddyTests */,
-			);
 			name = PokeZoneBuddyTests;
 			packageProductDependencies = (
 			);
 			productName = PokeZoneBuddyTests;
-			productReference = 302CFF962E8EFB6C000E02C5 /* PokeZoneBuddyTests.xctest */;
+			productReference = 30DB6E9B2E966BA7003DEF3A /* PokeZoneBuddyTests.xctest */;
 			productType = "com.apple.product-type.bundle.unit-test";
 		};
 		305FAD8B2E8D2AF4002CBBDD /* PokeZoneBuddyUITests */ = {
@@ -145,14 +130,11 @@
 			dependencies = (
 				305FAD8E2E8D2AF4002CBBDD /* PBXTargetDependency */,
 			);
-			fileSystemSynchronizedGroups = (
-				305FAD8F2E8D2AF4002CBBDD /* PokeZoneBuddyUITests */,
-			);
 			name = PokeZoneBuddyUITests;
 			packageProductDependencies = (
 			);
 			productName = PokeZoneBuddyUITests;
-			productReference = 302CFF972E8EFB6C000E02C5 /* PokeZoneBuddyUITests.xctest */;
+			productReference = 30DB6E9C2E966BA7003DEF3A /* PokeZoneBuddyUITests.xctest */;
 			productType = "com.apple.product-type.bundle.ui-testing";
 		};
 /* End PBXNativeTarget section */
@@ -421,7 +403,7 @@
 				LD_RUNPATH_SEARCH_PATHS = "@executable_path/Frameworks";
 				"LD_RUNPATH_SEARCH_PATHS[sdk=macosx*]" = "@executable_path/../Frameworks";
 				MACOSX_DEPLOYMENT_TARGET = 26.0;
-				MARKETING_VERSION = 1.0.0;
+				MARKETING_VERSION = 1.1.0;
 				PRODUCT_BUNDLE_IDENTIFIER = DannyHollek.PokeZoneBuddy;
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				REGISTER_APP_GROUPS = YES;
@@ -480,7 +462,7 @@
 				LD_RUNPATH_SEARCH_PATHS = "@executable_path/Frameworks";
 				"LD_RUNPATH_SEARCH_PATHS[sdk=macosx*]" = "@executable_path/../Frameworks";
 				MACOSX_DEPLOYMENT_TARGET = 26.0;
-				MARKETING_VERSION = 1.0.0;
+				MARKETING_VERSION = 1.1.0;
 				PRODUCT_BUNDLE_IDENTIFIER = DannyHollek.PokeZoneBuddy;
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				REGISTER_APP_GROUPS = YES;

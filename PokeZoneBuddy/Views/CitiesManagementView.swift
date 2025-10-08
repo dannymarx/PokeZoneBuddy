@@ -35,14 +35,16 @@ struct CitiesManagementView: View {
                 // Content
                 contentSection
             }
-            .background(.windowBackground)
-            .navigationTitle(Text(String(localized: "cities.manage_title")))
+            .background(Color.appBackground)
+            
             .toolbar {
                 ToolbarItem(placement: .cancellationAction) {
                     Button(String(localized: "common.done")) {
                         dismiss()
                     }
+#if os(macOS)
                     .buttonStyle(ModernButtonStyle())
+#endif
                 }
             }
             .alert(String(localized: "alert.error.title"), isPresented: $viewModel.showError) {
@@ -53,7 +55,9 @@ struct CitiesManagementView: View {
                 Text(viewModel.errorMessage ?? String(localized: "alert.error.unknown"))
             }
         }
+#if os(macOS)
         .frame(minWidth: 600, minHeight: 700)
+#endif
     }
     
     // MARK: - Header Section
@@ -141,28 +145,35 @@ struct CitiesManagementView: View {
     // MARK: - Favorite Cities View
     
     private var favoriteCitiesView: some View {
-        ScrollView {
+        ScrollView(.vertical, showsIndicators: false) {
             if viewModel.favoriteCities.isEmpty {
                 noCitiesPlaceholder
             } else {
                 LazyVStack(spacing: 12) {
                     ForEach(viewModel.favoriteCities) { city in
-                        FavoriteCityRow(city: city) {
-                            withAnimation(.spring(response: 0.3)) {
-                                viewModel.removeCity(city)
+                        NavigationLink {
+                            CityDetailWrapperFromManagement(city: city)
+                        } label: {
+                            FavoriteCityRow(city: city) {
+                                withAnimation(.spring(response: 0.3)) {
+                                    viewModel.removeCity(city)
+                                }
                             }
                         }
+                        .buttonStyle(.plain)
                     }
                 }
                 .padding(24)
             }
         }
+        .scrollIndicators(.hidden, axes: .vertical)
+        .hideScrollIndicatorsCompat()
     }
     
     // MARK: - Search Results View
     
     private var searchResultsView: some View {
-        ScrollView {
+        ScrollView(.vertical, showsIndicators: false) {
             if viewModel.searchResults.isEmpty {
                 noResultsPlaceholder
             } else {
@@ -181,6 +192,8 @@ struct CitiesManagementView: View {
                 .padding(24)
             }
         }
+        .scrollIndicators(.hidden, axes: .vertical)
+        .hideScrollIndicatorsCompat()
     }
     
     // MARK: - Placeholders
@@ -374,6 +387,15 @@ private struct SearchResultRow: View {
     }
 }
 
+private struct CityDetailWrapperFromManagement: View {
+    @Environment(\.modelContext) private var modelContext
+    let city: FavoriteCity
+    var body: some View {
+        let vm = CitiesViewModel(modelContext: modelContext)
+        CityDetailView(city: city, viewModel: vm)
+    }
+}
+
 // MARK: - Preview
 
 #Preview {
@@ -382,4 +404,3 @@ private struct SearchResultRow: View {
     
     CitiesManagementView(viewModel: viewModel)
 }
-
