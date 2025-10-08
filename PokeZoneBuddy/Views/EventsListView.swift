@@ -87,13 +87,17 @@ private struct AdaptiveEventsView: View {
     
     @Environment(\.horizontalSizeClass) private var horizontalSizeClass
     @Environment(\.verticalSizeClass) private var verticalSizeClass
+    @Environment(\.dynamicTypeSize) private var dynamicTypeSize
     
     private var shouldUseSplitLayout: Bool {
 #if os(iOS)
-        if horizontalSizeClass == .compact {
+        if dynamicTypeSize.isAccessibilitySize {
             return false
         }
-        return true
+        if let horizontalSizeClass, let verticalSizeClass {
+            return horizontalSizeClass == .regular && verticalSizeClass == .regular
+        }
+        return false
 #else
         return true
 #endif
@@ -733,6 +737,8 @@ private struct EventsContentView: View {
                 case .past:
                     pastEventsView
                 }
+                
+                creditsFooter
             }
             .padding(.vertical, 12)
         }
@@ -892,6 +898,24 @@ private struct EventsContentView: View {
                 .font(.system(size: 14, weight: .semibold))
         }
         .frame(maxHeight: .infinity)
+    }
+    
+    private var creditsFooter: some View {
+        VStack(spacing: 8) {
+            Text(Constants.Legal.footerText)
+                .font(.system(size: 10, weight: .regular))
+                .foregroundStyle(.tertiary)
+                .multilineTextAlignment(.center)
+            
+            Text(Constants.Credits.fullCredit)
+                .font(.system(size: 10, weight: .regular))
+                .foregroundStyle(.tertiary)
+                .multilineTextAlignment(.center)
+        }
+        .frame(maxWidth: .infinity, alignment: .center)
+        .padding(.top, 32)
+        .padding(.horizontal, 20)
+        .padding(.bottom, 24)
     }
 }
 
