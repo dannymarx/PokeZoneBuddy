@@ -9,6 +9,7 @@
 import Foundation
 import EventKit
 import Observation
+import OSLog
 
 #if os(macOS)
 
@@ -22,6 +23,7 @@ class CalendarService {
     // MARK: - Properties
     
     private let eventStore = EKEventStore()
+    private let timezoneService = TimezoneService.shared
     var authorizationStatus: EKAuthorizationStatus = .notDetermined
     
     // MARK: - Initializer
@@ -58,23 +60,41 @@ class CalendarService {
             try await requestAccess()
         }
         
+        // Determine event timing in user's local timezone
+        let userTimezone = timezoneService.userTimezone
+        let startDate: Date
+        let endDate: Date
+        
+        if event.isGlobalTime {
+            // Global events already represent an absolute point in time
+            startDate = event.startTime
+            endDate = event.endTime
+        } else if let cityTimezone = city.timeZone {
+            // Local events need to be converted from the city's wall-clock time
+            startDate = timezoneService.convertLocalEventTime(
+                event.startTime,
+                from: cityTimezone,
+                to: userTimezone
+            )
+            endDate = timezoneService.convertLocalEventTime(
+                event.endTime,
+                from: cityTimezone,
+                to: userTimezone
+            )
+        } else {
+            // Fallback: treat as global if city timezone is unavailable
+            AppLogger.calendar.warn("Falling back to global time for city \(city.name)")
+            startDate = event.startTime
+            endDate = event.endTime
+        }
+        
         // Create calendar event
         let ekEvent = EKEvent(eventStore: eventStore)
         
-        // Set timezone based on city
-        let timeZone = TimeZone(identifier: city.timeZoneIdentifier) ?? .current
-        ekEvent.timeZone = timeZone
-        
-        // Set dates (convert from global time if needed)
-        if event.isGlobalTime {
-            // Event has global UTC time - convert to city's timezone
-            ekEvent.startDate = event.startTime
-            ekEvent.endDate = event.endTime
-        } else {
-            // Event has local time - use directly
-            ekEvent.startDate = event.startTime
-            ekEvent.endDate = event.endTime
-        }
+        // Set timezone and dates
+        ekEvent.timeZone = userTimezone
+        ekEvent.startDate = startDate
+        ekEvent.endDate = endDate
         
         // Set event details
         ekEvent.title = "\(event.displayName) - \(city.name)"
@@ -144,4 +164,3 @@ enum CalendarError: LocalizedError {
 }
 
 #endif
-
