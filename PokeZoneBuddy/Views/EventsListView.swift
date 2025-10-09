@@ -232,14 +232,6 @@ private struct AdaptiveEventsView: View {
 #if os(iOS)
     @ToolbarContentBuilder
     private var compactToolbar: some ToolbarContent {
-        ToolbarItem(placement: .topBarLeading) {
-            Button {
-                showCitiesManagement = true
-            } label: {
-                Label(String(localized: "sidebar.your_cities"), systemImage: "mappin.circle")
-            }
-        }
-        
         ToolbarItem(placement: .topBarTrailing) {
             Menu {
                 Button(String(localized: "settings.title")) {
@@ -616,7 +608,9 @@ private struct EventsContentView: View {
             }
         }
         .background(Color.appBackground)
+#if os(macOS)
         .searchable(text: $filterConfig.searchText, prompt: String(localized: "search.events.prompt"))
+#endif
         .sheet(isPresented: $showFilterSheet) {
             FilterSheet(config: filterConfig)
         }
