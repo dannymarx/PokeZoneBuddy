@@ -35,6 +35,9 @@ struct SearchView: View {
         }
         .background(Color.appBackground)
         .navigationTitle(String(localized: "search.title"))
+#if os(iOS)
+        .navigationBarTitleDisplayMode(.large)
+#endif
         .navigationDestination(for: String.self) { eventID in
             if let event = eventsViewModel.events.first(where: { $0.id == eventID }) {
                 EventDetailView(event: event, favoriteCities: citiesViewModel.favoriteCities)
