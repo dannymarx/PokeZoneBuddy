@@ -82,6 +82,8 @@ private struct AdaptiveEventsView: View {
     @State private var showCitiesManagement = false
     @State private var showAbout = false
     @State private var showCacheManagement = false
+    @State private var activeCityForSpots: FavoriteCity?
+    @State private var activeSpotForSpots: CitySpot?
     @State private var columnVisibility: NavigationSplitViewVisibility = .all
     @State private var navigationPath: [String] = []
     
@@ -128,6 +130,24 @@ private struct AdaptiveEventsView: View {
                 compactLayout
             }
         }
+        .sheet(item: $activeCityForSpots) { city in
+            SpotListView(
+                viewModel: citiesViewModel,
+                city: city,
+                initialSpot: activeSpotForSpots
+            )
+#if os(iOS)
+            .presentationDetents([.fraction(0.9), .large])
+            .presentationDragIndicator(.visible)
+#elseif os(macOS)
+            .presentationSizing(.fitted)
+#endif
+        }
+        .onChange(of: activeCityForSpots) { newValue in
+            if case .none = newValue {
+                activeSpotForSpots = nil
+            }
+        }
         .sheet(isPresented: $showCitiesManagement) {
             CitiesManagementView(viewModel: citiesViewModel)
         }
@@ -153,7 +173,11 @@ private struct AdaptiveEventsView: View {
                 showManagement: $showCitiesManagement,
                 showAbout: $showAbout,
                 showCacheManagement: $showCacheManagement,
-                selectedEvent: $selectedEvent
+                selectedEvent: $selectedEvent,
+                onCitySelected: { city, spot in
+                    activeSpotForSpots = spot
+                    activeCityForSpots = city
+                }
             )
             .navigationSplitViewColumnWidth(min: 220, ideal: 260, max: 300)
             
@@ -208,14 +232,6 @@ private struct AdaptiveEventsView: View {
 #if os(iOS)
     @ToolbarContentBuilder
     private var compactToolbar: some ToolbarContent {
-        ToolbarItem(placement: .topBarLeading) {
-            Button {
-                showCitiesManagement = true
-            } label: {
-                Label(String(localized: "sidebar.your_cities"), systemImage: "mappin.circle")
-            }
-        }
-        
         ToolbarItem(placement: .topBarTrailing) {
             Menu {
                 Button(String(localized: "settings.title")) {
@@ -257,6 +273,7 @@ private struct CitiesSidebarView: View {
     @Binding var showAbout: Bool
     @Binding var showCacheManagement: Bool
     @Binding var selectedEvent: Event?
+    let onCitySelected: (FavoriteCity, CitySpot?) -> Void
 
     // SwiftData Query to observe favorite changes in real-time
     @Query(sort: \FavoriteEvent.addedDate, order: .reverse) private var favoriteEventModels: [FavoriteEvent]
@@ -320,7 +337,10 @@ private struct CitiesSidebarView: View {
             } else {
                 LazyVStack(spacing: 8) {
                     ForEach(viewModel.favoriteCities) { city in
-                        CityCard(city: city)
+                        CityCard(city: city) {
+                            let initialSpot = viewModel.getSpots(for: city).first
+                            onCitySelected(city, initialSpot)
+                        }
                     }
                 }
                 .padding(16)
@@ -433,11 +453,11 @@ private struct CitiesSidebarView: View {
 
 private struct CityCard: View {
     let city: FavoriteCity
+    let onSelect: () -> Void
     
     var body: some View {
-        NavigationLink {
-            // We need a CitiesViewModel to drive CityDetailView. Attempt to get it from environment using modelContext.
-            CityDetailWrapper(city: city)
+        Button {
+            onSelect()
         } label: {
             VStack(alignment: .leading, spacing: 8) {
                 HStack {
@@ -468,15 +488,6 @@ private struct CityCard: View {
             )
         }
         .buttonStyle(.plain)
-    }
-}
-
-private struct CityDetailWrapper: View {
-    @Environment(\.modelContext) private var modelContext
-    let city: FavoriteCity
-    var body: some View {
-        let viewModel = CitiesViewModel(modelContext: modelContext)
-        CityDetailView(city: city, viewModel: viewModel)
     }
 }
 
@@ -597,7 +608,9 @@ private struct EventsContentView: View {
             }
         }
         .background(Color.appBackground)
+#if os(macOS)
         .searchable(text: $filterConfig.searchText, prompt: String(localized: "search.events.prompt"))
+#endif
         .sheet(isPresented: $showFilterSheet) {
             FilterSheet(config: filterConfig)
         }
