@@ -60,15 +60,22 @@ struct PokeZoneBuddyApp: App {
     
     var body: some Scene {
         WindowGroup {
-            EventsListView()
+            #if os(iOS)
+            MainTabView()
                 .environment(networkMonitor)
-                #if os(macOS)
-                .environment(calendarService)
-                #endif
                 .preferredColorScheme(currentTheme.colorScheme)
                 .onAppear {
                     setupBackgroundRefresh()
                 }
+            #else
+            EventsListView()
+                .environment(networkMonitor)
+                .environment(calendarService)
+                .preferredColorScheme(currentTheme.colorScheme)
+                .onAppear {
+                    setupBackgroundRefresh()
+                }
+            #endif
         }
         .modelContainer(sharedModelContainer)
         #if os(macOS)
