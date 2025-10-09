@@ -80,7 +80,6 @@ private struct AdaptiveEventsView: View {
     
     @State private var selectedEvent: Event?
     @State private var showCitiesManagement = false
-    @State private var showAbout = false
     @State private var showCacheManagement = false
     @State private var activeCityForSpots: FavoriteCity?
     @State private var activeSpotForSpots: CitySpot?
@@ -151,15 +150,6 @@ private struct AdaptiveEventsView: View {
         .sheet(isPresented: $showCitiesManagement) {
             CitiesManagementView(viewModel: citiesViewModel)
         }
-#if os(iOS)
-        .fullScreenCover(isPresented: $showAbout) {
-            AboutView()
-        }
-#else
-        .sheet(isPresented: $showAbout) {
-            AboutView()
-        }
-#endif
         .sheet(isPresented: $showCacheManagement) {
             SettingsView()
         }
@@ -171,7 +161,6 @@ private struct AdaptiveEventsView: View {
                 viewModel: citiesViewModel,
                 eventsViewModel: eventsViewModel,
                 showManagement: $showCitiesManagement,
-                showAbout: $showAbout,
                 showCacheManagement: $showCacheManagement,
                 selectedEvent: $selectedEvent,
                 onCitySelected: { city, spot in
@@ -188,7 +177,8 @@ private struct AdaptiveEventsView: View {
                 layout: .split,
                 onEventSelected: { event in
                     selectedEvent = event
-                }
+                },
+                showCacheManagement: $showCacheManagement
             )
             .navigationSplitViewColumnWidth(min: 420, ideal: 460, max: 540)
             
@@ -207,7 +197,8 @@ private struct AdaptiveEventsView: View {
                 viewModel: eventsViewModel,
                 selectedEvent: $selectedEvent,
                 layout: .compact,
-                onEventSelected: handleCompactSelection
+                onEventSelected: handleCompactSelection,
+                showCacheManagement: $showCacheManagement
             )
             .navigationDestination(for: String.self) { eventID in
                 if let event = eventsViewModel.events.first(where: { $0.id == eventID }) {
@@ -216,36 +207,15 @@ private struct AdaptiveEventsView: View {
                     MissingEventView()
                 }
             }
-#if os(iOS)
-            .toolbar { compactToolbar }
-#endif
         }
     }
-    
+
     private func handleCompactSelection(_ event: Event) {
         selectedEvent = event
         if navigationPath.last != event.id {
             navigationPath.append(event.id)
         }
     }
-    
-#if os(iOS)
-    @ToolbarContentBuilder
-    private var compactToolbar: some ToolbarContent {
-        ToolbarItem(placement: .topBarTrailing) {
-            Menu {
-                Button(String(localized: "settings.title")) {
-                    showCacheManagement = true
-                }
-                Button(String(localized: "about.title")) {
-                    showAbout = true
-                }
-            } label: {
-                Image(systemName: "ellipsis.circle")
-            }
-        }
-    }
-#endif
     
     private struct MissingEventView: View {
         var body: some View {
@@ -270,7 +240,6 @@ private struct CitiesSidebarView: View {
     let viewModel: CitiesViewModel
     let eventsViewModel: EventsViewModel
     @Binding var showManagement: Bool
-    @Binding var showAbout: Bool
     @Binding var showCacheManagement: Bool
     @Binding var selectedEvent: Event?
     let onCitySelected: (FavoriteCity, CitySpot?) -> Void
@@ -300,11 +269,10 @@ private struct CitiesSidebarView: View {
                 Divider()
                 favoriteEventsSection
             }
-            
+
             Divider()
-            
+
             settingsButton
-            aboutButton
         }
         .background(Color.appBackground)
         .hideScrollIndicatorsCompat()
@@ -380,26 +348,6 @@ private struct CitiesSidebarView: View {
         .transition(.opacity.combined(with: .move(edge: .top)))
     }
 
-    private var aboutButton: some View {
-        Button {
-            showAbout = true
-        } label: {
-            HStack {
-                Image(systemName: "info.circle")
-                    .font(.system(size: 14))
-                Text(String(localized: "about.title"))
-                    .font(.system(size: 13, weight: .medium))
-                Spacer()
-            }
-            .padding(.horizontal, 20)
-            .padding(.vertical, 12)
-            .contentShape(Rectangle())
-        }
-        .buttonStyle(.plain)
-        .foregroundStyle(.secondary)
-        .background(Color.clear)
-    }
-    
     private var settingsButton: some View {
         Button {
             showCacheManagement = true
@@ -577,27 +525,30 @@ private struct EventsContentView: View {
     @Binding var selectedEvent: Event?
     let layout: EventsLayoutStyle
     let onEventSelected: (Event) -> Void
+    @Binding var showCacheManagement: Bool
     @State private var selectedFilter: EventFilter = .all
     @State private var filterConfig = FilterConfiguration()
     @State private var showFilterSheet = false
     
     var body: some View {
         VStack(spacing: 0) {
-            // Header
+#if os(macOS)
+            // Header with buttons for macOS
             headerView
-            
+
             Divider()
-            
+#endif
+
             // OFFLINE: Show status banner
             if viewModel.isOffline {
                 offlineBanner
             }
-            
+
             // Filter
             filterView
 
             Divider()
-            
+
             // Content
             if viewModel.isLoading && viewModel.events.isEmpty {
                 loadingContent
@@ -608,7 +559,29 @@ private struct EventsContentView: View {
             }
         }
         .background(Color.appBackground)
-#if os(macOS)
+        .navigationTitle(String(localized: "events.title"))
+#if os(iOS)
+        .navigationBarTitleDisplayMode(.large)
+        .toolbar {
+            ToolbarItem(placement: .topBarTrailing) {
+                Button {
+                    Task { await viewModel.refreshEvents() }
+                } label: {
+                    Label(String(localized: "events.refresh.help"), systemImage: "arrow.clockwise")
+                }
+                .disabled(viewModel.isLoading)
+            }
+
+            ToolbarItem(placement: .topBarTrailing) {
+                Button {
+                    showFilterSheet = true
+                } label: {
+                    Label(String(localized: "events.filter.help"), systemImage: "line.3.horizontal.decrease.circle")
+                }
+                .badge(filterConfig.activeFilterCount > 0 ? filterConfig.activeFilterCount : 0)
+            }
+        }
+#else
         .searchable(text: $filterConfig.searchText, prompt: String(localized: "search.events.prompt"))
 #endif
         .sheet(isPresented: $showFilterSheet) {
@@ -637,22 +610,13 @@ private struct EventsContentView: View {
         .frame(maxWidth: .infinity)
         .background(Color.orange)
     }
-    
+
+    // MARK: - Header View (macOS only)
+
     private var headerView: some View {
         HStack {
-            VStack(alignment: .leading, spacing: 4) {
-                Text(String(localized: "events.title"))
-                    .titleStyle()
-                
-                if let lastUpdate = viewModel.lastUpdateText {
-                    Text(lastUpdate)
-                        .font(.system(size: 11))
-                        .foregroundStyle(.tertiary)
-                }
-            }
-            
             Spacer()
-            
+
             // Filter Button
             Button {
                 showFilterSheet = true
@@ -664,7 +628,7 @@ private struct EventsContentView: View {
             .buttonStyle(.plain)
             .badge(filterConfig.activeFilterCount > 0 ? filterConfig.activeFilterCount : 0)
             .help(String(localized: "events.filter.help"))
-            
+
             // Refresh Button
             Button {
                 Task { await viewModel.refreshEvents() }
@@ -680,7 +644,7 @@ private struct EventsContentView: View {
         .padding(.horizontal, 20)
         .padding(.vertical, 16)
     }
-    
+
     private var filterView: some View {
         VStack(spacing: 0) {
             ScrollView(.horizontal, showsIndicators: false) {

@@ -15,6 +15,9 @@ struct AllSpotsView: View {
     @Bindable var citiesViewModel: CitiesViewModel
     @State private var selectedCity: FavoriteCity?
     @State private var selectedSpot: CitySpot?
+    @State private var showCityPicker = false
+    @State private var showAddSpot = false
+    @State private var cityForNewSpot: FavoriteCity?
 
     // MARK: - Body
 
@@ -31,6 +34,16 @@ struct AllSpotsView: View {
             }
             .background(Color.appBackground)
             .navigationTitle(String(localized: "spots.section.title"))
+#if os(iOS)
+            .navigationBarTitleDisplayMode(.large)
+            .toolbar {
+                ToolbarItem(placement: .primaryAction) {
+                    Button(String(localized: "spots.add.title")) {
+                        showCityPicker = true
+                    }
+                }
+            }
+#endif
             .sheet(item: $selectedCity) { city in
                 SpotListView(
                     viewModel: citiesViewModel,
@@ -44,9 +57,37 @@ struct AllSpotsView: View {
                 .presentationSizing(.fitted)
 #endif
             }
+            .sheet(isPresented: $showCityPicker) {
+                CityPickerSheet(cities: citiesViewModel.favoriteCities) { city in
+                    cityForNewSpot = city
+                    showAddSpot = true
+                }
+#if os(iOS)
+                .presentationDetents([.medium, .large])
+                .presentationDragIndicator(.visible)
+#elseif os(macOS)
+                .presentationSizing(.fitted)
+#endif
+            }
+            .sheet(isPresented: $showAddSpot) {
+                if let city = cityForNewSpot {
+                    AddSpotSheet(city: city, viewModel: citiesViewModel)
+#if os(iOS)
+                        .presentationDetents([.large])
+                        .presentationDragIndicator(.visible)
+#elseif os(macOS)
+                        .presentationSizing(.fitted)
+#endif
+                }
+            }
             .onChange(of: selectedCity) { newValue in
                 if case .none = newValue {
                     selectedSpot = nil
+                }
+            }
+            .onChange(of: showAddSpot) { _, newValue in
+                if !newValue {
+                    cityForNewSpot = nil
                 }
             }
         }
