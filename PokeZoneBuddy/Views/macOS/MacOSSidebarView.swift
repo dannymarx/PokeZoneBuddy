@@ -18,7 +18,6 @@ struct MacOSSidebarView: View {
     let eventsViewModel: EventsViewModel
     @Binding var selectedEvent: Event?
     let onAddCity: () -> Void
-    let onShowSettings: () -> Void
     let onCitySelected: (FavoriteCity, CitySpot?) -> Void
 
     // MARK: - Query
@@ -48,18 +47,11 @@ struct MacOSSidebarView: View {
                             Label(item.title, systemImage: item.icon)
                         }
                     }
-
-                    Button {
-                        onShowSettings()
-                    } label: {
-                        Label(String(localized: "settings.title"), systemImage: "gearshape")
-                    }
-                    .buttonStyle(.plain)
                 }
 
                 if !favoriteEvents.isEmpty {
                     Section(String(localized: "sidebar.favorite_events")) {
-                        ForEach(favoriteEvents.prefix(5)) { event in
+                        ForEach(favoriteEvents.prefix(15)) { event in
                             Button {
                                 selectedItem = .events
                                 selectedEvent = event
@@ -194,7 +186,6 @@ struct MacOSSidebarView: View {
         eventsViewModel: eventsVM,
         selectedEvent: $selectedEvent,
         onAddCity: {},
-        onShowSettings: {},
         onCitySelected: { _, _ in }
     )
     .modelContainer(container)
