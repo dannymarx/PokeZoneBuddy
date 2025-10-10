@@ -12,45 +12,47 @@ import MapKit
 struct CitiesManagementView: View {
     
     // MARK: - Properties
-    
+
     // With @Observable, use @Bindable for two-way bindings!
     @Bindable var viewModel: CitiesViewModel
     @Environment(\.dismiss) private var dismiss
     @State private var activeCityForSpots: FavoriteCity?
     @State private var activeSpotForSpots: CitySpot?
+    @State private var showAddCity = false
     
     // MARK: - Body
     
     var body: some View {
         NavigationStack {
-            VStack(spacing: 0) {
-                // Header
-                headerSection
-
-                Divider()
-
-                // Content
-                contentSection
-            }
-            .background(Color.appBackground)
-            
-            .toolbar {
-                ToolbarItem(placement: .confirmationAction) {
-                    Button(String(localized: "common.done")) {
-                        dismiss()
+            contentSection
+                .background(Color.appBackground)
+                .navigationTitle(String(localized: "cities.manage_title"))
+#if os(iOS)
+                .navigationBarTitleDisplayMode(.large)
+                .toolbar {
+                    ToolbarItem(placement: .primaryAction) {
+                        Button(String(localized: "action.add_city")) {
+                            showAddCity = true
+                        }
                     }
-#if os(macOS)
-                    .keyboardShortcut(.cancelAction)
+                }
+#else
+                .toolbar {
+                    ToolbarItem(placement: .confirmationAction) {
+                        Button(String(localized: "common.done")) {
+                            dismiss()
+                        }
+                        .keyboardShortcut(.cancelAction)
+                    }
+                }
 #endif
+                .alert(String(localized: "alert.error.title"), isPresented: $viewModel.showError) {
+                    Button("OK") {
+                        viewModel.showError = false
+                    }
+                } message: {
+                    Text(viewModel.errorMessage ?? String(localized: "alert.error.unknown"))
                 }
-            }
-            .alert(String(localized: "alert.error.title"), isPresented: $viewModel.showError) {
-                Button("OK") {
-                    viewModel.showError = false
-                }
-            } message: {
-                Text(viewModel.errorMessage ?? String(localized: "alert.error.unknown"))
-            }
         }
         .sheet(item: $activeCityForSpots) { city in
             SpotListView(
@@ -65,6 +67,15 @@ struct CitiesManagementView: View {
             .presentationSizing(.fitted)
 #endif
         }
+        .sheet(isPresented: $showAddCity) {
+            AddCitySheet(viewModel: viewModel)
+#if os(iOS)
+            .presentationDetents([.large])
+            .presentationDragIndicator(.visible)
+#elseif os(macOS)
+            .presentationSizing(.fitted)
+#endif
+        }
         .onChange(of: activeCityForSpots) { newValue in
             if case .none = newValue {
                 activeSpotForSpots = nil
@@ -73,38 +84,6 @@ struct CitiesManagementView: View {
 #if os(macOS)
         .frame(minWidth: 600, minHeight: 700)
 #endif
-    }
-    
-    // MARK: - Header Section
-    
-    private var headerSection: some View {
-        HStack(spacing: 16) {
-            Circle()
-                .fill(
-                    LinearGradient(
-                        colors: [.blue, .purple],
-                        startPoint: .topLeading,
-                        endPoint: .bottomTrailing
-                    )
-                )
-                .frame(width: 56, height: 56)
-                .overlay(
-                    Image(systemName: "map.fill")
-                        .font(.system(size: 24))
-                        .foregroundStyle(.white)
-                )
-            
-            VStack(alignment: .leading, spacing: 4) {
-                Text(String(localized: "cities.manage_title"))
-                    .font(.system(size: 24, weight: .bold, design: .rounded))
-                
-                Text("\(viewModel.favoriteCities.count) of \(Constants.Limits.maxFavoriteCities) cities")
-                    .secondaryStyle()
-            }
-            
-            Spacer()
-        }
-        .padding(24)
     }
     
     // MARK: - Content Section
