@@ -68,7 +68,7 @@ struct PokeZoneBuddyApp: App {
                     setupBackgroundRefresh()
                 }
             #else
-            EventsListView()
+            MacOSMainView()
                 .environment(networkMonitor)
                 .environment(calendarService)
                 .preferredColorScheme(currentTheme.colorScheme)

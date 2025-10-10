@@ -468,7 +468,7 @@ enum EventFilter: String, CaseIterable {
     var localizedKey: LocalizedStringKey { .init(self.rawValue) }
 }
 
-private enum EventsLayoutStyle {
+enum EventsLayoutStyle {
     case split
     case compact
 }
@@ -519,7 +519,7 @@ private struct FilterButton: View {
 
 // MARK: - Events Content View
 
-private struct EventsContentView: View {
+struct EventsContentView: View {
     // With @Observable, no property wrapper needed for read-only access!
     let viewModel: EventsViewModel
     @Binding var selectedEvent: Event?
@@ -1017,7 +1017,7 @@ private struct EventRow: View {
 
 // MARK: - Event Detail Container
 
-private struct EventDetailContainerView: View {
+struct EventDetailContainerView: View {
     let event: Event?
     let cities: [FavoriteCity]
     
