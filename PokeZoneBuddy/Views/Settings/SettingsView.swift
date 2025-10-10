@@ -200,11 +200,6 @@ struct SettingsView: View {
     @ViewBuilder
     private var supplementarySectionGroup: some View {
         VStack(spacing: 32) {
-            if displayMode == .supplementaryOnly {
-                Divider()
-                    .padding(.vertical, 8)
-            }
-
             creditsSection
             legalSection
             linksSection
