@@ -17,19 +17,15 @@ struct PokeZoneBuddyApp: App {
     
     /// SwiftData ModelContainer for local persistence
     /// Stores Events, FavoriteCities, and FavoriteEvents locally (no CloudKit)
+    /// Nested models (SpotlightDetails, RaidDetails, etc.) are automatically discovered via @Relationship
     var sharedModelContainer: ModelContainer = {
         let schema = Schema([
             Event.self,
             FavoriteCity.self,
             CitySpot.self,
-            FavoriteEvent.self,
-            SpotlightDetails.self,
-            RaidDetails.self,
-            CommunityDayDetails.self,
-            PokemonInfo.self,
-            CommunityDayBonus.self
+            FavoriteEvent.self
         ])
-        
+
         let modelConfiguration = ModelConfiguration(
             schema: schema,
             isStoredInMemoryOnly: false
