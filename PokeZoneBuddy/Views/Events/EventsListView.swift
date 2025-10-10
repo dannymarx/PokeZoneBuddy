@@ -150,9 +150,11 @@ private struct AdaptiveEventsView: View {
         .sheet(isPresented: $showCitiesManagement) {
             CitiesManagementView(viewModel: citiesViewModel)
         }
+#if os(iOS)
         .sheet(isPresented: $showCacheManagement) {
             SettingsView()
         }
+#endif
     }
     
     private var splitLayout: some View {

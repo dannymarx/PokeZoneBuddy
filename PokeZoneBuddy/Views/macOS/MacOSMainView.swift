@@ -77,7 +77,6 @@ private struct MacOSContentView: View {
     @State private var selectedSidebarItem: SidebarItem = .events
     @State private var selectedEvent: Event?
     @State private var showAddCity = false
-    @State private var showSettings = false
     @State private var selectedCity: FavoriteCity?
     @State private var selectedSpot: CitySpot?
     @State private var columnVisibility: NavigationSplitViewVisibility = .all
@@ -93,7 +92,6 @@ private struct MacOSContentView: View {
                 eventsViewModel: eventsViewModel,
                 selectedEvent: $selectedEvent,
                 onAddCity: { showAddCity = true },
-                onShowSettings: { showSettings = true },
                 onCitySelected: { city, spot in
                     selectedCity = city
                     selectedSpot = spot
@@ -115,10 +113,6 @@ private struct MacOSContentView: View {
             AddCitySheet(viewModel: citiesViewModel)
                 .presentationSizing(.fitted)
         }
-        .sheet(isPresented: $showSettings) {
-            SettingsView()
-                .presentationSizing(.fitted)
-        }
         .sheet(item: $selectedCity) { city in
             SpotListView(
                 viewModel: citiesViewModel,
@@ -130,6 +124,11 @@ private struct MacOSContentView: View {
         .onChange(of: selectedCity) { _, newValue in
             if newValue == nil {
                 selectedSpot = nil
+            }
+        }
+        .onChange(of: selectedSidebarItem) { _, newValue in
+            if newValue == .settings {
+                columnVisibility = .all
             }
         }
         .onReceive(NotificationCenter.default.publisher(for: .refreshEvents)) { _ in
@@ -160,7 +159,7 @@ private struct MacOSContentView: View {
                 onEventSelected: { event in
                     selectedEvent = event
                 },
-                showCacheManagement: $showSettings
+                showCacheManagement: settingsSelectionBinding
             )
 
         case .cities:
@@ -181,6 +180,9 @@ private struct MacOSContentView: View {
                     selectedSpot = spot
                 }
             )
+
+        case .settings:
+            SettingsView(displayMode: .primaryOnly, showsDismissButton: false)
         }
     }
 
@@ -218,6 +220,9 @@ private struct MacOSContentView: View {
                     subtitle: String(localized: "placeholder.no_spot_selected.subtitle")
                 )
             }
+
+        case .settings:
+            SettingsView(displayMode: .supplementaryOnly, showsDismissButton: false)
         }
     }
 
@@ -243,6 +248,19 @@ private struct MacOSContentView: View {
         .frame(maxWidth: .infinity, maxHeight: .infinity)
         .background(Color.appBackground)
     }
+
+    private var settingsSelectionBinding: Binding<Bool> {
+        Binding(
+            get: { selectedSidebarItem == .settings },
+            set: { isPresented in
+                if isPresented {
+                    selectedSidebarItem = .settings
+                } else if selectedSidebarItem == .settings {
+                    selectedSidebarItem = .events
+                }
+            }
+        )
+    }
 }
 
 // MARK: - Sidebar Item
@@ -251,6 +269,7 @@ enum SidebarItem: String, CaseIterable, Identifiable {
     case events
     case cities
     case allSpots
+    case settings
 
     var id: String { rawValue }
 
@@ -262,6 +281,8 @@ enum SidebarItem: String, CaseIterable, Identifiable {
             return String(localized: "sidebar.your_cities")
         case .allSpots:
             return String(localized: "spots.section.title")
+        case .settings:
+            return String(localized: "settings.title")
         }
     }
 
@@ -273,6 +294,8 @@ enum SidebarItem: String, CaseIterable, Identifiable {
             return "building.2"
         case .allSpots:
             return "mappin.and.ellipse"
+        case .settings:
+            return "gearshape"
         }
     }
 }
