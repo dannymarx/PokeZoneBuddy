@@ -64,6 +64,10 @@ struct MainTabView: View {
                     .searchable(text: $searchText)
                 }
             }
+
+            Tab(String(localized: "settings.title"), systemImage: "gearshape") {
+                SettingsView()
+            }
         }
     }
 

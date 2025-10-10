@@ -38,23 +38,6 @@
         }
       }
     },
-    "%@, %@" : {
-      "extractionState" : "stale",
-      "localizations" : {
-        "de" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "%1$@, %2$@"
-          }
-        },
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "%1$@, %2$@"
-          }
-        }
-      }
-    },
     "%lld" : {
       "comment" : "A badge displaying the number of items in a filter. The argument is the count of items in the filter.",
       "extractionState" : "manual",
@@ -902,6 +885,70 @@
         }
       }
     },
+    "cities.timezone" : {
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Zeitzone"
+          }
+        },
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Time Zone"
+          }
+        }
+      }
+    },
+    "cities.utc_offset" : {
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "UTC Offset"
+          }
+        },
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "UTC Offset"
+          }
+        }
+      }
+    },
+    "cities.current_time" : {
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Aktuelle Uhrzeit"
+          }
+        },
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Current Time"
+          }
+        }
+      }
+    },
+    "cities.delete" : {
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Stadt löschen"
+          }
+        },
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Delete City"
+          }
+        }
+      }
+    },
     "city_time.event_time_in" : {
       "comment" : "The title of a block that shows the time of an event in a specific city. The argument is the name of the city.",
       "extractionState" : "manual",
@@ -936,91 +983,6 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Your Local Play Time"
-          }
-        }
-      }
-    },
-    "city.info.added" : {
-      "extractionState" : "stale",
-      "localizations" : {
-        "de" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Added"
-          }
-        },
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Added"
-          }
-        }
-      }
-    },
-    "city.info.fullName" : {
-      "extractionState" : "stale",
-      "localizations" : {
-        "de" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Full Name"
-          }
-        },
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Full Name"
-          }
-        }
-      }
-    },
-    "city.info.section" : {
-      "extractionState" : "stale",
-      "localizations" : {
-        "de" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Section"
-          }
-        },
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Section"
-          }
-        }
-      }
-    },
-    "city.info.timeZone" : {
-      "extractionState" : "stale",
-      "localizations" : {
-        "de" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Zeitzone"
-          }
-        },
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Time Zone"
-          }
-        }
-      }
-    },
-    "city.info.utcOffset" : {
-      "extractionState" : "stale",
-      "localizations" : {
-        "de" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Utc Offset"
-          }
-        },
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Utc Offset"
           }
         }
       }
@@ -1161,6 +1123,38 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Yes"
+          }
+        }
+      }
+    },
+    "common.danger_zone" : {
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Gefahrenzone"
+          }
+        },
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Danger Zone"
+          }
+        }
+      }
+    },
+    "common.and_more" : {
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Und %lld mehr..."
+          }
+        },
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "And %lld more..."
           }
         }
       }
@@ -1597,6 +1591,9 @@
           }
         }
       }
+    },
+    "dialog.add_city" : {
+
     },
     "dialog.add_city.placeholder" : {
       "extractionState" : "manual",
@@ -3019,6 +3016,22 @@
         }
       }
     },
+    "loading.searching" : {
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Suche läuft..."
+          }
+        },
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Searching..."
+          }
+        }
+      }
+    },
     "Location" : {
       "localizations" : {
         "de" : {
@@ -3034,9 +3047,6 @@
           }
         }
       }
-    },
-    "Manage preferences and storage" : {
-
     },
     "menu.refresh_events" : {
       "comment" : "The title of a menu item that refreshes the list of events.",
@@ -3366,6 +3376,150 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "No results"
+          }
+        }
+      }
+    },
+    "placeholder.search_cities.subtitle" : {
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Suche nach einer Stadt, um sie zu deinen Favoriten hinzuzufügen."
+          }
+        },
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Search for a city to add it to your favorites."
+          }
+        }
+      }
+    },
+    "placeholder.search_cities.title" : {
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Stadt suchen"
+          }
+        },
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Search for a City"
+          }
+        }
+      }
+    },
+    "placeholder.no_city_selected.title" : {
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Keine Stadt ausgewählt"
+          }
+        },
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "No City Selected"
+          }
+        }
+      }
+    },
+    "placeholder.no_city_selected.subtitle" : {
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Wähle eine Stadt aus der Liste aus"
+          }
+        },
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Select a city from the list"
+          }
+        }
+      }
+    },
+    "placeholder.no_spot_selected.title" : {
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Kein Spot ausgewählt"
+          }
+        },
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "No Spot Selected"
+          }
+        }
+      }
+    },
+    "placeholder.no_spot_selected.subtitle" : {
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Wähle einen Spot aus der Liste aus"
+          }
+        },
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Select a spot from the list"
+          }
+        }
+      }
+    },
+    "sidebar.navigation" : {
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Navigation"
+          }
+        },
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Navigation"
+          }
+        }
+      }
+    },
+    "alert.delete.city.title" : {
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Stadt löschen?"
+          }
+        },
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Delete City?"
+          }
+        }
+      }
+    },
+    "alert.delete.city.message" : {
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Bist du sicher, dass du diese Stadt löschen möchtest? Alle zugehörigen Spots werden ebenfalls gelöscht."
+          }
+        },
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Are you sure you want to delete this city? All associated spots will also be deleted."
           }
         }
       }
@@ -3920,23 +4074,6 @@
         }
       }
     },
-    "spots.action.showAll" : {
-      "extractionState" : "stale",
-      "localizations" : {
-        "de" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Alle anzeigen"
-          }
-        },
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Show All"
-          }
-        }
-      }
-    },
     "spots.add.cancel" : {
       "localizations" : {
         "de" : {
@@ -4293,13 +4430,45 @@
         "de" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Meine Spots"
+            "value" : "Spots verwalten"
           }
         },
         "en" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "My Spots"
+            "value" : "Manage Spots"
+          }
+        }
+      }
+    },
+    "spots.select_city.empty.subtitle" : {
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Füge zuerst eine Stadt hinzu, bevor du einen Spot erstellen kannst."
+          }
+        },
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Add a city first before you can create a spot."
+          }
+        }
+      }
+    },
+    "spots.select_city.title" : {
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Stadt auswählen"
+          }
+        },
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Select City"
           }
         }
       }
