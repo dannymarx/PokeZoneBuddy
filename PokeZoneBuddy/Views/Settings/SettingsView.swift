@@ -5,7 +5,6 @@
 //  Settings view for preferences & cache
 //  Version 0.4 - Modern UI Design
 //
-
 import SwiftUI
 import SwiftData
 
@@ -59,6 +58,48 @@ struct SettingsView: View {
     
     @Environment(\.modelContext) private var modelContext
     @Environment(\.dismiss) private var dismiss
+
+    // MARK: - Display Mode
+
+    enum DisplayMode {
+        case full
+        case primaryOnly
+        case supplementaryOnly
+
+        var includesPrimarySections: Bool {
+            switch self {
+            case .full, .primaryOnly:
+                return true
+            case .supplementaryOnly:
+                return false
+            }
+        }
+
+        var includesSupplementarySections: Bool {
+            switch self {
+            case .full, .supplementaryOnly:
+                return true
+            case .primaryOnly:
+                return false
+            }
+        }
+
+        var showsGroupDivider: Bool {
+            includesPrimarySections && includesSupplementarySections
+        }
+    }
+    
+    // MARK: - Properties
+    
+    private let displayMode: DisplayMode
+    private let showsDismissButton: Bool
+    
+    // MARK: - Init
+    
+    init(displayMode: DisplayMode = .full, showsDismissButton: Bool = true) {
+        self.displayMode = displayMode
+        self.showsDismissButton = showsDismissButton
+    }
     
     // MARK: - State
     
@@ -75,21 +116,17 @@ struct SettingsView: View {
         NavigationStack {
             ScrollView(.vertical, showsIndicators: false) {
                 VStack(spacing: 24) {
-                    appearanceSection
-                    cacheStatisticsSection
-                    cacheActionsSection
+                    if displayMode.includesPrimarySections {
+                        primarySectionGroup
+                    }
 
-                    Divider()
+                    if displayMode.showsGroupDivider {
+                        Divider()
+                    }
 
-                    creditsSection
-                    legalSection
-                    linksSection
-
-                    Divider()
-
-                    // App Header
-                    appHeaderSection
-                        .padding(.bottom, 16)
+                    if displayMode.includesSupplementarySections {
+                        supplementarySectionGroup
+                    }
                 }
                 .padding(24)
             }
@@ -100,16 +137,18 @@ struct SettingsView: View {
 #if os(iOS)
             .navigationBarTitleDisplayMode(.large)
 #endif
-            .toolbar {
 #if os(macOS)
-                ToolbarItem(placement: .confirmationAction) {
-                    Button(String(localized: "common.done")) {
-                        dismiss()
+            .toolbar {
+                if showsDismissButton {
+                    ToolbarItem(placement: .confirmationAction) {
+                        Button(String(localized: "common.done")) {
+                            dismiss()
+                        }
+                        .keyboardShortcut(.cancelAction)
                     }
-                    .keyboardShortcut(.cancelAction)
                 }
-#endif
             }
+#endif
             .onAppear {
                 updateCacheStats()
             }
@@ -142,6 +181,36 @@ struct SettingsView: View {
         .frame(minWidth: 600, minHeight: 500)
 #endif
     }
+    
+    // MARK: - Section Grouping
+
+    private var primarySectionGroup: some View {
+        VStack(spacing: 24) {
+            appearanceSection
+            cacheStatisticsSection
+            cacheActionsSection
+        }
+    }
+
+    @ViewBuilder
+    private var supplementarySectionGroup: some View {
+        VStack(spacing: 24) {
+            if displayMode == .supplementaryOnly {
+                Divider()
+            }
+
+            creditsSection
+            legalSection
+            linksSection
+
+            Divider()
+
+            appHeaderSection
+                .padding(.bottom, 16)
+        }
+    }
+
+
     
     // MARK: - Appearance Section
     
