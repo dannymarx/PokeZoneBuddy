@@ -1637,6 +1637,12 @@
         }
       }
     },
+    "Delete All Data" : {
+
+    },
+    "Delete All User Data" : {
+
+    },
     "dialog.add_city" : {
       "localizations" : {
         "de" : {
@@ -4640,6 +4646,9 @@
           }
         }
       }
+    },
+    "This will permanently delete all your saved cities, spots, and favorite events. This action cannot be undone." : {
+
     },
     "time.hours_ahead" : {
       "comment" : "A description of a time difference, indicating that one timezone is \"ahead\" (e.g. later in the day) than another. The number is the absolute value of the time difference.",
