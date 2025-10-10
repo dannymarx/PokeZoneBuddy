@@ -51,7 +51,7 @@ struct MacOSSidebarView: View {
 
                 if !favoriteEvents.isEmpty {
                     Section(String(localized: "sidebar.favorite_events")) {
-                        ForEach(favoriteEvents.prefix(5)) { event in
+                        ForEach(favoriteEvents.prefix(15)) { event in
                             Button {
                                 selectedItem = .events
                                 selectedEvent = event
