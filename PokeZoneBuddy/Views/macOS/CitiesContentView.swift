@@ -31,11 +31,13 @@ struct CitiesContentView: View {
         }
         .navigationTitle(String(localized: "sidebar.your_cities"))
         .toolbar {
-            ToolbarItem(placement: .primaryAction) {
-                Button {
-                    onAddCity()
-                } label: {
-                    Label(String(localized: "action.add_city"), systemImage: "plus")
+            if !viewModel.favoriteCities.isEmpty {
+                ToolbarItem(placement: .primaryAction) {
+                    Button {
+                        onAddCity()
+                    } label: {
+                        Label(String(localized: "action.add_city"), systemImage: "plus")
+                    }
                 }
             }
         }
