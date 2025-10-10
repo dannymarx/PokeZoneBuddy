@@ -10,11 +10,9 @@ import SwiftData
 
 /// Repräsentiert einen gespeicherten Spot (Koordinate) innerhalb einer Stadt
 /// Ermöglicht das Speichern von wichtigen Locations wie Gyms, PokéStops oder Treffpunkten
+/// Note: @Model classes are automatically Identifiable via persistentModelID
 @Model
-final class CitySpot: Identifiable {
-    /// Eindeutige ID für den Spot
-    var id: UUID
-
+final class CitySpot {
     /// Name des Spots (z.B. "Central Park Gym Cluster")
     var name: String
 
@@ -62,7 +60,6 @@ final class CitySpot: Identifiable {
         isFavorite: Bool = false,
         city: FavoriteCity? = nil
     ) {
-        self.id = UUID()
         self.name = name
         self.notes = notes
         self.latitude = latitude

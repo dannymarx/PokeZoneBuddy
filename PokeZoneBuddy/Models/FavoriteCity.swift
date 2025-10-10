@@ -10,22 +10,21 @@ import SwiftData
 
 /// Repräsentiert eine Lieblingsstadt des Users mit Timezone-Informationen
 /// Wird lokal mit SwiftData gespeichert
+/// Note: @Model classes are automatically Identifiable via persistentModelID
 @Model
 final class FavoriteCity {
-    /// Eindeutige ID für die Stadt
-    var id: UUID
-    
     /// Stadtname (z.B. "Tokyo", "New York")
     var name: String
-    
+
     /// TimeZone Identifier (z.B. "Asia/Tokyo", "America/New_York")
     /// Verwendet Apple's TimeZone-System für präzise Konvertierungen
-    var timeZoneIdentifier: String
-    
+    /// Unique constraint prevents duplicate cities
+    @Attribute(.unique) var timeZoneIdentifier: String
+
     /// Vollständiger Name mit Kontext (z.B. "Tokyo, Japan", "Los Angeles, California")
     /// Wird von MapKit's addressRepresentations.cityWithContext bereitgestellt
     var fullName: String
-    
+
     /// Wann wurde diese Stadt hinzugefügt
     var addedDate: Date
 
@@ -53,7 +52,6 @@ final class FavoriteCity {
         timeZoneIdentifier: String,
         fullName: String
     ) {
-        self.id = UUID()
         self.name = name
         self.timeZoneIdentifier = timeZoneIdentifier
         self.fullName = fullName
