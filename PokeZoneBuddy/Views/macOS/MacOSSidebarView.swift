@@ -40,46 +40,75 @@ struct MacOSSidebarView: View {
     // MARK: - Body
 
     var body: some View {
-        List(selection: $selectedItem) {
-            Section(String(localized: "sidebar.navigation")) {
-                ForEach(SidebarItem.allCases) { item in
-                    NavigationLink(value: item) {
-                        Label(item.title, systemImage: item.icon)
-                    }
-                }
-
-                Button {
-                    onShowSettings()
-                } label: {
-                    Label(String(localized: "settings.title"), systemImage: "gearshape")
-                }
-                .buttonStyle(.plain)
-            }
-
-            if !favoriteEvents.isEmpty {
-                Section(String(localized: "sidebar.favorite_events")) {
-                    ForEach(favoriteEvents.prefix(5)) { event in
-                        Button {
-                            selectedItem = .events
-                            selectedEvent = event
-                        } label: {
-                            VStack(alignment: .leading, spacing: 2) {
-                                Text(event.displayName)
-                                    .font(.system(size: 13))
-                                    .lineLimit(1)
-                                Text(event.displayHeading)
-                                    .font(.system(size: 11))
-                                    .foregroundStyle(.secondary)
-                                    .lineLimit(1)
-                            }
+        VStack(spacing: 0) {
+            List(selection: $selectedItem) {
+                Section(String(localized: "sidebar.navigation")) {
+                    ForEach(SidebarItem.allCases) { item in
+                        NavigationLink(value: item) {
+                            Label(item.title, systemImage: item.icon)
                         }
-                        .buttonStyle(.plain)
+                    }
+
+                    Button {
+                        onShowSettings()
+                    } label: {
+                        Label(String(localized: "settings.title"), systemImage: "gearshape")
+                    }
+                    .buttonStyle(.plain)
+                }
+
+                if !favoriteEvents.isEmpty {
+                    Section(String(localized: "sidebar.favorite_events")) {
+                        ForEach(favoriteEvents.prefix(5)) { event in
+                            Button {
+                                selectedItem = .events
+                                selectedEvent = event
+                            } label: {
+                                VStack(alignment: .leading, spacing: 2) {
+                                    Text(event.displayName)
+                                        .font(.system(size: 13))
+                                        .lineLimit(1)
+                                    Text(event.displayHeading)
+                                        .font(.system(size: 11))
+                                        .foregroundStyle(.secondary)
+                                        .lineLimit(1)
+                                }
+                            }
+                            .buttonStyle(.plain)
+                        }
                     }
                 }
             }
+            .listStyle(.sidebar)
+
+            Divider()
+
+            creditsFooter
         }
-        .listStyle(.sidebar)
         .navigationTitle("PokeZoneBuddy")
+    }
+
+    // MARK: - Credits Footer
+
+    private var creditsFooter: some View {
+        VStack(spacing: 6) {
+            Text(Constants.Legal.footerText)
+                .font(.system(size: 9, weight: .regular))
+                .foregroundStyle(.tertiary)
+                .multilineTextAlignment(.center)
+                .fixedSize(horizontal: false, vertical: true)
+                .minimumScaleFactor(0.8)
+
+            Text(Constants.Credits.fullCredit)
+                .font(.system(size: 9, weight: .regular))
+                .foregroundStyle(.tertiary)
+                .multilineTextAlignment(.center)
+                .fixedSize(horizontal: false, vertical: true)
+                .minimumScaleFactor(0.8)
+        }
+        .frame(maxWidth: .infinity, alignment: .center)
+        .padding(.horizontal, 8)
+        .padding(.vertical, 12)
     }
 }
 
