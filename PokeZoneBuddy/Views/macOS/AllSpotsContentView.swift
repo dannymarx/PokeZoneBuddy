@@ -69,21 +69,19 @@ struct AllSpotsContentView: View {
     // MARK: - Empty States
 
     private var noCitiesView: some View {
-        ContentUnavailableView {
-            Label(String(localized: "placeholder.no_cities.title"), systemImage: "map.circle")
-        } description: {
-            Text(String(localized: "placeholder.no_cities.subtitle"))
-                .multilineTextAlignment(.center)
-        }
+        EmptyStateView(
+            icon: "map.circle",
+            title: String(localized: "placeholder.no_cities.title"),
+            subtitle: String(localized: "placeholder.no_cities.subtitle")
+        )
     }
 
     private var noSpotsView: some View {
-        ContentUnavailableView {
-            Label(String(localized: "spots.section.empty"), systemImage: "mappin.slash")
-        } description: {
-            Text(String(localized: "spots.section.empty.description"))
-                .multilineTextAlignment(.center)
-        }
+        EmptyStateView(
+            icon: "mappin.slash",
+            title: String(localized: "spots.section.empty"),
+            subtitle: String(localized: "spots.section.empty.description")
+        )
     }
 }
 

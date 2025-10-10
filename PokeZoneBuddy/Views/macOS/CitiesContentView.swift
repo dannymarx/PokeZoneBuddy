@@ -62,30 +62,16 @@ struct CitiesContentView: View {
     // MARK: - Empty State
 
     private var emptyStateView: some View {
-        VStack(spacing: 24) {
-            Image(systemName: "map.circle")
-                .font(.system(size: 72))
-                .foregroundStyle(.quaternary)
-
-            VStack(spacing: 8) {
-                Text(String(localized: "placeholder.no_cities_yet.title"))
-                    .font(.system(size: 20, weight: .semibold))
-
-                Text(String(localized: "placeholder.no_cities_yet.subtitle"))
-                    .secondaryStyle()
-                    .multilineTextAlignment(.center)
-                    .frame(maxWidth: 400)
-            }
-
-            Button {
-                onAddCity()
-            } label: {
-                Label(String(localized: "action.add_city"), systemImage: "plus.circle")
-            }
-            .buttonStyle(.borderedProminent)
-        }
-        .padding(60)
-        .frame(maxWidth: .infinity, maxHeight: .infinity)
+        EmptyStateView(
+            icon: "map.circle",
+            title: String(localized: "placeholder.no_cities_yet.title"),
+            subtitle: String(localized: "placeholder.no_cities_yet.subtitle"),
+            action: .init(
+                title: String(localized: "action.add_city"),
+                systemImage: "plus.circle",
+                handler: onAddCity
+            )
+        )
     }
 }
 
