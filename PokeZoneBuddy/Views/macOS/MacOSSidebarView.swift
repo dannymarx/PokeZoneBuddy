@@ -64,15 +64,7 @@ struct MacOSSidebarView: View {
                                 selectedItem = .events
                                 selectedEvent = event
                             } label: {
-                                VStack(alignment: .leading, spacing: 2) {
-                                    Text(event.displayName)
-                                        .font(.system(size: 13))
-                                        .lineLimit(1)
-                                    Text(event.displayHeading)
-                                        .font(.system(size: 11))
-                                        .foregroundStyle(.secondary)
-                                        .lineLimit(1)
-                                }
+                                SidebarFavoriteEventRow(event: event)
                             }
                             .buttonStyle(.plain)
                         }
@@ -86,6 +78,73 @@ struct MacOSSidebarView: View {
             creditsFooter
         }
         .navigationTitle("PokeZoneBuddy")
+    }
+
+    // MARK: - Favorite Event Row
+
+    /// Compact circular thumbnail style for sidebar favorite events
+    /// Optimized for sidebars 220-280pt width with proper text wrapping
+    private struct SidebarFavoriteEventRow: View {
+        let event: Event
+
+        var body: some View {
+            HStack(spacing: 10) {
+                // Circular thumbnail
+                if let imageURL = event.imageURL, let url = URL(string: imageURL) {
+                    AsyncImage(url: url) { phase in
+                        switch phase {
+                        case .success(let image):
+                            image
+                                .resizable()
+                                .aspectRatio(contentMode: .fill)
+                        case .failure, .empty:
+                            Circle()
+                                .fill(.quaternary)
+                                .overlay(
+                                    ProgressView()
+                                        .controlSize(.mini)
+                                )
+                        @unknown default:
+                            Circle()
+                                .fill(.quaternary)
+                        }
+                    }
+                    .frame(width: 32, height: 32)
+                    .clipShape(Circle())
+                } else {
+                    // Fallback icon
+                    Circle()
+                        .fill(.blue.opacity(0.2))
+                        .frame(width: 32, height: 32)
+                        .overlay(
+                            Image(systemName: "calendar")
+                                .font(.system(size: 14))
+                                .foregroundStyle(.blue)
+                        )
+                }
+
+                // Event info with wrapping text
+                VStack(alignment: .leading, spacing: 2) {
+                    Text(event.displayName)
+                        .font(.system(size: 12, weight: .medium))
+                        .foregroundStyle(.primary)
+                        .lineLimit(2)
+                        .fixedSize(horizontal: false, vertical: true)
+                        .minimumScaleFactor(0.85)
+
+                    Text(event.displayHeading)
+                        .font(.system(size: 10))
+                        .foregroundStyle(.secondary)
+                        .lineLimit(1)
+                        .fixedSize(horizontal: false, vertical: true)
+                        .minimumScaleFactor(0.85)
+                }
+                .frame(maxWidth: .infinity, alignment: .leading)
+
+                Spacer(minLength: 0)
+            }
+            .padding(.vertical, 4)
+        }
     }
 
     // MARK: - Credits Footer
