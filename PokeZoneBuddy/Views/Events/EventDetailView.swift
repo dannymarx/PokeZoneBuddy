@@ -15,6 +15,9 @@ struct EventDetailView: View {
     let event: Event
     let favoriteCities: [FavoriteCity]
     
+    @Environment(\.horizontalSizeClass) private var horizontalSizeClass
+    @Environment(\.dynamicTypeSize) private var dynamicTypeSize
+    
     private let timezoneService = TimezoneService.shared
     
     // MARK: - Body
@@ -22,42 +25,47 @@ struct EventDetailView: View {
     var body: some View {
         ScrollViewReader { proxy in
             ScrollView(.vertical, showsIndicators: false) {
-                VStack(spacing: 24) {
+                VStack(alignment: contentAlignment, spacing: contentSpacing) {
                     // Anchor for scrolling to top
                     Color.clear
                         .frame(height: 0)
                         .id("top")
-                // Event Image Header
-                if let imageURL = event.imageURL, let url = URL(string: imageURL) {
-                    eventImageHeader(url: url)
+                    
+                    // Event Image Header
+                    if let imageURL = event.imageURL, let url = URL(string: imageURL) {
+                        eventImageHeader(url: url)
+                    }
+                    
+                    // Event Header
+                    eventHeaderSection
+                    
+                    // Countdown/Status
+                    EventCountdownView(event: event)
+                    
+                    // Event Info Cards
+                    eventInfoSection
+                    
+                    // Pokemon Details (Spotlight/Raid/CD)
+                    pokemonDetailsSection
+                    
+                    // Time Zones Section
+                    if !favoriteCities.isEmpty {
+                        timeZonesSection
+                    } else {
+                        noCitiesPlaceholder
+                    }
+                    
+                    // Copyright Footer
+                    copyrightFooter
+                    
+                    Spacer(minLength: usesCompactLayout ? 24 : 40)
                 }
-                
-                // Event Header
-                eventHeaderSection
-                
-                // Countdown/Status
-                EventCountdownView(event: event)
-                
-                // Event Info Cards
-                eventInfoSection
-                
-                // Pokemon Details (Spotlight/Raid/CD)
-                pokemonDetailsSection
-                
-                // Time Zones Section
-                if !favoriteCities.isEmpty {
-                    timeZonesSection
-                } else {
-                    noCitiesPlaceholder
-                }
-                
-                // Copyright Footer
-                copyrightFooter
-                
-                    Spacer(minLength: 40)
-                }
-                .padding(32)
-                .frame(maxWidth: 800)
+                .padding(.horizontal, horizontalPadding)
+                .padding(.vertical, verticalPadding)
+                .frame(
+                    maxWidth: maxContentWidth ?? .infinity,
+                    alignment: usesCompactLayout ? .leading : .center
+                )
             }
             .scrollIndicators(.hidden, axes: .vertical)
             .hideScrollIndicatorsCompat()
@@ -75,74 +83,93 @@ struct EventDetailView: View {
     // MARK: - Event Image Header
     
     private func eventImageHeader(url: URL) -> some View {
-        AsyncImage(url: url) { phase in
+        AsyncImage(url: url, transaction: Transaction(animation: .easeInOut)) { phase in
             switch phase {
             case .success(let image):
                 image
                     .resizable()
-                    .aspectRatio(contentMode: .fill)
-            case .failure, .empty:
-                Rectangle()
-                    .fill(.quaternary)
+                    .scaledToFit()
+                    .frame(maxWidth: .infinity, alignment: .center)
+                    .clipShape(RoundedRectangle(cornerRadius: 20, style: .continuous))
                     .overlay(
-                        ProgressView()
-                            .controlSize(.large)
+                        RoundedRectangle(cornerRadius: 20, style: .continuous)
+                            .strokeBorder(Color.primary.opacity(0.05))
                     )
+                    .shadow(color: .black.opacity(0.08), radius: 12, y: 4)
+            case .failure, .empty:
+                ZStack {
+                    RoundedRectangle(cornerRadius: 20, style: .continuous)
+                        .fill(.quaternary.opacity(0.4))
+                    
+                    ProgressView()
+                        .controlSize(.large)
+                }
+                .aspectRatio(16 / 9, contentMode: .fit)
+                .frame(maxWidth: .infinity)
+                .shadow(color: .black.opacity(0.05), radius: 10, y: 4)
             @unknown default:
-                Rectangle()
-                    .fill(.quaternary)
+                RoundedRectangle(cornerRadius: 20, style: .continuous)
+                    .fill(.quaternary.opacity(0.4))
+                    .aspectRatio(16 / 9, contentMode: .fit)
+                    .frame(maxWidth: .infinity)
+                    .shadow(color: .black.opacity(0.05), radius: 10, y: 4)
             }
         }
-        .frame(height: 240)
-        .clipShape(RoundedRectangle(cornerRadius: 20, style: .continuous))
-        .shadow(color: .black.opacity(0.1), radius: 12, y: 4)
     }
     
     // MARK: - Event Header
     
     private var eventHeaderSection: some View {
         VStack(alignment: .leading, spacing: 20) {
-            // Event Type Badge
+            // Event Type Badge with Liquid Glass
             HStack {
                 ModernBadge(event.eventType, icon: "tag.fill", color: .blue)
+                    .liquidGlassBadge(color: .blue)
 
                 if event.isCurrentlyActive {
-                    ModernBadge(String(localized: "badge.live_now"), icon: "circle.fill", color: .successGreen)
-                        .shimmer()
+                    ModernBadge(String(localized: "badge.live_now"), icon: "circle.fill", color: .green)
+                        .liquidGlassBadge(color: .green)
+                        .liquidGlassAnimated()
                 }
 
                 Spacer()
 
-                // Favorite Button
+                // Favorite Button with enhanced icon
                 FavoriteButton(eventID: event.id)
                     .font(.system(size: 24))
+                    .symbolRenderingMode(.hierarchical)
             }
             
             // Event Name
             Text(event.displayName)
                 .font(.system(size: 36, weight: .bold, design: .rounded))
                 .foregroundStyle(.primary)
+                .multilineTextAlignment(.leading)
+                .fixedSize(horizontal: false, vertical: true)
 
             // Event Heading
             Text(event.displayHeading)
                 .font(.system(size: 16, weight: .medium))
                 .foregroundStyle(.secondary)
+                .multilineTextAlignment(.leading)
+                .fixedSize(horizontal: false, vertical: true)
             
             // Features Row
-            HStack(spacing: 12) {
-                if event.hasSpawns {
-                    FeatureChip(icon: "location.fill", text: String(localized: "badge.spawns"), color: .green)
+            if !featureChipItems.isEmpty {
+                LazyVGrid(
+                    columns: [GridItem(.adaptive(minimum: chipMinimumWidth), spacing: 12)],
+                    alignment: .leading,
+                    spacing: 12
+                ) {
+                    ForEach(featureChipItems) { chip in
+                        FeatureChip(
+                            icon: chip.icon,
+                            text: chip.text,
+                            color: chip.color
+                        )
+                        .liquidGlassBadge(color: chip.color)
+                    }
                 }
-                
-                if event.hasFieldResearchTasks {
-                    FeatureChip(icon: "doc.text.fill", text: String(localized: "badge.research_tasks"), color: .purple)
-                }
-                
-                FeatureChip(
-                    icon: event.isGlobalTime ? "globe" : "location.circle",
-                    text: event.isGlobalTime ? String(localized: "badge.global_event") : String(localized: "badge.local_event"),
-                    color: .orange
-                )
             }
             
             // LeekDuck Link
@@ -185,8 +212,7 @@ struct EventDetailView: View {
     
     private var eventInfoSection: some View {
         VStack(spacing: 16) {
-            HStack(spacing: 16) {
-                // Duration Card
+            infoRowLayout {
                 InfoCard(
                     icon: "timer",
                     title: String(localized: "info.duration"),
@@ -194,7 +220,6 @@ struct EventDetailView: View {
                     color: .blue
                 )
                 
-                // Status Card
                 InfoCard(
                     icon: statusIcon,
                     title: String(localized: "info.status"),
@@ -203,8 +228,7 @@ struct EventDetailView: View {
                 )
             }
             
-            HStack(spacing: 16) {
-                // Start Time Card
+            infoRowLayout {
                 InfoCard(
                     icon: "play.circle.fill",
                     title: String(localized: "info.start"),
@@ -212,7 +236,6 @@ struct EventDetailView: View {
                     color: .green
                 )
                 
-                // End Time Card
                 InfoCard(
                     icon: "stop.circle.fill",
                     title: String(localized: "info.end"),
@@ -248,6 +271,15 @@ struct EventDetailView: View {
         }
     }
     
+    @ViewBuilder
+    private func infoRowLayout<Content: View>(@ViewBuilder content: () -> Content) -> some View {
+        if usesCompactLayout {
+            VStack(spacing: 16, content: content)
+        } else {
+            HStack(spacing: 16, content: content)
+        }
+    }
+    
     // MARK: - Time Zones Section
     
     private var timeZonesSection: some View {
@@ -268,24 +300,26 @@ struct EventDetailView: View {
     }
     
     // MARK: - No Cities Placeholder
-    
+
     private var noCitiesPlaceholder: some View {
-        VStack(spacing: 20) {
+        VStack(spacing: 24) {
             Image(systemName: "map.circle")
-                .font(.system(size: 56))
+                .font(.system(size: 64))
                 .foregroundStyle(.quaternary)
-            
+
             VStack(spacing: 8) {
                 Text(String(localized: "placeholder.no_cities_added.title"))
-                    .font(.system(size: 18, weight: .semibold))
-                
+                    .font(.system(size: 20, weight: .semibold))
+                    .multilineTextAlignment(.center)
+
                 Text(String(localized: "placeholder.no_cities_added.subtitle"))
-                    .secondaryStyle()
+                    .font(.system(size: 14))
+                    .foregroundStyle(.secondary)
                     .multilineTextAlignment(.center)
                     .frame(maxWidth: 400)
             }
         }
-        .padding(40)
+        .padding(usesCompactLayout ? 24 : 40)
         .frame(maxWidth: .infinity)
         .background(
             RoundedRectangle(cornerRadius: 16, style: .continuous)
@@ -294,6 +328,85 @@ struct EventDetailView: View {
     }
     
     // MARK: - Computed Properties
+    
+    private var usesCompactLayout: Bool {
+#if os(iOS)
+        if dynamicTypeSize.isAccessibilitySize {
+            return true
+        }
+        if let horizontalSizeClass {
+            return horizontalSizeClass == .compact
+        }
+        return true
+#else
+        dynamicTypeSize.isAccessibilitySize
+#endif
+    }
+    
+    private var horizontalPadding: CGFloat {
+        usesCompactLayout ? 20 : 32
+    }
+    
+    private var verticalPadding: CGFloat {
+        usesCompactLayout ? 24 : 32
+    }
+    
+    private var contentSpacing: CGFloat {
+        usesCompactLayout ? 20 : 24
+    }
+    
+    private var contentAlignment: HorizontalAlignment {
+        usesCompactLayout ? .leading : .center
+    }
+    
+    private var maxContentWidth: CGFloat? {
+#if os(macOS)
+        return usesCompactLayout ? nil : 800
+#else
+        return nil
+#endif
+    }
+    
+    private var chipMinimumWidth: CGFloat {
+        usesCompactLayout ? 120 : 160
+    }
+    
+    private var featureChipItems: [FeatureChipItem] {
+        var items: [FeatureChipItem] = []
+        
+        if event.hasSpawns {
+            items.append(
+                FeatureChipItem(
+                    id: "spawns",
+                    icon: "location.fill",
+                    text: String(localized: "badge.spawns"),
+                    color: .green
+                )
+            )
+        }
+        
+        if event.hasFieldResearchTasks {
+            items.append(
+                FeatureChipItem(
+                    id: "research",
+                    icon: "doc.text.fill",
+                    text: String(localized: "badge.research_tasks"),
+                    color: .purple
+                )
+            )
+        }
+        
+        items.append(
+            FeatureChipItem(
+                id: event.isGlobalTime ? "global_event" : "local_event",
+                icon: event.isGlobalTime ? "globe" : "location.circle",
+                text: event.isGlobalTime ? String(localized: "badge.global_event") : String(localized: "badge.local_event"),
+                color: .orange
+            )
+        )
+        
+        return items
+    }
     
     private var statusIcon: String {
         if event.isCurrentlyActive {
@@ -317,9 +430,9 @@ struct EventDetailView: View {
     
     private var statusColor: Color {
         if event.isCurrentlyActive {
-            return .successGreen
+            return .green
         } else if event.isUpcoming {
-            return .warningOrange
+            return .orange
         } else {
             return .secondary
         }
@@ -339,6 +452,7 @@ struct EventDetailView: View {
                 .foregroundStyle(.tertiary)
                 .multilineTextAlignment(.center)
         }
+        .frame(maxWidth: .infinity, alignment: .center)
         .padding(.top, 20)
     }
     
@@ -358,6 +472,13 @@ struct EventDetailView: View {
 }
 
 // MARK: - Feature Chip
+
+private struct FeatureChipItem: Identifiable {
+    let id: String
+    let icon: String
+    let text: String
+    let color: Color
+}
 
 private struct FeatureChip: View {
     let icon: String
@@ -395,14 +516,15 @@ private struct InfoCard: View {
                 Image(systemName: icon)
                     .font(.system(size: 20))
                     .foregroundStyle(color)
-                
+                    .symbolRenderingMode(.hierarchical)
+
                 Text(title)
                     .font(.system(size: 13, weight: .semibold))
                     .foregroundStyle(.secondary)
                     .textCase(.uppercase)
                     .kerning(0.5)
             }
-            
+
             Text(value)
                 .font(.system(size: 18, weight: .semibold))
                 .foregroundStyle(.primary)
@@ -412,8 +534,24 @@ private struct InfoCard: View {
         .frame(maxWidth: .infinity, alignment: .leading)
         .background(
             RoundedRectangle(cornerRadius: 12, style: .continuous)
-                .fill(.quaternary.opacity(0.3))
+                .fill(.ultraThinMaterial)
         )
+        .overlay(
+            RoundedRectangle(cornerRadius: 12, style: .continuous)
+                .strokeBorder(
+                    LinearGradient(
+                        colors: [
+                            .white.opacity(0.25),
+                            color.opacity(0.15),
+                            .clear
+                        ],
+                        startPoint: .topLeading,
+                        endPoint: .bottomTrailing
+                    ),
+                    lineWidth: 1
+                )
+        )
+        .shadow(color: color.opacity(0.1), radius: 8, x: 0, y: 2)
     }
 }
 
@@ -498,6 +636,22 @@ private struct CityTimeCard: View {
             RoundedRectangle(cornerRadius: 16, style: .continuous)
                 .fill(.ultraThinMaterial)
         )
+        .overlay(
+            RoundedRectangle(cornerRadius: 16, style: .continuous)
+                .strokeBorder(
+                    LinearGradient(
+                        colors: [
+                            .white.opacity(0.3),
+                            .blue.opacity(0.2),
+                            .clear
+                        ],
+                        startPoint: .topLeading,
+                        endPoint: .bottomTrailing
+                    ),
+                    lineWidth: 1.5
+                )
+        )
+        .shadow(color: .blue.opacity(0.12), radius: 12, x: 0, y: 4)
     }
 }
 

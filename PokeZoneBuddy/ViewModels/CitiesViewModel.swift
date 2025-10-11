@@ -9,6 +9,7 @@
 import Foundation
 import SwiftData
 import MapKit
+import SwiftUI
 import Observation
 
 @MainActor
@@ -206,6 +207,25 @@ final class CitiesViewModel {
         }
     }
 
+    /// Entfernt mehrere Städte anhand ihrer Indizes
+    /// - Parameter offsets: IndexSet der zu entfernenden Städte
+    func removeCities(at offsets: IndexSet) {
+        for index in offsets {
+            let city = favoriteCities[index]
+            modelContext.delete(city)
+        }
+
+        do {
+            try modelContext.save()
+            loadFavoriteCitiesFromDatabase()
+            AppLogger.viewModel.info("Städte entfernt: \(offsets.count) Stadt(e)")
+        } catch {
+            AppLogger.viewModel.error("Fehler beim Entfernen: \(String(describing: error))")
+            errorMessage = "Failed to remove cities"
+            showError = true
+        }
+    }
+
     // MARK: - Spot Management
 
     /// Fügt einen neuen Spot zu einer Stadt hinzu
@@ -294,6 +314,27 @@ final class CitiesViewModel {
                 "Fehler beim Löschen des Spots: \(String(describing: error))"
             )
             errorMessage = "Failed to delete the spot"
+            showError = true
+        }
+    }
+
+    /// Entfernt mehrere Spots einer Stadt anhand ihrer Indizes
+    /// - Parameters:
+    ///   - offsets: IndexSet der zu entfernenden Spots
+    ///   - city: Die Stadt, deren Spots gelöscht werden sollen
+    func deleteSpots(at offsets: IndexSet, from city: FavoriteCity) {
+        let spots = getSpots(for: city)
+        for index in offsets {
+            let spot = spots[index]
+            modelContext.delete(spot)
+        }
+
+        do {
+            try modelContext.save()
+            AppLogger.viewModel.info("Spots gelöscht: \(offsets.count) Spot(s) aus \(city.name)")
+        } catch {
+            AppLogger.viewModel.error("Fehler beim Löschen: \(String(describing: error))")
+            errorMessage = "Failed to delete spots"
             showError = true
         }
     }

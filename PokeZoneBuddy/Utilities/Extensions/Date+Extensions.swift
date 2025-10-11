@@ -24,15 +24,7 @@ extension Date {
         let calendar = Calendar.current
         return calendar.isDate(self, equalTo: Date(), toGranularity: .weekOfYear)
     }
-    
-    /// Returns a relative time string (e.g., "in 2 hours", "3 days ago")
-    var relativeTimeString: String {
-        let formatter = RelativeDateTimeFormatter()
-        formatter.locale = Locale.current
-        formatter.unitsStyle = .full
-        return formatter.localizedString(for: self, relativeTo: Date())
-    }
-    
+
     /// Formats the date using the current locale
     func formatted(dateStyle: DateFormatter.Style = .medium, timeStyle: DateFormatter.Style = .short) -> String {
         let formatter = DateFormatter()
@@ -45,27 +37,6 @@ extension Date {
     /// Returns the start of the day
     var startOfDay: Date {
         Calendar.current.startOfDay(for: self)
-    }
-    
-    /// Returns the end of the day (23:59:59)
-    var endOfDay: Date {
-        var components = DateComponents()
-        components.day = 1
-        components.second = -1
-        return Calendar.current.date(byAdding: components, to: startOfDay) ?? self
-    }
-    
-    /// Calculates the difference in days to another date
-    func daysDifference(to date: Date) -> Int {
-        let calendar = Calendar.current
-        let components = calendar.dateComponents([.day], from: self.startOfDay, to: date.startOfDay)
-        return components.day ?? 0
-    }
-    
-    /// Formats the date as an ISO8601 string
-    var iso8601String: String {
-        let formatter = ISO8601DateFormatter()
-        return formatter.string(from: self)
     }
 }
 

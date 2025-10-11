@@ -141,31 +141,35 @@ final class EventsViewModel {
     // MARK: - Private Methods
     
     /// OFFLINE: Save API events to SwiftData
+    /// Uses @Attribute(.unique) on Event.id for automatic upsert behavior
     private func saveEventsToLocalStorage(_ apiEvents: [Event]) async {
         // Use background context for heavy operation
         let container = modelContext.container
-        
+
         await Task.detached {
             let context = ModelContext(container)
-            
-            // Delete all existing events first
-            let descriptor = FetchDescriptor<Event>()
-            if let existingEvents = try? context.fetch(descriptor) {
-                for event in existingEvents {
-                    context.delete(event)
-                }
-            }
-            
-            // Insert new events (@Attribute(.unique) handles upsert automatically!)
+
+            // Insert events - @Attribute(.unique) on Event.id handles upserts automatically
+            // SwiftData will update existing events or insert new ones based on the unique ID
             for apiEvent in apiEvents {
                 context.insert(apiEvent)
             }
-            
+
+            // Clean up old events that are no longer in the API response
+            // This is more efficient than delete-all-then-insert
+            let apiEventIDs = Set(apiEvents.map { $0.id })
+            let descriptor = FetchDescriptor<Event>()
+            if let existingEvents = try? context.fetch(descriptor) {
+                for event in existingEvents where !apiEventIDs.contains(event.id) {
+                    context.delete(event)
+                }
+            }
+
             try? context.save()
-            
+
             AppLogger.viewModel.info("Saved \(apiEvents.count) events to local storage")
         }.value
-        
+
         // Reload from storage
         loadFromLocalStorage()
     }
@@ -227,25 +231,5 @@ final class EventsViewModel {
                 return event.isUpcoming || event.isCurrentlyActive
             }
             .sorted { $0.startTime < $1.startTime }
-    }
-
-    /// Events gruppiert nach Typ
-    var eventsByType: [String: [Event]] {
-        Dictionary(grouping: events, by: { $0.eventType })
-    }
-}
-
-// MARK: - Formatting Helpers
-
-extension EventsViewModel {
-    /// Formatiert die letzte Update-Zeit für die Anzeige
-    var lastUpdateText: String? {
-        guard let updateTime = lastSyncDate else { return nil }
-        
-        let formatter = RelativeDateTimeFormatter()
-        formatter.locale = Locale.autoupdatingCurrent
-        formatter.unitsStyle = .full
-        
-        return String(format: String(localized: "events.last_updated"), formatter.localizedString(for: updateTime, relativeTo: Date()))
     }
 }

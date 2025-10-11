@@ -80,20 +80,25 @@ private struct AdaptiveEventsView: View {
     
     @State private var selectedEvent: Event?
     @State private var showCitiesManagement = false
-    @State private var showAbout = false
     @State private var showCacheManagement = false
+    @State private var activeCityForSpots: FavoriteCity?
+    @State private var activeSpotForSpots: CitySpot?
     @State private var columnVisibility: NavigationSplitViewVisibility = .all
     @State private var navigationPath: [String] = []
     
     @Environment(\.horizontalSizeClass) private var horizontalSizeClass
     @Environment(\.verticalSizeClass) private var verticalSizeClass
+    @Environment(\.dynamicTypeSize) private var dynamicTypeSize
     
     private var shouldUseSplitLayout: Bool {
 #if os(iOS)
-        if horizontalSizeClass == .compact {
+        if dynamicTypeSize.isAccessibilitySize {
             return false
         }
-        return true
+        if let horizontalSizeClass, let verticalSizeClass {
+            return horizontalSizeClass == .regular && verticalSizeClass == .regular
+        }
+        return false
 #else
         return true
 #endif
@@ -124,21 +129,32 @@ private struct AdaptiveEventsView: View {
                 compactLayout
             }
         }
+        .sheet(item: $activeCityForSpots) { city in
+            SpotListView(
+                viewModel: citiesViewModel,
+                city: city,
+                initialSpot: activeSpotForSpots
+            )
+#if os(iOS)
+            .presentationDetents([.fraction(0.9), .large])
+            .presentationDragIndicator(.visible)
+#elseif os(macOS)
+            .presentationSizing(.fitted)
+#endif
+        }
+        .onChange(of: activeCityForSpots) { newValue in
+            if case .none = newValue {
+                activeSpotForSpots = nil
+            }
+        }
         .sheet(isPresented: $showCitiesManagement) {
             CitiesManagementView(viewModel: citiesViewModel)
         }
 #if os(iOS)
-        .fullScreenCover(isPresented: $showAbout) {
-            AboutView()
-        }
-#else
-        .sheet(isPresented: $showAbout) {
-            AboutView()
-        }
-#endif
         .sheet(isPresented: $showCacheManagement) {
             SettingsView()
         }
+#endif
     }
     
     private var splitLayout: some View {
@@ -147,9 +163,12 @@ private struct AdaptiveEventsView: View {
                 viewModel: citiesViewModel,
                 eventsViewModel: eventsViewModel,
                 showManagement: $showCitiesManagement,
-                showAbout: $showAbout,
                 showCacheManagement: $showCacheManagement,
-                selectedEvent: $selectedEvent
+                selectedEvent: $selectedEvent,
+                onCitySelected: { city, spot in
+                    activeSpotForSpots = spot
+                    activeCityForSpots = city
+                }
             )
             .navigationSplitViewColumnWidth(min: 220, ideal: 260, max: 300)
             
@@ -160,7 +179,8 @@ private struct AdaptiveEventsView: View {
                 layout: .split,
                 onEventSelected: { event in
                     selectedEvent = event
-                }
+                },
+                showCacheManagement: $showCacheManagement
             )
             .navigationSplitViewColumnWidth(min: 420, ideal: 460, max: 540)
             
@@ -179,7 +199,8 @@ private struct AdaptiveEventsView: View {
                 viewModel: eventsViewModel,
                 selectedEvent: $selectedEvent,
                 layout: .compact,
-                onEventSelected: handleCompactSelection
+                onEventSelected: handleCompactSelection,
+                showCacheManagement: $showCacheManagement
             )
             .navigationDestination(for: String.self) { eventID in
                 if let event = eventsViewModel.events.first(where: { $0.id == eventID }) {
@@ -188,44 +209,15 @@ private struct AdaptiveEventsView: View {
                     MissingEventView()
                 }
             }
-#if os(iOS)
-            .toolbar { compactToolbar }
-#endif
         }
     }
-    
+
     private func handleCompactSelection(_ event: Event) {
         selectedEvent = event
         if navigationPath.last != event.id {
             navigationPath.append(event.id)
         }
     }
-    
-#if os(iOS)
-    @ToolbarContentBuilder
-    private var compactToolbar: some ToolbarContent {
-        ToolbarItem(placement: .topBarLeading) {
-            Button {
-                showCitiesManagement = true
-            } label: {
-                Label(String(localized: "sidebar.your_cities"), systemImage: "mappin.circle")
-            }
-        }
-        
-        ToolbarItem(placement: .topBarTrailing) {
-            Menu {
-                Button(String(localized: "settings.title")) {
-                    showCacheManagement = true
-                }
-                Button(String(localized: "about.title")) {
-                    showAbout = true
-                }
-            } label: {
-                Image(systemName: "ellipsis.circle")
-            }
-        }
-    }
-#endif
     
     private struct MissingEventView: View {
         var body: some View {
@@ -250,9 +242,9 @@ private struct CitiesSidebarView: View {
     let viewModel: CitiesViewModel
     let eventsViewModel: EventsViewModel
     @Binding var showManagement: Bool
-    @Binding var showAbout: Bool
     @Binding var showCacheManagement: Bool
     @Binding var selectedEvent: Event?
+    let onCitySelected: (FavoriteCity, CitySpot?) -> Void
 
     // SwiftData Query to observe favorite changes in real-time
     @Query(sort: \FavoriteEvent.addedDate, order: .reverse) private var favoriteEventModels: [FavoriteEvent]
@@ -270,110 +262,94 @@ private struct CitiesSidebarView: View {
     
     var body: some View {
         VStack(spacing: 0) {
-            // Header
-            HStack {
-                Text(String(localized: "sidebar.your_cities"))
-                    .titleStyle()
-                Spacer()
-                Button {
-                    showManagement = true
-                } label: {
-                    Image(systemName: "plus")
-                        .font(.system(size: 14, weight: .semibold))
-                        .foregroundStyle(.secondary)
-                }
-                .buttonStyle(.plain)
-                .help(String(localized: "sidebar.add_city"))
-            }
-            .padding(.horizontal, 20)
-            .padding(.vertical, 16)
+            header
             
             Divider()
+            citiesList
             
-            // Cities List
-            ScrollView(.vertical, showsIndicators: false) {
-                if viewModel.favoriteCities.isEmpty {
-                    noCitiesPlaceholder
-                } else {
-                    LazyVStack(spacing: 8) {
-                        ForEach(viewModel.favoriteCities) { city in
-                            CityCard(city: city)
-                        }
-                    }
-                    .padding(16)
-                }
-            }
-            .scrollIndicators(.hidden, axes: .vertical)
-            .hideScrollIndicatorsCompat()
-
-            // Favorite Events Section
             if !favoriteEvents.isEmpty {
                 Divider()
-
-                VStack(spacing: 0) {
-                    // Header
-                    HStack {
-                        Text(String(localized: "sidebar.favorite_events"))
-                            .titleStyle()
-                        Spacer()
-                    }
-                    .padding(.horizontal, 20)
-                    .padding(.vertical, 16)
-
-                    Divider()
-
-                    // Favorites List
-                    ScrollView(.vertical, showsIndicators: false) {
-                        LazyVStack(spacing: 8) {
-                            ForEach(favoriteEvents) { event in
-                                FavoriteEventCard(event: event)
-                                    .contentShape(Rectangle())
-                                    .onTapGesture {
-                                        selectedEvent = event
-                                    }
-                            }
-                        }
-                        .padding(16)
-                    }
-                    .scrollIndicators(.hidden, axes: .vertical)
-                    .hideScrollIndicatorsCompat()
-                }
-                .transition(.opacity.combined(with: .move(edge: .top)))
+                favoriteEventsSection
             }
 
             Divider()
 
-            // Settings Button
             settingsButton
-
-            // About Button
-            aboutButton
         }
         .background(Color.appBackground)
         .hideScrollIndicatorsCompat()
         .animation(.default, value: favoriteEvents.isEmpty)
     }
     
-    private var aboutButton: some View {
-        Button {
-            showAbout = true
-        } label: {
+    private var header: some View {
+        HStack {
+            Text(String(localized: "sidebar.your_cities"))
+                .titleStyle()
+            Spacer()
+            Button {
+                showManagement = true
+            } label: {
+                Image(systemName: "plus")
+                    .font(.system(size: 14, weight: .semibold))
+                    .foregroundStyle(.secondary)
+            }
+            .buttonStyle(.plain)
+            .help(String(localized: "sidebar.add_city"))
+        }
+        .padding(.horizontal, 20)
+        .padding(.vertical, 16)
+    }
+    
+    private var citiesList: some View {
+        ScrollView(.vertical, showsIndicators: false) {
+            if viewModel.favoriteCities.isEmpty {
+                noCitiesPlaceholder
+            } else {
+                LazyVStack(spacing: 8) {
+                    ForEach(viewModel.favoriteCities) { city in
+                        CityCard(city: city) {
+                            let initialSpot = viewModel.getSpots(for: city).first
+                            onCitySelected(city, initialSpot)
+                        }
+                    }
+                }
+                .padding(16)
+            }
+        }
+        .scrollIndicators(.hidden, axes: .vertical)
+        .hideScrollIndicatorsCompat()
+    }
+    
+    private var favoriteEventsSection: some View {
+        VStack(spacing: 0) {
             HStack {
-                Image(systemName: "info.circle")
-                    .font(.system(size: 14))
-                Text(String(localized: "about.title"))
-                    .font(.system(size: 13, weight: .medium))
+                Text(String(localized: "sidebar.favorite_events"))
+                    .titleStyle()
                 Spacer()
             }
             .padding(.horizontal, 20)
-            .padding(.vertical, 12)
-            .contentShape(Rectangle())
+            .padding(.vertical, 16)
+
+            Divider()
+
+            ScrollView(.vertical, showsIndicators: false) {
+                LazyVStack(spacing: 8) {
+                    ForEach(favoriteEvents) { event in
+                        FavoriteEventCard(event: event)
+                            .contentShape(Rectangle())
+                            .onTapGesture {
+                                selectedEvent = event
+                            }
+                    }
+                }
+                .padding(16)
+            }
+            .scrollIndicators(.hidden, axes: .vertical)
+            .hideScrollIndicatorsCompat()
         }
-        .buttonStyle(.plain)
-        .foregroundStyle(.secondary)
-        .background(Color.clear)
+        .transition(.opacity.combined(with: .move(edge: .top)))
     }
-    
+
     private var settingsButton: some View {
         Button {
             showCacheManagement = true
@@ -427,19 +403,22 @@ private struct CitiesSidebarView: View {
 
 private struct CityCard: View {
     let city: FavoriteCity
-    
+    let onSelect: () -> Void
+    @State private var isHovered = false
+
     var body: some View {
-        NavigationLink {
-            // We need a CitiesViewModel to drive CityDetailView. Attempt to get it from environment using modelContext.
-            CityDetailWrapper(city: city)
+        Button {
+            onSelect()
         } label: {
             VStack(alignment: .leading, spacing: 8) {
                 HStack {
                     Image(systemName: "mappin.circle.fill")
                         .font(.system(size: 20))
                         .foregroundStyle(.blue.gradient)
+                        .symbolRenderingMode(.hierarchical)
                     VStack(alignment: .leading, spacing: 2) {
                         Text(city.name)
+                            .font(.system(size: 14, weight: .semibold))
                     }
                     Spacer()
                 }
@@ -458,19 +437,35 @@ private struct CityCard: View {
             .frame(maxWidth: .infinity, alignment: .leading)
             .background(
                 RoundedRectangle(cornerRadius: 12, style: .continuous)
-                    .fill(Color.gray.opacity(0.15))
+                    .fill(.ultraThinMaterial)
             )
+            .overlay(
+                RoundedRectangle(cornerRadius: 12, style: .continuous)
+                    .strokeBorder(
+                        LinearGradient(
+                            colors: [
+                                .white.opacity(isHovered ? 0.4 : 0.2),
+                                .blue.opacity(isHovered ? 0.3 : 0.1)
+                            ],
+                            startPoint: .topLeading,
+                            endPoint: .bottomTrailing
+                        ),
+                        lineWidth: 1.5
+                    )
+            )
+            .shadow(
+                color: .blue.opacity(isHovered ? 0.2 : 0.1),
+                radius: isHovered ? 10 : 6,
+                x: 0,
+                y: isHovered ? 4 : 2
+            )
+            .scaleEffect(isHovered ? 1.02 : 1.0)
+            .animation(.spring(response: 0.3, dampingFraction: 0.7), value: isHovered)
         }
         .buttonStyle(.plain)
-    }
-}
-
-private struct CityDetailWrapper: View {
-    @Environment(\.modelContext) private var modelContext
-    let city: FavoriteCity
-    var body: some View {
-        let viewModel = CitiesViewModel(modelContext: modelContext)
-        CityDetailView(city: city, viewModel: viewModel)
+        .onHover { hovering in
+            isHovered = hovering
+        }
     }
 }
 
@@ -503,7 +498,7 @@ enum EventFilter: String, CaseIterable {
     var localizedKey: LocalizedStringKey { .init(self.rawValue) }
 }
 
-private enum EventsLayoutStyle {
+enum EventsLayoutStyle {
     case split
     case compact
 }
@@ -554,33 +549,36 @@ private struct FilterButton: View {
 
 // MARK: - Events Content View
 
-private struct EventsContentView: View {
+struct EventsContentView: View {
     // With @Observable, no property wrapper needed for read-only access!
     let viewModel: EventsViewModel
     @Binding var selectedEvent: Event?
     let layout: EventsLayoutStyle
     let onEventSelected: (Event) -> Void
+    @Binding var showCacheManagement: Bool
     @State private var selectedFilter: EventFilter = .all
     @State private var filterConfig = FilterConfiguration()
     @State private var showFilterSheet = false
     
     var body: some View {
         VStack(spacing: 0) {
-            // Header
+#if os(macOS)
+            // Header with buttons for macOS
             headerView
-            
+
             Divider()
-            
+#endif
+
             // OFFLINE: Show status banner
             if viewModel.isOffline {
                 offlineBanner
             }
-            
+
             // Filter
             filterView
 
             Divider()
-            
+
             // Content
             if viewModel.isLoading && viewModel.events.isEmpty {
                 loadingContent
@@ -591,7 +589,31 @@ private struct EventsContentView: View {
             }
         }
         .background(Color.appBackground)
+        .navigationTitle(String(localized: "events.title"))
+#if os(iOS)
+        .navigationBarTitleDisplayMode(.large)
+        .toolbar {
+            ToolbarItem(placement: .topBarTrailing) {
+                Button {
+                    Task { await viewModel.refreshEvents() }
+                } label: {
+                    Label(String(localized: "events.refresh.help"), systemImage: "arrow.clockwise")
+                }
+                .disabled(viewModel.isLoading)
+            }
+
+            ToolbarItem(placement: .topBarTrailing) {
+                Button {
+                    showFilterSheet = true
+                } label: {
+                    Label(String(localized: "events.filter.help"), systemImage: "line.3.horizontal.decrease.circle")
+                }
+                .badge(filterConfig.activeFilterCount > 0 ? filterConfig.activeFilterCount : 0)
+            }
+        }
+#else
         .searchable(text: $filterConfig.searchText, prompt: String(localized: "search.events.prompt"))
+#endif
         .sheet(isPresented: $showFilterSheet) {
             FilterSheet(config: filterConfig)
         }
@@ -618,22 +640,13 @@ private struct EventsContentView: View {
         .frame(maxWidth: .infinity)
         .background(Color.orange)
     }
-    
+
+    // MARK: - Header View (macOS only)
+
     private var headerView: some View {
         HStack {
-            VStack(alignment: .leading, spacing: 4) {
-                Text(String(localized: "events.title"))
-                    .titleStyle()
-                
-                if let lastUpdate = viewModel.lastUpdateText {
-                    Text(lastUpdate)
-                        .font(.system(size: 11))
-                        .foregroundStyle(.tertiary)
-                }
-            }
-            
             Spacer()
-            
+
             // Filter Button
             Button {
                 showFilterSheet = true
@@ -645,7 +658,7 @@ private struct EventsContentView: View {
             .buttonStyle(.plain)
             .badge(filterConfig.activeFilterCount > 0 ? filterConfig.activeFilterCount : 0)
             .help(String(localized: "events.filter.help"))
-            
+
             // Refresh Button
             Button {
                 Task { await viewModel.refreshEvents() }
@@ -661,7 +674,7 @@ private struct EventsContentView: View {
         .padding(.horizontal, 20)
         .padding(.vertical, 16)
     }
-    
+
     private var filterView: some View {
         VStack(spacing: 0) {
             ScrollView(.horizontal, showsIndicators: false) {
@@ -731,6 +744,8 @@ private struct EventsContentView: View {
                 case .past:
                     pastEventsView
                 }
+                
+                creditsFooter
             }
             .padding(.vertical, 12)
         }
@@ -891,6 +906,24 @@ private struct EventsContentView: View {
         }
         .frame(maxHeight: .infinity)
     }
+    
+    private var creditsFooter: some View {
+        VStack(spacing: 8) {
+            Text(Constants.Legal.footerText)
+                .font(.system(size: 10, weight: .regular))
+                .foregroundStyle(.tertiary)
+                .multilineTextAlignment(.center)
+            
+            Text(Constants.Credits.fullCredit)
+                .font(.system(size: 10, weight: .regular))
+                .foregroundStyle(.tertiary)
+                .multilineTextAlignment(.center)
+        }
+        .frame(maxWidth: .infinity, alignment: .center)
+        .padding(.top, 32)
+        .padding(.horizontal, 20)
+        .padding(.bottom, 24)
+    }
 }
 
 // MARK: - Event Row
@@ -917,7 +950,7 @@ private struct EventRow: View {
     
     var body: some View {
         HStack(spacing: 12) {
-            // Event Thumbnail
+            // Event Thumbnail with Liquid Glass frame
             if let imageURL = event.imageURL, let url = URL(string: imageURL) {
                 AsyncImage(url: url) { phase in
                     switch phase {
@@ -939,8 +972,12 @@ private struct EventRow: View {
                 }
                 .frame(width: 60, height: 60)
                 .clipShape(RoundedRectangle(cornerRadius: 10, style: .continuous))
+                .overlay(
+                    RoundedRectangle(cornerRadius: 10, style: .continuous)
+                        .strokeBorder(.white.opacity(0.2), lineWidth: 1)
+                )
             }
-            
+
             VStack(alignment: .leading, spacing: 12) {
                 // Event Name & Countdown
                 HStack(alignment: .top) {
@@ -953,24 +990,26 @@ private struct EventRow: View {
                         Text(event.displayHeading)
                             .captionStyle()
                     }
-                    
+
                     Spacer()
-                    
+
                     CompactCountdownBadge(event: event)
-                    
+
                     FavoriteButton(eventID: event.id)
                         .padding(.leading, 4)
                 }
-                
-                // Badges
+
+                // Badges with Liquid Glass effect
                 HStack(spacing: 6) {
                     ModernBadge(event.displayHeading, icon: "tag.fill", color: eventTypeColor)
-                    
+                        .liquidGlassBadge(color: eventTypeColor)
+
                     if event.hasSpawns {
                         ModernBadge(String(localized: "badge.spawns"), icon: "location.fill", color: .green)
+                            .liquidGlassBadge(color: .green)
                     }
                 }
-                
+
                 // Date
                 Text(formatEventDate(event.startTime))
                     .font(.system(size: 12))
@@ -979,19 +1018,15 @@ private struct EventRow: View {
             }
         }
         .padding(14)
-        .background(
-            RoundedRectangle(cornerRadius: 12, style: .continuous)
-                .fill(isSelected ? Color.accentColor.opacity(0.1) : (isActive ? Color.green.opacity(0.05) : Color.clear))
-        )
-        .overlay(
-            RoundedRectangle(cornerRadius: 12, style: .continuous)
-                .strokeBorder(
-                    isSelected ? Color.accentColor.opacity(0.3) : (isActive ? Color.green.opacity(0.3) : Color.clear),
-                    lineWidth: isActive ? 2 : (isSelected ? 2 : 0)
-                )
+        .liquidGlassEventCard(
+            isSelected: isSelected,
+            isActive: isActive,
+            accentColor: .accentColor
         )
         .padding(.horizontal, 20)
         .opacity(isPast ? 0.6 : 1.0)
+        .animation(.spring(response: 0.4, dampingFraction: 0.75), value: isSelected)
+        .animation(.spring(response: 0.4, dampingFraction: 0.75), value: isActive)
     }
     
     private var eventTypeColor: Color {
@@ -1014,7 +1049,7 @@ private struct EventRow: View {
 
 // MARK: - Event Detail Container
 
-private struct EventDetailContainerView: View {
+struct EventDetailContainerView: View {
     let event: Event?
     let cities: [FavoriteCity]
     

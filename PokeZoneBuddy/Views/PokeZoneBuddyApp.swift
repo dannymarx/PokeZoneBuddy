@@ -17,19 +17,15 @@ struct PokeZoneBuddyApp: App {
     
     /// SwiftData ModelContainer for local persistence
     /// Stores Events, FavoriteCities, and FavoriteEvents locally (no CloudKit)
+    /// Nested models (SpotlightDetails, RaidDetails, etc.) are automatically discovered via @Relationship
     var sharedModelContainer: ModelContainer = {
         let schema = Schema([
             Event.self,
             FavoriteCity.self,
             CitySpot.self,
-            FavoriteEvent.self,
-            SpotlightDetails.self,
-            RaidDetails.self,
-            CommunityDayDetails.self,
-            PokemonInfo.self,
-            CommunityDayBonus.self
+            FavoriteEvent.self
         ])
-        
+
         let modelConfiguration = ModelConfiguration(
             schema: schema,
             isStoredInMemoryOnly: false
@@ -60,19 +56,27 @@ struct PokeZoneBuddyApp: App {
     
     var body: some Scene {
         WindowGroup {
-            EventsListView()
+            #if os(iOS)
+            MainTabView()
                 .environment(networkMonitor)
-                #if os(macOS)
-                .environment(calendarService)
-                #endif
                 .preferredColorScheme(currentTheme.colorScheme)
                 .onAppear {
                     setupBackgroundRefresh()
                 }
+            #else
+            MacOSMainView()
+                .environment(networkMonitor)
+                .environment(calendarService)
+                .preferredColorScheme(currentTheme.colorScheme)
+                .onAppear {
+                    setupBackgroundRefresh()
+                }
+            #endif
         }
         .modelContainer(sharedModelContainer)
         #if os(macOS)
         .defaultSize(width: 1200, height: 800)
+        .windowStyle(.hiddenTitleBar)
         .commands {
             // Refresh Command for macOS Menu Bar
             CommandGroup(after: .newItem) {
