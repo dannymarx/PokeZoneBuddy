@@ -43,18 +43,25 @@ struct SpotRowView: View {
                         .truncationMode(.tail)
                 }
 
-                // Category Badge
+                // Category Badge with Liquid Glass
                 HStack(spacing: 4) {
                     Image(systemName: spot.category.icon)
                         .font(.caption2)
                     Text(spot.category.localizedName)
                         .font(.caption2)
                 }
-                .foregroundStyle(.secondary)
+                .foregroundStyle(categoryColor)
                 .padding(.horizontal, 6)
                 .padding(.vertical, 2)
-                .background(Color.secondary.opacity(0.1))
-                .cornerRadius(4)
+                .background(
+                    Capsule()
+                        .fill(.ultraThinMaterial)
+                )
+                .overlay(
+                    Capsule()
+                        .strokeBorder(categoryColor.opacity(0.3), lineWidth: 1)
+                )
+                .shadow(color: categoryColor.opacity(0.15), radius: 2, x: 0, y: 1)
             }
 
             Spacer()
@@ -81,12 +88,22 @@ struct SpotRowView: View {
 
     // MARK: - View Components
 
-    /// Category Icon mit passendem SF Symbol
+    /// Category Icon mit passendem SF Symbol and Liquid Glass styling
     @ViewBuilder
     private var categoryIcon: some View {
         Image(systemName: spot.category.icon)
             .font(.title2)
-            .foregroundStyle(categoryColor)
+            .foregroundStyle(
+                LinearGradient(
+                    colors: [
+                        categoryColor,
+                        categoryColor.opacity(0.8)
+                    ],
+                    startPoint: .topLeading,
+                    endPoint: .bottomTrailing
+                )
+            )
+            .symbolRenderingMode(.hierarchical)
             .frame(width: 32, height: 32)
             .accessibilityLabel("\(spot.category.localizedName) icon")
     }
@@ -115,21 +132,39 @@ struct SpotRowView: View {
         }
     }
 
-    /// Feedback-View wenn Koordinaten kopiert wurden
+    /// Feedback-View wenn Koordinaten kopiert wurden with Liquid Glass
     @ViewBuilder
     private var copiedFeedbackView: some View {
         HStack(spacing: 8) {
             Image(systemName: "checkmark.circle.fill")
                 .foregroundStyle(.green)
+                .symbolRenderingMode(.hierarchical)
             Text("Copied!")
                 .font(.caption)
+                .fontWeight(.semibold)
                 .foregroundStyle(.primary)
         }
         .padding(.horizontal, 12)
         .padding(.vertical, 6)
-        .background(.regularMaterial)
-        .cornerRadius(8)
-        .shadow(radius: 4)
+        .background(
+            RoundedRectangle(cornerRadius: 8, style: .continuous)
+                .fill(.ultraThinMaterial)
+        )
+        .overlay(
+            RoundedRectangle(cornerRadius: 8, style: .continuous)
+                .strokeBorder(
+                    LinearGradient(
+                        colors: [
+                            .white.opacity(0.3),
+                            .green.opacity(0.2)
+                        ],
+                        startPoint: .topLeading,
+                        endPoint: .bottomTrailing
+                    ),
+                    lineWidth: 1.5
+                )
+        )
+        .shadow(color: .green.opacity(0.2), radius: 8, x: 0, y: 2)
         .transition(.scale.combined(with: .opacity))
     }
 
