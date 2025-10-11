@@ -1,7 +1,33 @@
 # Changelog
 
-All notable changes to **PokeZoneBuddy** are documented here.  
+All notable changes to **PokeZoneBuddy** are documented here.
 This project follows [Semantic Versioning](https://semver.org/).
+
+---
+
+## [1.2.0] – 2025-10-12
+
+### Added
+- **Liquid Glass UI** enhancements with improved visual effects and modern design language throughout the app.
+- **iOS Support** with platform-specific layouts, navigation patterns, and optimized views for iPhone and iPad.
+- **Enhanced Empty States** across all views to guide users when no data is available with clear calls-to-action.
+
+### Changed
+- **Refined Add Spot Workflow** with improved validation, better error handling, and streamlined user experience.
+- **SwiftData Architecture** upgraded with optimized queries, better performance, and more reliable persistence.
+- **Settings Interface** redesigned for better organization and clearer option presentation.
+- **Calendar Export** improved with better date/time handling and error feedback on macOS.
+- **Event Detail Views** optimized for iOS with platform-appropriate navigation and layout patterns.
+- **Favorite Button** behavior refined for more consistent and predictable interactions.
+- **Standard Buttons** and title bars updated across the app for better consistency and accessibility.
+
+### Fixed
+- Add Spot workflow validation and submission errors.
+- Favorite Events sidebar persistence and state management.
+- macOS-specific layout issues in various views.
+- Calendar export timing and timezone conversion accuracy.
+- Settings view crashes and data synchronization issues.
+- City Spots display and editing on iOS platforms.
 
 ---
 
