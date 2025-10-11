@@ -78,7 +78,6 @@ private struct MacOSContentView: View {
     @State private var selectedEvent: Event?
     @State private var showAddCity = false
     @State private var showCityPickerForSpot = false
-    @State private var showAddSpot = false
     @State private var cityForNewSpot: FavoriteCity?
     @State private var selectedCity: FavoriteCity?
     @State private var selectedSpot: CitySpot?
@@ -116,24 +115,17 @@ private struct MacOSContentView: View {
             AddCitySheet(viewModel: citiesViewModel)
                 .presentationSizing(.fitted)
         }
-        .sheet(isPresented: $showCityPickerForSpot, onDismiss: {
-            // Show AddSpotSheet after CityPickerSheet dismisses
-            if cityForNewSpot != nil {
-                showAddSpot = true
-            }
-        }) {
+        .sheet(item: $cityForNewSpot, onDismiss: {
+            // Cleanup handled by binding
+        }) { city in
+            AddSpotSheet(city: city, viewModel: citiesViewModel)
+                .presentationSizing(.fitted)
+        }
+        .sheet(isPresented: $showCityPickerForSpot) {
             CityPickerSheet(cities: citiesViewModel.favoriteCities) { city in
                 cityForNewSpot = city
             }
-        }
-        .sheet(isPresented: $showAddSpot, onDismiss: {
-            // Clear selected city after AddSpotSheet closes
-            cityForNewSpot = nil
-        }) {
-            if let city = cityForNewSpot {
-                AddSpotSheet(city: city, viewModel: citiesViewModel)
-                    .presentationSizing(.fitted)
-            }
+            .presentationSizing(.fitted)
         }
         .onChange(of: selectedSidebarItem) { _, newValue in
             if newValue == .settings {

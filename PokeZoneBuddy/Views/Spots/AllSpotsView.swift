@@ -86,8 +86,6 @@ struct AllSpotsView: View {
 #if os(iOS)
                         .presentationDetents([.large])
                         .presentationDragIndicator(.visible)
-#elseif os(macOS)
-                        .presentationSizing(.fitted)
 #endif
                 }
             }
