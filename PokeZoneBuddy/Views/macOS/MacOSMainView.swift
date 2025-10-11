@@ -113,19 +113,6 @@ private struct MacOSContentView: View {
             AddCitySheet(viewModel: citiesViewModel)
                 .presentationSizing(.fitted)
         }
-        .sheet(item: $selectedCity) { city in
-            SpotListView(
-                viewModel: citiesViewModel,
-                city: city,
-                initialSpot: selectedSpot
-            )
-            .presentationSizing(.fitted)
-        }
-        .onChange(of: selectedCity) { _, newValue in
-            if newValue == nil {
-                selectedSpot = nil
-            }
-        }
         .onChange(of: selectedSidebarItem) { _, newValue in
             if newValue == .settings {
                 columnVisibility = .all

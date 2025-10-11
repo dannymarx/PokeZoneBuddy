@@ -18,6 +18,7 @@ struct CityDetailView: View {
     let viewModel: CitiesViewModel
 
     @State private var showDeleteConfirmation = false
+    @State private var showAddSpot = false
 
     // MARK: - Computed Properties
 
@@ -44,6 +45,19 @@ struct CityDetailView: View {
         }
         .background(Color.appBackground)
         .navigationTitle(city.name)
+        .toolbar {
+            ToolbarItem(placement: .primaryAction) {
+                Button {
+                    showAddSpot = true
+                } label: {
+                    Label(String(localized: "spots.add.title"), systemImage: "plus")
+                }
+            }
+        }
+        .sheet(isPresented: $showAddSpot) {
+            AddSpotSheet(city: city, viewModel: viewModel)
+                .presentationSizing(.fitted)
+        }
         .alert(String(localized: "alert.delete.city.title"), isPresented: $showDeleteConfirmation) {
             Button(String(localized: "common.cancel"), role: .cancel) {}
             Button(String(localized: "common.delete"), role: .destructive) {
@@ -137,24 +151,35 @@ struct CityDetailView: View {
             }
 
             if spots.isEmpty {
-                Text(String(localized: "spots.section.empty"))
-                    .font(.system(size: 14))
-                    .foregroundStyle(.secondary)
-                    .frame(maxWidth: .infinity, alignment: .center)
-                    .padding(.vertical, 32)
-            } else {
-                VStack(spacing: 8) {
-                    ForEach(spots.prefix(5)) { spot in
-                        SpotCompactRow(spot: spot)
-                    }
+                VStack(spacing: 12) {
+                    Image(systemName: "mappin.slash")
+                        .font(.system(size: 32))
+                        .foregroundStyle(.quaternary)
 
-                    if spots.count > 5 {
-                        Text(String(localized: "common.and_more", defaultValue: "And \(spots.count - 5) more..."))
-                            .font(.system(size: 12))
-                            .foregroundStyle(.secondary)
-                            .padding(.top, 8)
+                    Text(String(localized: "spots.section.empty"))
+                        .font(.system(size: 14))
+                        .foregroundStyle(.secondary)
+
+                    Button {
+                        showAddSpot = true
+                    } label: {
+                        Label(String(localized: "spots.add.title"), systemImage: "plus.circle")
+                    }
+                    .buttonStyle(.bordered)
+                }
+                .frame(maxWidth: .infinity)
+                .padding(.vertical, 32)
+            } else {
+                List {
+                    ForEach(spots, id: \.persistentModelID) { spot in
+                        SpotDetailRow(spot: spot, viewModel: viewModel)
+                    }
+                    .onDelete { offsets in
+                        viewModel.deleteSpots(at: offsets, from: city)
                     }
                 }
+                .listStyle(.inset)
+                .frame(minHeight: 200)
             }
         }
     }
@@ -207,48 +232,65 @@ struct CityDetailView: View {
     }
 }
 
-// MARK: - Spot Compact Row
+// MARK: - Spot Detail Row
 
-private struct SpotCompactRow: View {
+private struct SpotDetailRow: View {
     let spot: CitySpot
+    let viewModel: CitiesViewModel
+
+    @State private var showEditSpot = false
 
     var body: some View {
-        HStack(spacing: 12) {
-            Circle()
-                .fill(categoryColor.gradient)
-                .frame(width: 32, height: 32)
-                .overlay(
-                    Image(systemName: categoryIcon)
-                        .font(.system(size: 14))
-                        .foregroundStyle(.white)
-                )
+        Button {
+            showEditSpot = true
+        } label: {
+            HStack(spacing: 12) {
+                Circle()
+                    .fill(categoryColor.gradient)
+                    .frame(width: 36, height: 36)
+                    .overlay(
+                        Image(systemName: categoryIcon)
+                            .font(.system(size: 16))
+                            .foregroundStyle(.white)
+                    )
 
-            VStack(alignment: .leading, spacing: 2) {
-                Text(spot.name)
-                    .font(.system(size: 13, weight: .medium))
-                    .lineLimit(1)
-
-                if !spot.notes.isEmpty {
-                    Text(spot.notes)
-                        .font(.system(size: 11))
-                        .foregroundStyle(.secondary)
+                VStack(alignment: .leading, spacing: 4) {
+                    Text(spot.name)
+                        .font(.system(size: 14, weight: .semibold))
                         .lineLimit(1)
+
+                    HStack(spacing: 4) {
+                        Text(spot.category.localizedName)
+                            .font(.system(size: 11, weight: .medium))
+                            .foregroundStyle(categoryColor)
+
+                        if !spot.notes.isEmpty {
+                            Text("•")
+                                .foregroundStyle(.quaternary)
+
+                            Text(spot.notes)
+                                .font(.system(size: 11))
+                                .foregroundStyle(.secondary)
+                                .lineLimit(1)
+                        }
+                    }
+                }
+
+                Spacer()
+
+                if spot.isFavorite {
+                    Image(systemName: "star.fill")
+                        .font(.system(size: 12))
+                        .foregroundStyle(.yellow)
                 }
             }
-
-            Spacer()
-
-            if spot.isFavorite {
-                Image(systemName: "star.fill")
-                    .font(.system(size: 11))
-                    .foregroundStyle(.yellow)
-            }
+            .padding(.vertical, 4)
         }
-        .padding(8)
-        .background(
-            RoundedRectangle(cornerRadius: 8, style: .continuous)
-                .fill(.quaternary.opacity(0.2))
-        )
+        .buttonStyle(.plain)
+        .sheet(isPresented: $showEditSpot) {
+            EditSpotSheet(spot: spot, viewModel: viewModel)
+                .presentationSizing(.fitted)
+        }
     }
 
     private var categoryIcon: String {

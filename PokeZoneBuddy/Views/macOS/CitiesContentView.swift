@@ -47,18 +47,25 @@ struct CitiesContentView: View {
 
     private var citiesList: some View {
         List(selection: $selectedCityID) {
-            ForEach(viewModel.favoriteCities) { city in
-                Button {
-                    selectedCityID = city.id
-                    onCitySelected(city)
-                } label: {
-                    CityRowView(city: city, viewModel: viewModel)
-                }
-                .buttonStyle(.plain)
-                .tag(city.id)
+            ForEach(viewModel.favoriteCities, id: \.persistentModelID) { city in
+                CityRowView(city: city, viewModel: viewModel)
+                    .tag(city.persistentModelID)
+                    .contentShape(Rectangle())
+            }
+            .onDelete { offsets in
+                viewModel.removeCities(at: offsets)
+            }
+            .onMove { source, destination in
+                viewModel.moveCities(from: source, to: destination)
             }
         }
         .listStyle(.inset)
+        .onChange(of: selectedCityID) { _, newID in
+            if let newID = newID,
+               let city = viewModel.favoriteCities.first(where: { $0.persistentModelID == newID }) {
+                onCitySelected(city)
+            }
+        }
     }
 
     // MARK: - Empty State
