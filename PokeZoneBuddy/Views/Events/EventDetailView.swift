@@ -121,20 +121,23 @@ struct EventDetailView: View {
     
     private var eventHeaderSection: some View {
         VStack(alignment: .leading, spacing: 20) {
-            // Event Type Badge
+            // Event Type Badge with Liquid Glass
             HStack {
                 ModernBadge(event.eventType, icon: "tag.fill", color: .blue)
+                    .liquidGlassBadge(color: .blue)
 
                 if event.isCurrentlyActive {
                     ModernBadge(String(localized: "badge.live_now"), icon: "circle.fill", color: .green)
-                        .shimmer()
+                        .liquidGlassBadge(color: .green)
+                        .liquidGlassAnimated()
                 }
 
                 Spacer()
 
-                // Favorite Button
+                // Favorite Button with enhanced icon
                 FavoriteButton(eventID: event.id)
                     .font(.system(size: 24))
+                    .symbolRenderingMode(.hierarchical)
             }
             
             // Event Name
@@ -164,6 +167,7 @@ struct EventDetailView: View {
                             text: chip.text,
                             color: chip.color
                         )
+                        .liquidGlassBadge(color: chip.color)
                     }
                 }
             }
@@ -512,14 +516,15 @@ private struct InfoCard: View {
                 Image(systemName: icon)
                     .font(.system(size: 20))
                     .foregroundStyle(color)
-                
+                    .symbolRenderingMode(.hierarchical)
+
                 Text(title)
                     .font(.system(size: 13, weight: .semibold))
                     .foregroundStyle(.secondary)
                     .textCase(.uppercase)
                     .kerning(0.5)
             }
-            
+
             Text(value)
                 .font(.system(size: 18, weight: .semibold))
                 .foregroundStyle(.primary)
@@ -529,8 +534,24 @@ private struct InfoCard: View {
         .frame(maxWidth: .infinity, alignment: .leading)
         .background(
             RoundedRectangle(cornerRadius: 12, style: .continuous)
-                .fill(.quaternary.opacity(0.3))
+                .fill(.ultraThinMaterial)
         )
+        .overlay(
+            RoundedRectangle(cornerRadius: 12, style: .continuous)
+                .strokeBorder(
+                    LinearGradient(
+                        colors: [
+                            .white.opacity(0.25),
+                            color.opacity(0.15),
+                            .clear
+                        ],
+                        startPoint: .topLeading,
+                        endPoint: .bottomTrailing
+                    ),
+                    lineWidth: 1
+                )
+        )
+        .shadow(color: color.opacity(0.1), radius: 8, x: 0, y: 2)
     }
 }
 
@@ -615,6 +636,22 @@ private struct CityTimeCard: View {
             RoundedRectangle(cornerRadius: 16, style: .continuous)
                 .fill(.ultraThinMaterial)
         )
+        .overlay(
+            RoundedRectangle(cornerRadius: 16, style: .continuous)
+                .strokeBorder(
+                    LinearGradient(
+                        colors: [
+                            .white.opacity(0.3),
+                            .blue.opacity(0.2),
+                            .clear
+                        ],
+                        startPoint: .topLeading,
+                        endPoint: .bottomTrailing
+                    ),
+                    lineWidth: 1.5
+                )
+        )
+        .shadow(color: .blue.opacity(0.12), radius: 12, x: 0, y: 4)
     }
 }
 

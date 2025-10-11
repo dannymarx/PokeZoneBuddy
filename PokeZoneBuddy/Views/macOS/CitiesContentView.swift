@@ -94,7 +94,7 @@ private struct CityRowView: View {
 
     var body: some View {
         HStack(spacing: 16) {
-            // Icon
+            // Icon with Liquid Glass styling
             Circle()
                 .fill(
                     LinearGradient(
@@ -108,7 +108,9 @@ private struct CityRowView: View {
                     Image(systemName: "mappin.circle.fill")
                         .font(.system(size: 22))
                         .foregroundStyle(.white)
+                        .symbolRenderingMode(.hierarchical)
                 )
+                .shadow(color: .blue.opacity(0.3), radius: 6, x: 0, y: 2)
 
             // Info
             VStack(alignment: .leading, spacing: 6) {
@@ -138,21 +140,27 @@ private struct CityRowView: View {
 
             Spacer()
 
-            // Spot Count Badge
+            // Spot Count Badge with Liquid Glass
             if spotCount > 0 {
                 HStack(spacing: 4) {
                     Image(systemName: "mappin.circle.fill")
                         .font(.system(size: 12))
+                        .symbolRenderingMode(.hierarchical)
                     Text("\(spotCount)")
                         .font(.system(size: 12, weight: .semibold))
                 }
-                .foregroundStyle(.secondary)
+                .foregroundStyle(.blue)
                 .padding(.horizontal, 8)
                 .padding(.vertical, 4)
                 .background(
                     Capsule()
-                        .fill(.quaternary.opacity(0.3))
+                        .fill(.ultraThinMaterial)
                 )
+                .overlay(
+                    Capsule()
+                        .strokeBorder(.blue.opacity(0.3), lineWidth: 1)
+                )
+                .shadow(color: .blue.opacity(0.15), radius: 3, x: 0, y: 1)
             }
         }
         .padding(.vertical, 8)
