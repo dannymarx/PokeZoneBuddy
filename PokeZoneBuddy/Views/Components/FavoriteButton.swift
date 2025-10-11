@@ -12,15 +12,22 @@ import SwiftData
 /// A button that toggles the favorite status of an event
 /// Displays a filled star when favorited, an empty star when not
 struct FavoriteButton: View {
-    
+
     // MARK: - Properties
-    
+
     let eventID: String
     @Environment(\.modelContext) private var modelContext
-    @State private var isFavorite = false
-    
+
+    // Query all favorites - this automatically updates when favorites change!
+    @Query private var allFavorites: [FavoriteEvent]
+
+    // Computed property to check if this specific event is favorited
+    private var isFavorite: Bool {
+        allFavorites.contains(where: { $0.eventID == eventID })
+    }
+
     // MARK: - Body
-    
+
     var body: some View {
         Button {
             toggleFavorite()
@@ -31,23 +38,14 @@ struct FavoriteButton: View {
         }
         .buttonStyle(.borderless) // Critical for buttons in List rows!
         .symbolEffect(.bounce, value: isFavorite)
-        .onAppear {
-            checkFavoriteStatus()
-        }
         .help(isFavorite ? "Remove from favorites" : "Add to favorites")
     }
-    
+
     // MARK: - Private Methods
-    
+
     private func toggleFavorite() {
         let manager = FavoritesManager(modelContext: modelContext)
         manager.toggleFavorite(eventID: eventID)
-        isFavorite.toggle()
-    }
-    
-    private func checkFavoriteStatus() {
-        let manager = FavoritesManager(modelContext: modelContext)
-        isFavorite = manager.isFavorite(eventID: eventID)
     }
 }
 
