@@ -113,19 +113,6 @@ private struct MacOSContentView: View {
             AddCitySheet(viewModel: citiesViewModel)
                 .presentationSizing(.fitted)
         }
-        .sheet(item: $selectedCity) { city in
-            SpotListView(
-                viewModel: citiesViewModel,
-                city: city,
-                initialSpot: selectedSpot
-            )
-            .presentationSizing(.fitted)
-        }
-        .onChange(of: selectedCity) { _, newValue in
-            if newValue == nil {
-                selectedSpot = nil
-            }
-        }
         .onChange(of: selectedSidebarItem) { _, newValue in
             if newValue == .settings {
                 columnVisibility = .all
@@ -201,7 +188,7 @@ private struct MacOSContentView: View {
             if let city = selectedCity {
                 CityDetailView(city: city, viewModel: citiesViewModel)
             } else {
-                placeholderView(
+                EmptyStateView(
                     icon: "building.2",
                     title: String(localized: "placeholder.no_city_selected.title"),
                     subtitle: String(localized: "placeholder.no_city_selected.subtitle")
@@ -214,7 +201,7 @@ private struct MacOSContentView: View {
                     // Handle edit
                 }
             } else {
-                placeholderView(
+                EmptyStateView(
                     icon: "mappin.and.ellipse",
                     title: String(localized: "placeholder.no_spot_selected.title"),
                     subtitle: String(localized: "placeholder.no_spot_selected.subtitle")
@@ -227,27 +214,6 @@ private struct MacOSContentView: View {
     }
 
     // MARK: - Helper Views
-
-    private func placeholderView(icon: String, title: String, subtitle: String) -> some View {
-        VStack(spacing: 16) {
-            Image(systemName: icon)
-                .font(.system(size: 64))
-                .foregroundStyle(.quaternary)
-
-            VStack(spacing: 8) {
-                Text(title)
-                    .font(.system(size: 18, weight: .semibold))
-
-                Text(subtitle)
-                    .font(.system(size: 14))
-                    .foregroundStyle(.secondary)
-                    .multilineTextAlignment(.center)
-                    .frame(maxWidth: 300)
-            }
-        }
-        .frame(maxWidth: .infinity, maxHeight: .infinity)
-        .background(Color.appBackground)
-    }
 
     private var settingsSelectionBinding: Binding<Bool> {
         Binding(

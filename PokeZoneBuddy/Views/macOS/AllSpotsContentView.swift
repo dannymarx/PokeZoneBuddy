@@ -45,19 +45,25 @@ struct AllSpotsContentView: View {
 
     private var spotsList: some View {
         List(selection: $selectedSpotID) {
-            ForEach(viewModel.favoriteCities) { city in
+            ForEach(viewModel.favoriteCities, id: \.persistentModelID) { city in
                 let spots = viewModel.getSpots(for: city)
                 if !spots.isEmpty {
                     Section(city.name) {
-                        ForEach(spots) { spot in
+                        ForEach(spots, id: \.persistentModelID) { spot in
                             Button {
-                                selectedSpotID = spot.id
+                                selectedSpotID = spot.persistentModelID
                                 onSpotSelected(city, spot)
                             } label: {
                                 SpotRowCompactView(spot: spot)
                             }
                             .buttonStyle(.plain)
-                            .tag(spot.id)
+                            .tag(spot.persistentModelID)
+                        }
+                        .onDelete { offsets in
+                            viewModel.deleteSpots(at: offsets, from: city)
+                        }
+                        .onMove { source, destination in
+                            viewModel.moveSpots(from: source, to: destination, in: city)
                         }
                     }
                 }
@@ -69,21 +75,19 @@ struct AllSpotsContentView: View {
     // MARK: - Empty States
 
     private var noCitiesView: some View {
-        ContentUnavailableView {
-            Label(String(localized: "placeholder.no_cities.title"), systemImage: "map.circle")
-        } description: {
-            Text(String(localized: "placeholder.no_cities.subtitle"))
-                .multilineTextAlignment(.center)
-        }
+        EmptyStateView(
+            icon: "map.circle",
+            title: String(localized: "placeholder.no_cities.title"),
+            subtitle: String(localized: "placeholder.no_cities.subtitle")
+        )
     }
 
     private var noSpotsView: some View {
-        ContentUnavailableView {
-            Label(String(localized: "spots.section.empty"), systemImage: "mappin.slash")
-        } description: {
-            Text(String(localized: "spots.section.empty.description"))
-                .multilineTextAlignment(.center)
-        }
+        EmptyStateView(
+            icon: "mappin.slash",
+            title: String(localized: "spots.section.empty"),
+            subtitle: String(localized: "spots.section.empty.description")
+        )
     }
 }
 

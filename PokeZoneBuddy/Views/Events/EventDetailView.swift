@@ -296,19 +296,21 @@ struct EventDetailView: View {
     }
     
     // MARK: - No Cities Placeholder
-    
+
     private var noCitiesPlaceholder: some View {
-        VStack(spacing: 20) {
+        VStack(spacing: 24) {
             Image(systemName: "map.circle")
-                .font(.system(size: 56))
+                .font(.system(size: 64))
                 .foregroundStyle(.quaternary)
-            
+
             VStack(spacing: 8) {
                 Text(String(localized: "placeholder.no_cities_added.title"))
-                    .font(.system(size: 18, weight: .semibold))
-                
+                    .font(.system(size: 20, weight: .semibold))
+                    .multilineTextAlignment(.center)
+
                 Text(String(localized: "placeholder.no_cities_added.subtitle"))
-                    .secondaryStyle()
+                    .font(.system(size: 14))
+                    .foregroundStyle(.secondary)
                     .multilineTextAlignment(.center)
                     .frame(maxWidth: 400)
             }
