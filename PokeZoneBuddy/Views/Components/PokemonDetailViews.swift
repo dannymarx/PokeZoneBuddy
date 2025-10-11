@@ -108,6 +108,22 @@ struct SpotlightHourDetailView: View {
             RoundedRectangle(cornerRadius: 16, style: .continuous)
                 .fill(.ultraThinMaterial)
         )
+        .overlay(
+            RoundedRectangle(cornerRadius: 16, style: .continuous)
+                .strokeBorder(
+                    LinearGradient(
+                        colors: [
+                            .yellow.opacity(0.3),
+                            .orange.opacity(0.2),
+                            .clear
+                        ],
+                        startPoint: .topLeading,
+                        endPoint: .bottomTrailing
+                    ),
+                    lineWidth: 1.5
+                )
+        )
+        .shadow(color: .yellow.opacity(0.15), radius: 12, x: 0, y: 4)
     }
 }
 
@@ -164,6 +180,22 @@ struct RaidBattleDetailView: View {
             RoundedRectangle(cornerRadius: 16, style: .continuous)
                 .fill(.ultraThinMaterial)
         )
+        .overlay(
+            RoundedRectangle(cornerRadius: 16, style: .continuous)
+                .strokeBorder(
+                    LinearGradient(
+                        colors: [
+                            .red.opacity(0.3),
+                            .orange.opacity(0.2),
+                            .clear
+                        ],
+                        startPoint: .topLeading,
+                        endPoint: .bottomTrailing
+                    ),
+                    lineWidth: 1.5
+                )
+        )
+        .shadow(color: .red.opacity(0.15), radius: 12, x: 0, y: 4)
     }
 }
 
@@ -265,6 +297,22 @@ struct CommunityDayDetailView: View {
             RoundedRectangle(cornerRadius: 16, style: .continuous)
                 .fill(.ultraThinMaterial)
         )
+        .overlay(
+            RoundedRectangle(cornerRadius: 16, style: .continuous)
+                .strokeBorder(
+                    LinearGradient(
+                        colors: [
+                            .green.opacity(0.3),
+                            .blue.opacity(0.2),
+                            .clear
+                        ],
+                        startPoint: .topLeading,
+                        endPoint: .bottomTrailing
+                    ),
+                    lineWidth: 1.5
+                )
+        )
+        .shadow(color: .green.opacity(0.15), radius: 12, x: 0, y: 4)
     }
 }
 
