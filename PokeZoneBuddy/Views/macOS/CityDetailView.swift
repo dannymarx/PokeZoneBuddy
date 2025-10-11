@@ -87,7 +87,9 @@ struct CityDetailView: View {
                         Image(systemName: "mappin.circle.fill")
                             .font(.system(size: 32))
                             .foregroundStyle(.white)
+                            .symbolRenderingMode(.hierarchical)
                     )
+                    .shadow(color: .blue.opacity(0.3), radius: 6, x: 0, y: 2)
 
                 VStack(alignment: .leading, spacing: 6) {
                     Text(city.name)
@@ -124,8 +126,23 @@ struct CityDetailView: View {
             .padding(16)
             .background(
                 RoundedRectangle(cornerRadius: 12, style: .continuous)
-                    .fill(.quaternary.opacity(0.3))
+                    .fill(.ultraThinMaterial)
             )
+            .overlay(
+                RoundedRectangle(cornerRadius: 12, style: .continuous)
+                    .strokeBorder(
+                        LinearGradient(
+                            colors: [
+                                .white.opacity(0.25),
+                                .blue.opacity(0.15)
+                            ],
+                            startPoint: .topLeading,
+                            endPoint: .bottomTrailing
+                        ),
+                        lineWidth: 1
+                    )
+            )
+            .shadow(color: .black.opacity(0.05), radius: 8, x: 0, y: 2)
         }
     }
 
@@ -146,8 +163,13 @@ struct CityDetailView: View {
                     .padding(.vertical, 4)
                     .background(
                         Capsule()
-                            .fill(.quaternary.opacity(0.3))
+                            .fill(.ultraThinMaterial)
                     )
+                    .overlay(
+                        Capsule()
+                            .strokeBorder(.blue.opacity(0.3), lineWidth: 1)
+                    )
+                    .shadow(color: .blue.opacity(0.15), radius: 3, x: 0, y: 1)
             }
 
             if spots.isEmpty {

@@ -404,7 +404,8 @@ private struct CitiesSidebarView: View {
 private struct CityCard: View {
     let city: FavoriteCity
     let onSelect: () -> Void
-    
+    @State private var isHovered = false
+
     var body: some View {
         Button {
             onSelect()
@@ -414,8 +415,10 @@ private struct CityCard: View {
                     Image(systemName: "mappin.circle.fill")
                         .font(.system(size: 20))
                         .foregroundStyle(.blue.gradient)
+                        .symbolRenderingMode(.hierarchical)
                     VStack(alignment: .leading, spacing: 2) {
                         Text(city.name)
+                            .font(.system(size: 14, weight: .semibold))
                     }
                     Spacer()
                 }
@@ -434,10 +437,35 @@ private struct CityCard: View {
             .frame(maxWidth: .infinity, alignment: .leading)
             .background(
                 RoundedRectangle(cornerRadius: 12, style: .continuous)
-                    .fill(Color.gray.opacity(0.15))
+                    .fill(.ultraThinMaterial)
             )
+            .overlay(
+                RoundedRectangle(cornerRadius: 12, style: .continuous)
+                    .strokeBorder(
+                        LinearGradient(
+                            colors: [
+                                .white.opacity(isHovered ? 0.4 : 0.2),
+                                .blue.opacity(isHovered ? 0.3 : 0.1)
+                            ],
+                            startPoint: .topLeading,
+                            endPoint: .bottomTrailing
+                        ),
+                        lineWidth: 1.5
+                    )
+            )
+            .shadow(
+                color: .blue.opacity(isHovered ? 0.2 : 0.1),
+                radius: isHovered ? 10 : 6,
+                x: 0,
+                y: isHovered ? 4 : 2
+            )
+            .scaleEffect(isHovered ? 1.02 : 1.0)
+            .animation(.spring(response: 0.3, dampingFraction: 0.7), value: isHovered)
         }
         .buttonStyle(.plain)
+        .onHover { hovering in
+            isHovered = hovering
+        }
     }
 }
 
@@ -922,7 +950,7 @@ private struct EventRow: View {
     
     var body: some View {
         HStack(spacing: 12) {
-            // Event Thumbnail
+            // Event Thumbnail with Liquid Glass frame
             if let imageURL = event.imageURL, let url = URL(string: imageURL) {
                 AsyncImage(url: url) { phase in
                     switch phase {
@@ -944,8 +972,12 @@ private struct EventRow: View {
                 }
                 .frame(width: 60, height: 60)
                 .clipShape(RoundedRectangle(cornerRadius: 10, style: .continuous))
+                .overlay(
+                    RoundedRectangle(cornerRadius: 10, style: .continuous)
+                        .strokeBorder(.white.opacity(0.2), lineWidth: 1)
+                )
             }
-            
+
             VStack(alignment: .leading, spacing: 12) {
                 // Event Name & Countdown
                 HStack(alignment: .top) {
@@ -958,24 +990,26 @@ private struct EventRow: View {
                         Text(event.displayHeading)
                             .captionStyle()
                     }
-                    
+
                     Spacer()
-                    
+
                     CompactCountdownBadge(event: event)
-                    
+
                     FavoriteButton(eventID: event.id)
                         .padding(.leading, 4)
                 }
-                
-                // Badges
+
+                // Badges with Liquid Glass effect
                 HStack(spacing: 6) {
                     ModernBadge(event.displayHeading, icon: "tag.fill", color: eventTypeColor)
-                    
+                        .liquidGlassBadge(color: eventTypeColor)
+
                     if event.hasSpawns {
                         ModernBadge(String(localized: "badge.spawns"), icon: "location.fill", color: .green)
+                            .liquidGlassBadge(color: .green)
                     }
                 }
-                
+
                 // Date
                 Text(formatEventDate(event.startTime))
                     .font(.system(size: 12))
@@ -984,19 +1018,15 @@ private struct EventRow: View {
             }
         }
         .padding(14)
-        .background(
-            RoundedRectangle(cornerRadius: 12, style: .continuous)
-                .fill(isSelected ? Color.accentColor.opacity(0.1) : (isActive ? Color.green.opacity(0.05) : Color.clear))
-        )
-        .overlay(
-            RoundedRectangle(cornerRadius: 12, style: .continuous)
-                .strokeBorder(
-                    isSelected ? Color.accentColor.opacity(0.3) : (isActive ? Color.green.opacity(0.3) : Color.clear),
-                    lineWidth: isActive ? 2 : (isSelected ? 2 : 0)
-                )
+        .liquidGlassEventCard(
+            isSelected: isSelected,
+            isActive: isActive,
+            accentColor: .accentColor
         )
         .padding(.horizontal, 20)
         .opacity(isPast ? 0.6 : 1.0)
+        .animation(.spring(response: 0.4, dampingFraction: 0.75), value: isSelected)
+        .animation(.spring(response: 0.4, dampingFraction: 0.75), value: isActive)
     }
     
     private var eventTypeColor: Color {
