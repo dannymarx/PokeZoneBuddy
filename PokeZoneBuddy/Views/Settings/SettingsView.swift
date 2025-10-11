@@ -242,8 +242,23 @@ struct SettingsView: View {
             .padding(16)
             .background(
                 RoundedRectangle(cornerRadius: 12, style: .continuous)
-                    .fill(.quaternary.opacity(0.2))
+                    .fill(.ultraThinMaterial)
             )
+            .overlay(
+                RoundedRectangle(cornerRadius: 12, style: .continuous)
+                    .strokeBorder(
+                        LinearGradient(
+                            colors: [
+                                .white.opacity(0.25),
+                                .blue.opacity(0.15)
+                            ],
+                            startPoint: .topLeading,
+                            endPoint: .bottomTrailing
+                        ),
+                        lineWidth: 1
+                    )
+            )
+            .shadow(color: .black.opacity(0.05), radius: 8, x: 0, y: 2)
         }
     }
 
@@ -301,8 +316,23 @@ struct SettingsView: View {
             .padding(16)
             .background(
                 RoundedRectangle(cornerRadius: 12, style: .continuous)
-                    .fill(.quaternary.opacity(0.2))
+                    .fill(.ultraThinMaterial)
             )
+            .overlay(
+                RoundedRectangle(cornerRadius: 12, style: .continuous)
+                    .strokeBorder(
+                        LinearGradient(
+                            colors: [
+                                .white.opacity(0.25),
+                                .blue.opacity(0.15)
+                            ],
+                            startPoint: .topLeading,
+                            endPoint: .bottomTrailing
+                        ),
+                        lineWidth: 1
+                    )
+            )
+            .shadow(color: .black.opacity(0.05), radius: 8, x: 0, y: 2)
         }
     }
 
@@ -670,7 +700,13 @@ private struct StatRow: View {
 
             Text(value)
                 .font(.system(size: 20, weight: .semibold, design: .rounded))
-                .foregroundStyle(.blue)
+                .foregroundStyle(
+                    LinearGradient(
+                        colors: [.blue, .blue.opacity(0.8)],
+                        startPoint: .topLeading,
+                        endPoint: .bottomTrailing
+                    )
+                )
         }
         .padding(.vertical, 8)
     }
@@ -712,8 +748,16 @@ private struct ActionRow: View {
                     .padding(.vertical, 8)
                     .background(
                         RoundedRectangle(cornerRadius: 8, style: .continuous)
-                            .fill(isHovering ? buttonColor.opacity(0.8) : buttonColor)
+                            .fill(isHovering ? buttonColor.opacity(0.9) : buttonColor)
                     )
+                    .shadow(
+                        color: buttonColor.opacity(isHovering ? 0.3 : 0.2),
+                        radius: isHovering ? 6 : 4,
+                        x: 0,
+                        y: isHovering ? 3 : 2
+                    )
+                    .scaleEffect(isHovering ? 1.02 : 1.0)
+                    .animation(.spring(response: 0.3, dampingFraction: 0.7), value: isHovering)
             }
             .buttonStyle(.plain)
             .onHover { hovering in
@@ -754,8 +798,13 @@ private struct CreditRow: View {
         .padding(12)
         .background(
             RoundedRectangle(cornerRadius: 10, style: .continuous)
-                .fill(.quaternary.opacity(0.2))
+                .fill(.ultraThinMaterial)
         )
+        .overlay(
+            RoundedRectangle(cornerRadius: 10, style: .continuous)
+                .strokeBorder(.white.opacity(0.2), lineWidth: 1)
+        )
+        .shadow(color: .black.opacity(0.04), radius: 4, x: 0, y: 1)
     }
 }
 
@@ -805,8 +854,13 @@ private struct LinkButton: View {
                 .padding(.vertical, 12)
                 .background(
                     RoundedRectangle(cornerRadius: 10, style: .continuous)
-                        .fill(.blue.opacity(0.1))
+                        .fill(.ultraThinMaterial)
                 )
+                .overlay(
+                    RoundedRectangle(cornerRadius: 10, style: .continuous)
+                        .strokeBorder(.blue.opacity(0.3), lineWidth: 1.5)
+                )
+                .shadow(color: .blue.opacity(0.15), radius: 4, x: 0, y: 2)
                 .foregroundStyle(.blue)
                 .accessibilityElement(children: .combine)
                 .accessibilityLabel(Text(title))

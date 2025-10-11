@@ -113,7 +113,7 @@ private struct SpotRowCompactView: View {
 
     var body: some View {
         HStack(spacing: 12) {
-            // Category Icon
+            // Category Icon with Liquid Glass
             Circle()
                 .fill(categoryColor.gradient)
                 .frame(width: 36, height: 36)
@@ -121,7 +121,9 @@ private struct SpotRowCompactView: View {
                     Image(systemName: categoryIcon)
                         .font(.system(size: 16))
                         .foregroundStyle(.white)
+                        .symbolRenderingMode(.hierarchical)
                 )
+                .shadow(color: categoryColor.opacity(0.3), radius: 4, x: 0, y: 2)
 
             // Spot Info
             VStack(alignment: .leading, spacing: 4) {
@@ -139,11 +141,13 @@ private struct SpotRowCompactView: View {
 
             Spacer()
 
-            // Favorite Indicator
+            // Favorite Indicator with glow
             if spot.isFavorite {
                 Image(systemName: "star.fill")
                     .font(.system(size: 12))
                     .foregroundStyle(.yellow)
+                    .symbolRenderingMode(.hierarchical)
+                    .shadow(color: .yellow.opacity(0.3), radius: 2, x: 0, y: 1)
             }
         }
         .padding(.vertical, 4)
