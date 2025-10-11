@@ -192,7 +192,7 @@ final class APIService {
                             canBeShiny: true
                         )
                     }
-                    
+
                     let shinies = cd.shinies.map { shiny in
                         PokemonInfo(
                             name: shiny.name,
@@ -200,19 +200,49 @@ final class APIService {
                             canBeShiny: true
                         )
                     }
-                    
+
                     let bonuses = cd.bonuses.map { bonus in
                         CommunityDayBonus(
                             text: bonus.text,
                             iconURL: bonus.image
                         )
                     }
-                    
+
+                    // Parse special research steps
+                    var specialResearch: [SpecialResearchStep] = []
+                    if let researchData = cd.specialresearch {
+                        specialResearch = researchData.compactMap { research in
+                            guard let tasks = research.tasks, let rewards = research.rewards else {
+                                return nil
+                            }
+
+                            let researchTasks = tasks.map { task in
+                                let taskReward = ResearchReward(
+                                    text: task.reward.text,
+                                    imageURL: task.reward.image
+                                )
+                                return ResearchTask(text: task.text, reward: taskReward)
+                            }
+
+                            let researchRewards = rewards.map { reward in
+                                ResearchReward(text: reward.text, imageURL: reward.image)
+                            }
+
+                            return SpecialResearchStep(
+                                name: research.name,
+                                stepNumber: research.step,
+                                tasks: researchTasks,
+                                rewards: researchRewards
+                            )
+                        }
+                    }
+
                     communityDayDetails = CommunityDayDetails(
                         featuredPokemon: spawns,
                         shinies: shinies,
                         bonuses: bonuses,
-                        hasSpecialResearch: cd.specialresearch != nil && !cd.specialresearch!.isEmpty
+                        bonusDisclaimers: cd.bonusDisclaimers ?? [],
+                        specialResearch: specialResearch
                     )
                 }
             }
@@ -297,26 +327,39 @@ private struct APIEvent: Decodable {
             let spawns: [SpawnData]
             let shinies: [ShinyData]
             let bonuses: [BonusData]
+            let bonusDisclaimers: [String]?
             let specialresearch: [ResearchData]?
-            
+
             struct SpawnData: Decodable {
                 let name: String
                 let image: String
             }
-            
+
             struct ShinyData: Decodable {
                 let name: String
                 let image: String
             }
-            
+
             struct BonusData: Decodable {
                 let text: String
                 let image: String?
             }
-            
+
             struct ResearchData: Decodable {
                 let name: String
                 let step: Int
+                let tasks: [TaskData]?
+                let rewards: [RewardData]?
+
+                struct TaskData: Decodable {
+                    let text: String
+                    let reward: RewardData
+                }
+
+                struct RewardData: Decodable {
+                    let text: String
+                    let image: String
+                }
             }
         }
     }

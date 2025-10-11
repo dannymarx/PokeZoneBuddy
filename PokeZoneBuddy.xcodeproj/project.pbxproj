@@ -6,27 +6,8 @@
 	objectVersion = 77;
 	objects = {
 
-/* Begin PBXContainerItemProxy section */
-		305FAD832E8D2AF4002CBBDD /* PBXContainerItemProxy */ = {
-			isa = PBXContainerItemProxy;
-			containerPortal = 305FAD6B2E8D2AF1002CBBDD /* Project object */;
-			proxyType = 1;
-			remoteGlobalIDString = 305FAD722E8D2AF1002CBBDD;
-			remoteInfo = PokeZoneBuddy;
-		};
-		305FAD8D2E8D2AF4002CBBDD /* PBXContainerItemProxy */ = {
-			isa = PBXContainerItemProxy;
-			containerPortal = 305FAD6B2E8D2AF1002CBBDD /* Project object */;
-			proxyType = 1;
-			remoteGlobalIDString = 305FAD722E8D2AF1002CBBDD;
-			remoteInfo = PokeZoneBuddy;
-		};
-/* End PBXContainerItemProxy section */
-
 /* Begin PBXFileReference section */
 		302CFF952E8EFB6C000E02C5 /* PokeZoneBuddy.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = PokeZoneBuddy.app; sourceTree = BUILT_PRODUCTS_DIR; };
-		30DB6E9B2E966BA7003DEF3A /* PokeZoneBuddyTests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = PokeZoneBuddyTests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
-		30DB6E9C2E966BA7003DEF3A /* PokeZoneBuddyUITests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = PokeZoneBuddyUITests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
 /* End PBXFileReference section */
 
 /* Begin PBXFileSystemSynchronizedRootGroup section */
@@ -45,20 +26,6 @@
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
-		305FAD7F2E8D2AF4002CBBDD /* Frameworks */ = {
-			isa = PBXFrameworksBuildPhase;
-			buildActionMask = 2147483647;
-			files = (
-			);
-			runOnlyForDeploymentPostprocessing = 0;
-		};
-		305FAD892E8D2AF4002CBBDD /* Frameworks */ = {
-			isa = PBXFrameworksBuildPhase;
-			buildActionMask = 2147483647;
-			files = (
-			);
-			runOnlyForDeploymentPostprocessing = 0;
-		};
 /* End PBXFrameworksBuildPhase section */
 
 /* Begin PBXGroup section */
@@ -67,8 +34,6 @@
 			children = (
 				305FAD752E8D2AF1002CBBDD /* PokeZoneBuddy */,
 				302CFF952E8EFB6C000E02C5 /* PokeZoneBuddy.app */,
-				30DB6E9B2E966BA7003DEF3A /* PokeZoneBuddyTests.xctest */,
-				30DB6E9C2E966BA7003DEF3A /* PokeZoneBuddyUITests.xctest */,
 			);
 			sourceTree = "<group>";
 		};
@@ -97,46 +62,6 @@
 			productReference = 302CFF952E8EFB6C000E02C5 /* PokeZoneBuddy.app */;
 			productType = "com.apple.product-type.application";
 		};
-		305FAD812E8D2AF4002CBBDD /* PokeZoneBuddyTests */ = {
-			isa = PBXNativeTarget;
-			buildConfigurationList = 305FAD992E8D2AF4002CBBDD /* Build configuration list for PBXNativeTarget "PokeZoneBuddyTests" */;
-			buildPhases = (
-				305FAD7E2E8D2AF4002CBBDD /* Sources */,
-				305FAD7F2E8D2AF4002CBBDD /* Frameworks */,
-				305FAD802E8D2AF4002CBBDD /* Resources */,
-			);
-			buildRules = (
-			);
-			dependencies = (
-				305FAD842E8D2AF4002CBBDD /* PBXTargetDependency */,
-			);
-			name = PokeZoneBuddyTests;
-			packageProductDependencies = (
-			);
-			productName = PokeZoneBuddyTests;
-			productReference = 30DB6E9B2E966BA7003DEF3A /* PokeZoneBuddyTests.xctest */;
-			productType = "com.apple.product-type.bundle.unit-test";
-		};
-		305FAD8B2E8D2AF4002CBBDD /* PokeZoneBuddyUITests */ = {
-			isa = PBXNativeTarget;
-			buildConfigurationList = 305FAD9C2E8D2AF4002CBBDD /* Build configuration list for PBXNativeTarget "PokeZoneBuddyUITests" */;
-			buildPhases = (
-				305FAD882E8D2AF4002CBBDD /* Sources */,
-				305FAD892E8D2AF4002CBBDD /* Frameworks */,
-				305FAD8A2E8D2AF4002CBBDD /* Resources */,
-			);
-			buildRules = (
-			);
-			dependencies = (
-				305FAD8E2E8D2AF4002CBBDD /* PBXTargetDependency */,
-			);
-			name = PokeZoneBuddyUITests;
-			packageProductDependencies = (
-			);
-			productName = PokeZoneBuddyUITests;
-			productReference = 30DB6E9C2E966BA7003DEF3A /* PokeZoneBuddyUITests.xctest */;
-			productType = "com.apple.product-type.bundle.ui-testing";
-		};
 /* End PBXNativeTarget section */
 
 /* Begin PBXProject section */
@@ -149,14 +74,6 @@
 				TargetAttributes = {
 					305FAD722E8D2AF1002CBBDD = {
 						CreatedOnToolsVersion = 26.0.1;
-					};
-					305FAD812E8D2AF4002CBBDD = {
-						CreatedOnToolsVersion = 26.0.1;
-						TestTargetID = 305FAD722E8D2AF1002CBBDD;
-					};
-					305FAD8B2E8D2AF4002CBBDD = {
-						CreatedOnToolsVersion = 26.0.1;
-						TestTargetID = 305FAD722E8D2AF1002CBBDD;
 					};
 				};
 			};
@@ -176,28 +93,12 @@
 			projectRoot = "";
 			targets = (
 				305FAD722E8D2AF1002CBBDD /* PokeZoneBuddy */,
-				305FAD812E8D2AF4002CBBDD /* PokeZoneBuddyTests */,
-				305FAD8B2E8D2AF4002CBBDD /* PokeZoneBuddyUITests */,
 			);
 		};
 /* End PBXProject section */
 
 /* Begin PBXResourcesBuildPhase section */
 		305FAD712E8D2AF1002CBBDD /* Resources */ = {
-			isa = PBXResourcesBuildPhase;
-			buildActionMask = 2147483647;
-			files = (
-			);
-			runOnlyForDeploymentPostprocessing = 0;
-		};
-		305FAD802E8D2AF4002CBBDD /* Resources */ = {
-			isa = PBXResourcesBuildPhase;
-			buildActionMask = 2147483647;
-			files = (
-			);
-			runOnlyForDeploymentPostprocessing = 0;
-		};
-		305FAD8A2E8D2AF4002CBBDD /* Resources */ = {
 			isa = PBXResourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
@@ -214,34 +115,7 @@
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
-		305FAD7E2E8D2AF4002CBBDD /* Sources */ = {
-			isa = PBXSourcesBuildPhase;
-			buildActionMask = 2147483647;
-			files = (
-			);
-			runOnlyForDeploymentPostprocessing = 0;
-		};
-		305FAD882E8D2AF4002CBBDD /* Sources */ = {
-			isa = PBXSourcesBuildPhase;
-			buildActionMask = 2147483647;
-			files = (
-			);
-			runOnlyForDeploymentPostprocessing = 0;
-		};
 /* End PBXSourcesBuildPhase section */
-
-/* Begin PBXTargetDependency section */
-		305FAD842E8D2AF4002CBBDD /* PBXTargetDependency */ = {
-			isa = PBXTargetDependency;
-			target = 305FAD722E8D2AF1002CBBDD /* PokeZoneBuddy */;
-			targetProxy = 305FAD832E8D2AF4002CBBDD /* PBXContainerItemProxy */;
-		};
-		305FAD8E2E8D2AF4002CBBDD /* PBXTargetDependency */ = {
-			isa = PBXTargetDependency;
-			target = 305FAD722E8D2AF1002CBBDD /* PokeZoneBuddy */;
-			targetProxy = 305FAD8D2E8D2AF4002CBBDD /* PBXContainerItemProxy */;
-		};
-/* End PBXTargetDependency section */
 
 /* Begin XCBuildConfiguration section */
 		305FAD942E8D2AF4002CBBDD /* Debug */ = {
@@ -368,6 +242,7 @@
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
 				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
 				ASSETCATALOG_COMPILER_INCLUDE_ALL_APPICON_ASSETS = YES;
+				CODE_SIGN_IDENTITY = "Apple Development";
 				CODE_SIGN_STYLE = Automatic;
 				CURRENT_PROJECT_VERSION = 1;
 				DEVELOPMENT_TEAM = 4B9TPJ9FTQ;
@@ -403,9 +278,10 @@
 				LD_RUNPATH_SEARCH_PATHS = "@executable_path/Frameworks";
 				"LD_RUNPATH_SEARCH_PATHS[sdk=macosx*]" = "@executable_path/../Frameworks";
 				MACOSX_DEPLOYMENT_TARGET = 26.0;
-				MARKETING_VERSION = 1.1.0;
+				MARKETING_VERSION = 1.2.0;
 				PRODUCT_BUNDLE_IDENTIFIER = DannyHollek.PokeZoneBuddy;
 				PRODUCT_NAME = "$(TARGET_NAME)";
+				PROVISIONING_PROFILE_SPECIFIER = "";
 				REGISTER_APP_GROUPS = YES;
 				SDKROOT = auto;
 				STRING_CATALOG_GENERATE_SYMBOLS = YES;
@@ -427,6 +303,7 @@
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
 				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
 				ASSETCATALOG_COMPILER_INCLUDE_ALL_APPICON_ASSETS = YES;
+				CODE_SIGN_IDENTITY = "Apple Development";
 				CODE_SIGN_STYLE = Automatic;
 				CURRENT_PROJECT_VERSION = 1;
 				DEVELOPMENT_TEAM = 4B9TPJ9FTQ;
@@ -462,9 +339,10 @@
 				LD_RUNPATH_SEARCH_PATHS = "@executable_path/Frameworks";
 				"LD_RUNPATH_SEARCH_PATHS[sdk=macosx*]" = "@executable_path/../Frameworks";
 				MACOSX_DEPLOYMENT_TARGET = 26.0;
-				MARKETING_VERSION = 1.1.0;
+				MARKETING_VERSION = 1.2.0;
 				PRODUCT_BUNDLE_IDENTIFIER = DannyHollek.PokeZoneBuddy;
 				PRODUCT_NAME = "$(TARGET_NAME)";
+				PROVISIONING_PROFILE_SPECIFIER = "";
 				REGISTER_APP_GROUPS = YES;
 				SDKROOT = auto;
 				STRING_CATALOG_GENERATE_SYMBOLS = YES;
@@ -476,112 +354,6 @@
 				SWIFT_UPCOMING_FEATURE_MEMBER_IMPORT_VISIBILITY = YES;
 				SWIFT_VERSION = 5.0;
 				TARGETED_DEVICE_FAMILY = 1;
-				XROS_DEPLOYMENT_TARGET = 26.0;
-			};
-			name = Release;
-		};
-		305FAD9A2E8D2AF4002CBBDD /* Debug */ = {
-			isa = XCBuildConfiguration;
-			buildSettings = {
-				BUNDLE_LOADER = "$(TEST_HOST)";
-				CODE_SIGN_STYLE = Automatic;
-				CURRENT_PROJECT_VERSION = 1;
-				DEVELOPMENT_TEAM = 4B9TPJ9FTQ;
-				GENERATE_INFOPLIST_FILE = YES;
-				IPHONEOS_DEPLOYMENT_TARGET = 26.0;
-				MACOSX_DEPLOYMENT_TARGET = 26.0;
-				MARKETING_VERSION = 1.0;
-				PRODUCT_BUNDLE_IDENTIFIER = DannyHollek.PokeZoneBuddyTests;
-				PRODUCT_NAME = "$(TARGET_NAME)";
-				SDKROOT = auto;
-				STRING_CATALOG_GENERATE_SYMBOLS = NO;
-				SUPPORTED_PLATFORMS = "iphoneos iphonesimulator macosx";
-				SUPPORTS_MACCATALYST = NO;
-				SWIFT_APPROACHABLE_CONCURRENCY = YES;
-				SWIFT_EMIT_LOC_STRINGS = NO;
-				SWIFT_UPCOMING_FEATURE_MEMBER_IMPORT_VISIBILITY = YES;
-				SWIFT_VERSION = 5.0;
-				TARGETED_DEVICE_FAMILY = 1;
-				TEST_HOST = "$(BUILT_PRODUCTS_DIR)/PokeZoneBuddy.app/$(BUNDLE_EXECUTABLE_FOLDER_PATH)/PokeZoneBuddy";
-				XROS_DEPLOYMENT_TARGET = 26.0;
-			};
-			name = Debug;
-		};
-		305FAD9B2E8D2AF4002CBBDD /* Release */ = {
-			isa = XCBuildConfiguration;
-			buildSettings = {
-				BUNDLE_LOADER = "$(TEST_HOST)";
-				CODE_SIGN_STYLE = Automatic;
-				CURRENT_PROJECT_VERSION = 1;
-				DEVELOPMENT_TEAM = 4B9TPJ9FTQ;
-				GENERATE_INFOPLIST_FILE = YES;
-				IPHONEOS_DEPLOYMENT_TARGET = 26.0;
-				MACOSX_DEPLOYMENT_TARGET = 26.0;
-				MARKETING_VERSION = 1.0;
-				PRODUCT_BUNDLE_IDENTIFIER = DannyHollek.PokeZoneBuddyTests;
-				PRODUCT_NAME = "$(TARGET_NAME)";
-				SDKROOT = auto;
-				STRING_CATALOG_GENERATE_SYMBOLS = NO;
-				SUPPORTED_PLATFORMS = "iphoneos iphonesimulator macosx";
-				SUPPORTS_MACCATALYST = NO;
-				SWIFT_APPROACHABLE_CONCURRENCY = YES;
-				SWIFT_EMIT_LOC_STRINGS = NO;
-				SWIFT_UPCOMING_FEATURE_MEMBER_IMPORT_VISIBILITY = YES;
-				SWIFT_VERSION = 5.0;
-				TARGETED_DEVICE_FAMILY = 1;
-				TEST_HOST = "$(BUILT_PRODUCTS_DIR)/PokeZoneBuddy.app/$(BUNDLE_EXECUTABLE_FOLDER_PATH)/PokeZoneBuddy";
-				XROS_DEPLOYMENT_TARGET = 26.0;
-			};
-			name = Release;
-		};
-		305FAD9D2E8D2AF4002CBBDD /* Debug */ = {
-			isa = XCBuildConfiguration;
-			buildSettings = {
-				CODE_SIGN_STYLE = Automatic;
-				CURRENT_PROJECT_VERSION = 1;
-				DEVELOPMENT_TEAM = 4B9TPJ9FTQ;
-				GENERATE_INFOPLIST_FILE = YES;
-				IPHONEOS_DEPLOYMENT_TARGET = 26.0;
-				MACOSX_DEPLOYMENT_TARGET = 26.0;
-				MARKETING_VERSION = 1.0;
-				PRODUCT_BUNDLE_IDENTIFIER = DannyHollek.PokeZoneBuddyUITests;
-				PRODUCT_NAME = "$(TARGET_NAME)";
-				SDKROOT = auto;
-				STRING_CATALOG_GENERATE_SYMBOLS = NO;
-				SUPPORTED_PLATFORMS = "iphoneos iphonesimulator macosx";
-				SUPPORTS_MACCATALYST = NO;
-				SWIFT_APPROACHABLE_CONCURRENCY = YES;
-				SWIFT_EMIT_LOC_STRINGS = NO;
-				SWIFT_UPCOMING_FEATURE_MEMBER_IMPORT_VISIBILITY = YES;
-				SWIFT_VERSION = 5.0;
-				TARGETED_DEVICE_FAMILY = 1;
-				TEST_TARGET_NAME = PokeZoneBuddy;
-				XROS_DEPLOYMENT_TARGET = 26.0;
-			};
-			name = Debug;
-		};
-		305FAD9E2E8D2AF4002CBBDD /* Release */ = {
-			isa = XCBuildConfiguration;
-			buildSettings = {
-				CODE_SIGN_STYLE = Automatic;
-				CURRENT_PROJECT_VERSION = 1;
-				DEVELOPMENT_TEAM = 4B9TPJ9FTQ;
-				GENERATE_INFOPLIST_FILE = YES;
-				IPHONEOS_DEPLOYMENT_TARGET = 26.0;
-				MACOSX_DEPLOYMENT_TARGET = 26.0;
-				MARKETING_VERSION = 1.0;
-				PRODUCT_BUNDLE_IDENTIFIER = DannyHollek.PokeZoneBuddyUITests;
-				PRODUCT_NAME = "$(TARGET_NAME)";
-				SDKROOT = auto;
-				STRING_CATALOG_GENERATE_SYMBOLS = NO;
-				SUPPORTED_PLATFORMS = "iphoneos iphonesimulator macosx";
-				SUPPORTS_MACCATALYST = NO;
-				SWIFT_APPROACHABLE_CONCURRENCY = YES;
-				SWIFT_EMIT_LOC_STRINGS = NO;
-				SWIFT_UPCOMING_FEATURE_MEMBER_IMPORT_VISIBILITY = YES;
-				SWIFT_VERSION = 5.0;
-				TARGETED_DEVICE_FAMILY = 1;
-				TEST_TARGET_NAME = PokeZoneBuddy;
 				XROS_DEPLOYMENT_TARGET = 26.0;
 			};
 			name = Release;
@@ -603,24 +375,6 @@
 			buildConfigurations = (
 				305FAD972E8D2AF4002CBBDD /* Debug */,
 				305FAD982E8D2AF4002CBBDD /* Release */,
-			);
-			defaultConfigurationIsVisible = 0;
-			defaultConfigurationName = Release;
-		};
-		305FAD992E8D2AF4002CBBDD /* Build configuration list for PBXNativeTarget "PokeZoneBuddyTests" */ = {
-			isa = XCConfigurationList;
-			buildConfigurations = (
-				305FAD9A2E8D2AF4002CBBDD /* Debug */,
-				305FAD9B2E8D2AF4002CBBDD /* Release */,
-			);
-			defaultConfigurationIsVisible = 0;
-			defaultConfigurationName = Release;
-		};
-		305FAD9C2E8D2AF4002CBBDD /* Build configuration list for PBXNativeTarget "PokeZoneBuddyUITests" */ = {
-			isa = XCConfigurationList;
-			buildConfigurations = (
-				305FAD9D2E8D2AF4002CBBDD /* Debug */,
-				305FAD9E2E8D2AF4002CBBDD /* Release */,
 			);
 			defaultConfigurationIsVisible = 0;
 			defaultConfigurationName = Release;
