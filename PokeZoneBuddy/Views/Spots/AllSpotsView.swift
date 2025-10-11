@@ -63,19 +63,24 @@ struct AllSpotsView: View {
                 .presentationSizing(.fitted)
 #endif
             }
-            .sheet(isPresented: $showCityPicker) {
+            .sheet(isPresented: $showCityPicker, onDismiss: {
+                // Show AddSpotSheet after CityPickerSheet dismisses
+                if cityForNewSpot != nil {
+                    showAddSpot = true
+                }
+            }) {
                 CityPickerSheet(cities: citiesViewModel.favoriteCities) { city in
                     cityForNewSpot = city
-                    showAddSpot = true
                 }
 #if os(iOS)
                 .presentationDetents([.medium, .large])
                 .presentationDragIndicator(.visible)
-#elseif os(macOS)
-                .presentationSizing(.fitted)
 #endif
             }
-            .sheet(isPresented: $showAddSpot) {
+            .sheet(isPresented: $showAddSpot, onDismiss: {
+                // Clear selected city after AddSpotSheet closes
+                cityForNewSpot = nil
+            }) {
                 if let city = cityForNewSpot {
                     AddSpotSheet(city: city, viewModel: citiesViewModel)
 #if os(iOS)
