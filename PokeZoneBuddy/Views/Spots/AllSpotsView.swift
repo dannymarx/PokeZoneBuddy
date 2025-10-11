@@ -42,6 +42,12 @@ struct AllSpotsView: View {
                         showCityPicker = true
                     }
                 }
+
+                if !allSpots.isEmpty {
+                    ToolbarItem(placement: .topBarLeading) {
+                        EditButton()
+                    }
+                }
             }
 #endif
             .sheet(item: $selectedCity) { city in
@@ -97,27 +103,24 @@ struct AllSpotsView: View {
 
     private var spotsList: some View {
         List {
-            ForEach(citiesViewModel.favoriteCities) { city in
+            ForEach(citiesViewModel.favoriteCities, id: \.persistentModelID) { city in
                 let spots = citiesViewModel.getSpots(for: city)
                 if !spots.isEmpty {
                     Section {
-                        ForEach(spots) { spot in
+                        ForEach(spots, id: \.persistentModelID) { spot in
                             Button {
                                 selectedSpot = spot
                                 selectedCity = city
                             } label: {
-                                SpotRowView(
-                                    spot: spot,
-                                    onEdit: {
-                                        selectedSpot = spot
-                                        selectedCity = city
-                                    },
-                                    onDelete: {
-                                        citiesViewModel.deleteSpot(spot)
-                                    }
-                                )
+                                SpotRowContent(spot: spot)
                             }
                             .buttonStyle(.plain)
+                        }
+                        .onDelete { offsets in
+                            citiesViewModel.deleteSpots(at: offsets, from: city)
+                        }
+                        .onMove { source, destination in
+                            citiesViewModel.moveSpots(from: source, to: destination, in: city)
                         }
                     } header: {
                         HStack {
@@ -140,21 +143,19 @@ struct AllSpotsView: View {
     // MARK: - Empty States
 
     private var emptyStateView: some View {
-        ContentUnavailableView {
-            Label(String(localized: "placeholder.no_cities.title"), systemImage: "map.circle")
-        } description: {
-            Text(String(localized: "placeholder.no_cities.subtitle"))
-                .multilineTextAlignment(.center)
-        }
+        EmptyStateView(
+            icon: "map.circle",
+            title: String(localized: "placeholder.no_cities.title"),
+            subtitle: String(localized: "placeholder.no_cities.subtitle")
+        )
     }
 
     private var noSpotsView: some View {
-        ContentUnavailableView {
-            Label(String(localized: "spots.section.empty"), systemImage: "mappin.slash")
-        } description: {
-            Text(String(localized: "spots.section.empty.description"))
-                .multilineTextAlignment(.center)
-        }
+        EmptyStateView(
+            icon: "mappin.slash",
+            title: String(localized: "spots.section.empty"),
+            subtitle: String(localized: "spots.section.empty.description")
+        )
     }
 
     // MARK: - Computed Properties
@@ -162,6 +163,68 @@ struct AllSpotsView: View {
     private var allSpots: [CitySpot] {
         citiesViewModel.favoriteCities.flatMap { city in
             citiesViewModel.getSpots(for: city)
+        }
+    }
+}
+
+// MARK: - Spot Row Content
+
+private struct SpotRowContent: View {
+    let spot: CitySpot
+
+    var body: some View {
+        HStack(spacing: 12) {
+            // Category Icon
+            Circle()
+                .fill(categoryColor.gradient)
+                .frame(width: 36, height: 36)
+                .overlay(
+                    Image(systemName: categoryIcon)
+                        .font(.system(size: 16))
+                        .foregroundStyle(.white)
+                )
+
+            // Spot Info
+            VStack(alignment: .leading, spacing: 4) {
+                Text(spot.name)
+                    .font(.system(size: 14, weight: .semibold))
+                    .lineLimit(1)
+
+                if !spot.notes.isEmpty {
+                    Text(spot.notes)
+                        .font(.system(size: 12))
+                        .foregroundStyle(.secondary)
+                        .lineLimit(1)
+                }
+            }
+
+            Spacer()
+
+            // Favorite Indicator
+            if spot.isFavorite {
+                Image(systemName: "star.fill")
+                    .font(.system(size: 12))
+                    .foregroundStyle(.yellow)
+            }
+        }
+        .padding(.vertical, 4)
+    }
+
+    private var categoryIcon: String {
+        switch spot.category {
+        case .pokestop: return "mappin.circle.fill"
+        case .gym: return "dumbbell.fill"
+        case .meetingPoint: return "person.2.fill"
+        case .other: return "mappin.and.ellipse"
+        }
+    }
+
+    private var categoryColor: Color {
+        switch spot.category {
+        case .pokestop: return .blue
+        case .gym: return .red
+        case .meetingPoint: return .purple
+        case .other: return .gray
         }
     }
 }

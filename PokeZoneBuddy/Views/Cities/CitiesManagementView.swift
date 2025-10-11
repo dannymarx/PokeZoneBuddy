@@ -35,6 +35,12 @@ struct CitiesManagementView: View {
                             showAddCity = true
                         }
                     }
+
+                    if !viewModel.favoriteCities.isEmpty {
+                        ToolbarItem(placement: .topBarLeading) {
+                            EditButton()
+                        }
+                    }
                 }
 #else
                 .toolbar {
@@ -93,66 +99,55 @@ struct CitiesManagementView: View {
     }
     
     // MARK: - Favorite Cities View
-    
+
     private var favoriteCitiesView: some View {
-        ScrollView(.vertical, showsIndicators: false) {
+        Group {
             if viewModel.favoriteCities.isEmpty {
                 noCitiesPlaceholder
             } else {
-                LazyVStack(spacing: 12) {
-                    ForEach(viewModel.favoriteCities) { city in
+                List {
+                    ForEach(viewModel.favoriteCities, id: \.persistentModelID) { city in
                         Button {
                             activeSpotForSpots = viewModel.getSpots(for: city).first
                             activeCityForSpots = city
                         } label: {
-                            FavoriteCityRow(city: city) {
-                                withAnimation(.spring(response: 0.3)) {
-                                    viewModel.removeCity(city)
-                                }
-                            }
+                            FavoriteCityRowContent(city: city)
                         }
                         .buttonStyle(.plain)
                     }
+                    .onDelete { offsets in
+                        viewModel.removeCities(at: offsets)
+                    }
+                    .onMove { source, destination in
+                        viewModel.moveCities(from: source, to: destination)
+                    }
                 }
-                .padding(24)
+#if os(macOS)
+                .listStyle(.inset)
+#else
+                .listStyle(.insetGrouped)
+#endif
             }
         }
-        .scrollIndicators(.hidden, axes: .vertical)
-        .hideScrollIndicatorsCompat()
     }
     
     // MARK: - Placeholders
-    
+
     private var noCitiesPlaceholder: some View {
-        VStack(spacing: 24) {
-            Image(systemName: "map.circle")
-                .font(.system(size: 72))
-                .foregroundStyle(.quaternary)
-            
-            VStack(spacing: 8) {
-                Text(String(localized: "placeholder.no_cities_yet.title"))
-                    .font(.system(size: 20, weight: .semibold))
-                
-                Text(String(localized: "placeholder.no_cities_yet.subtitle"))
-                    .secondaryStyle()
-                    .multilineTextAlignment(.center)
-                    .frame(maxWidth: 400)
-            }
-        }
-        .padding(60)
-        .frame(maxWidth: .infinity, maxHeight: .infinity)
+        EmptyStateView(
+            icon: "map.circle",
+            title: String(localized: "placeholder.no_cities_yet.title"),
+            subtitle: String(localized: "placeholder.no_cities_yet.subtitle")
+        )
     }
     
 }
 
-// MARK: - Favorite City Row
+// MARK: - Favorite City Row Content
 
-private struct FavoriteCityRow: View {
+private struct FavoriteCityRowContent: View {
     let city: FavoriteCity
-    let onDelete: () -> Void
-    
-    @State private var isHovering = false
-    
+
     var body: some View {
         HStack(spacing: 16) {
             // Icon
@@ -170,58 +165,36 @@ private struct FavoriteCityRow: View {
                         .font(.system(size: 22))
                         .foregroundStyle(.white)
                 )
-            
+
             // Info
             VStack(alignment: .leading, spacing: 6) {
                 Text(city.name)
                     .font(.system(size: 16, weight: .semibold))
-                
+
                 HStack(spacing: 8) {
                     Text(city.fullName)
                         .font(.system(size: 12, weight: .medium))
                         .foregroundStyle(.secondary)
-                    
+
                     Text("•")
                         .foregroundStyle(.quaternary)
-                    
+
                     Text(city.abbreviatedTimeZone)
                         .font(.system(size: 12, weight: .medium))
                         .foregroundStyle(.secondary)
-                    
+
                     Text("•")
                         .foregroundStyle(.quaternary)
-                    
+
                     Text(city.formattedUTCOffset)
                         .font(.system(size: 12, weight: .semibold))
                         .foregroundStyle(.blue)
                 }
             }
-            
+
             Spacer()
-            
-            // Delete Button
-            Button(role: .destructive) {
-                onDelete()
-            } label: {
-                Image(systemName: "trash")
-                    .font(.system(size: 16))
-                    .foregroundStyle(.red)
-                    .frame(width: 36, height: 36)
-                    .background(
-                        Circle()
-                            .fill(isHovering ? Color.red.opacity(0.1) : Color.clear)
-                    )
-            }
-            .buttonStyle(.plain)
-            .onHover { hovering in
-                isHovering = hovering
-            }
         }
-        .padding(16)
-        .background(
-            RoundedRectangle(cornerRadius: 12, style: .continuous)
-                .fill(.quaternary.opacity(0.3))
-        )
+        .padding(.vertical, 8)
     }
 }
 
