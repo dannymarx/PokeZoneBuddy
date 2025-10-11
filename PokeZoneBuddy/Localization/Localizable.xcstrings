@@ -3946,13 +3946,13 @@
         "de" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Deine Städte"
+            "value" : "Meine Städte"
           }
         },
         "en" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Your Cities"
+            "value" : "My Cities"
           }
         }
       }
@@ -4504,13 +4504,13 @@
         "de" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Spots verwalten"
+            "value" : "Meine Spots"
           }
         },
         "en" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Manage Spots"
+            "value" : "My Spots"
           }
         }
       }
