@@ -45,19 +45,25 @@ struct AllSpotsContentView: View {
 
     private var spotsList: some View {
         List(selection: $selectedSpotID) {
-            ForEach(viewModel.favoriteCities) { city in
+            ForEach(viewModel.favoriteCities, id: \.persistentModelID) { city in
                 let spots = viewModel.getSpots(for: city)
                 if !spots.isEmpty {
                     Section(city.name) {
-                        ForEach(spots) { spot in
+                        ForEach(spots, id: \.persistentModelID) { spot in
                             Button {
-                                selectedSpotID = spot.id
+                                selectedSpotID = spot.persistentModelID
                                 onSpotSelected(city, spot)
                             } label: {
                                 SpotRowCompactView(spot: spot)
                             }
                             .buttonStyle(.plain)
-                            .tag(spot.id)
+                            .tag(spot.persistentModelID)
+                        }
+                        .onDelete { offsets in
+                            viewModel.deleteSpots(at: offsets, from: city)
+                        }
+                        .onMove { source, destination in
+                            viewModel.moveSpots(from: source, to: destination, in: city)
                         }
                     }
                 }
