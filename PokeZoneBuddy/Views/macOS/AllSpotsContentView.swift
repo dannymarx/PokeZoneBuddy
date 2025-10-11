@@ -15,6 +15,7 @@ struct AllSpotsContentView: View {
 
     let viewModel: CitiesViewModel
     let onSpotSelected: (FavoriteCity, CitySpot) -> Void
+    let onAddSpot: () -> Void
 
     @State private var selectedSpotID: CitySpot.ID?
 
@@ -39,6 +40,17 @@ struct AllSpotsContentView: View {
             }
         }
         .navigationTitle(String(localized: "spots.section.title"))
+        .toolbar {
+            if !viewModel.favoriteCities.isEmpty {
+                ToolbarItem(placement: .primaryAction) {
+                    Button {
+                        onAddSpot()
+                    } label: {
+                        Label(String(localized: "spots.add.title"), systemImage: "plus")
+                    }
+                }
+            }
+        }
     }
 
     // MARK: - Spots List
@@ -83,7 +95,12 @@ struct AllSpotsContentView: View {
         EmptyStateView(
             icon: "mappin.slash",
             title: String(localized: "spots.section.empty"),
-            subtitle: String(localized: "spots.section.empty.description")
+            subtitle: String(localized: "spots.section.empty.description"),
+            action: .init(
+                title: String(localized: "spots.add.title"),
+                systemImage: "plus.circle",
+                handler: onAddSpot
+            )
         )
     }
 }
@@ -192,7 +209,8 @@ private struct SpotRowCompactView: View {
     NavigationStack {
         AllSpotsContentView(
             viewModel: mockViewModel,
-            onSpotSelected: { _, _ in }
+            onSpotSelected: { _, _ in },
+            onAddSpot: {}
         )
     }
 }

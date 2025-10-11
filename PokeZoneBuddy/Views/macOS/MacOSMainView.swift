@@ -72,11 +72,14 @@ struct MacOSMainView: View {
 private struct MacOSContentView: View {
 
     let eventsViewModel: EventsViewModel
-    let citiesViewModel: CitiesViewModel
+    @Bindable var citiesViewModel: CitiesViewModel
 
     @State private var selectedSidebarItem: SidebarItem = .events
     @State private var selectedEvent: Event?
     @State private var showAddCity = false
+    @State private var showCityPickerForSpot = false
+    @State private var showAddSpot = false
+    @State private var cityForNewSpot: FavoriteCity?
     @State private var selectedCity: FavoriteCity?
     @State private var selectedSpot: CitySpot?
     @State private var columnVisibility: NavigationSplitViewVisibility = .all
@@ -112,6 +115,25 @@ private struct MacOSContentView: View {
         .sheet(isPresented: $showAddCity) {
             AddCitySheet(viewModel: citiesViewModel)
                 .presentationSizing(.fitted)
+        }
+        .sheet(isPresented: $showCityPickerForSpot, onDismiss: {
+            // Show AddSpotSheet after CityPickerSheet dismisses
+            if cityForNewSpot != nil {
+                showAddSpot = true
+            }
+        }) {
+            CityPickerSheet(cities: citiesViewModel.favoriteCities) { city in
+                cityForNewSpot = city
+            }
+        }
+        .sheet(isPresented: $showAddSpot, onDismiss: {
+            // Clear selected city after AddSpotSheet closes
+            cityForNewSpot = nil
+        }) {
+            if let city = cityForNewSpot {
+                AddSpotSheet(city: city, viewModel: citiesViewModel)
+                    .presentationSizing(.fitted)
+            }
         }
         .onChange(of: selectedSidebarItem) { _, newValue in
             if newValue == .settings {
@@ -165,7 +187,8 @@ private struct MacOSContentView: View {
                 onSpotSelected: { city, spot in
                     selectedCity = city
                     selectedSpot = spot
-                }
+                },
+                onAddSpot: { showCityPickerForSpot = true }
             )
 
         case .settings:
