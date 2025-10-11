@@ -232,24 +232,4 @@ final class EventsViewModel {
             }
             .sorted { $0.startTime < $1.startTime }
     }
-
-    /// Events gruppiert nach Typ
-    var eventsByType: [String: [Event]] {
-        Dictionary(grouping: events, by: { $0.eventType })
-    }
-}
-
-// MARK: - Formatting Helpers
-
-extension EventsViewModel {
-    /// Formatiert die letzte Update-Zeit für die Anzeige
-    var lastUpdateText: String? {
-        guard let updateTime = lastSyncDate else { return nil }
-        
-        let formatter = RelativeDateTimeFormatter()
-        formatter.locale = Locale.autoupdatingCurrent
-        formatter.unitsStyle = .full
-        
-        return String(format: String(localized: "events.last_updated"), formatter.localizedString(for: updateTime, relativeTo: Date()))
-    }
 }
