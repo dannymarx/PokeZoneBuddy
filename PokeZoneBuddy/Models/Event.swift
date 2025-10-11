@@ -146,18 +146,26 @@ final class CommunityDayDetails {
     var featuredPokemon: [PokemonInfo]
     var shinies: [PokemonInfo]
     var bonuses: [CommunityDayBonus]
-    var hasSpecialResearch: Bool
-    
+    var bonusDisclaimers: [String]
+    var specialResearch: [SpecialResearchStep]
+
     init(
         featuredPokemon: [PokemonInfo],
         shinies: [PokemonInfo],
         bonuses: [CommunityDayBonus],
-        hasSpecialResearch: Bool = false
+        bonusDisclaimers: [String] = [],
+        specialResearch: [SpecialResearchStep] = []
     ) {
         self.featuredPokemon = featuredPokemon
         self.shinies = shinies
         self.bonuses = bonuses
-        self.hasSpecialResearch = hasSpecialResearch
+        self.bonusDisclaimers = bonusDisclaimers
+        self.specialResearch = specialResearch
+    }
+
+    /// Computed property for backwards compatibility
+    var hasSpecialResearch: Bool {
+        return !specialResearch.isEmpty
     }
 }
 
@@ -180,10 +188,49 @@ final class PokemonInfo {
 final class CommunityDayBonus {
     var text: String
     var iconURL: String?
-    
+
     init(text: String, iconURL: String? = nil) {
         self.text = text.htmlDecodedFast
         self.iconURL = iconURL
+    }
+}
+
+// MARK: - Special Research Models
+
+@Model
+final class SpecialResearchStep {
+    var name: String
+    var stepNumber: Int
+    var tasks: [ResearchTask]
+    var rewards: [ResearchReward]
+
+    init(name: String, stepNumber: Int, tasks: [ResearchTask], rewards: [ResearchReward]) {
+        self.name = name.htmlDecodedFast
+        self.stepNumber = stepNumber
+        self.tasks = tasks
+        self.rewards = rewards
+    }
+}
+
+@Model
+final class ResearchTask {
+    var text: String
+    var reward: ResearchReward
+
+    init(text: String, reward: ResearchReward) {
+        self.text = text.htmlDecodedFast
+        self.reward = reward
+    }
+}
+
+@Model
+final class ResearchReward {
+    var text: String
+    var imageURL: String
+
+    init(text: String, imageURL: String) {
+        self.text = text.htmlDecodedFast
+        self.imageURL = imageURL
     }
 }
 
