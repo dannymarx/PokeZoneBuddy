@@ -226,25 +226,6 @@ final class CitiesViewModel {
         }
     }
 
-    /// Verschiebt Städte in der Liste
-    /// - Parameters:
-    ///   - source: Quellindizes
-    ///   - destination: Zielindex
-    func moveCities(from source: IndexSet, to destination: Int) {
-        // Note: SwiftData doesn't have built-in ordering, so we would need to add
-        // an order property to FavoriteCity model. For now, we'll just update the array
-        // which won't persist. This is a limitation we should document.
-        // To properly implement this, we need to add a `sortOrder: Int` property to FavoriteCity
-
-        // Just update the local array for immediate UI feedback
-        // This won't persist across app launches without adding sortOrder to the model
-        var updatedCities = favoriteCities
-        updatedCities.move(fromOffsets: source, toOffset: destination)
-        favoriteCities = updatedCities
-
-        AppLogger.viewModel.info("Städte verschoben (nur UI, nicht persistiert)")
-    }
-
     // MARK: - Spot Management
 
     /// Fügt einen neuen Spot zu einer Stadt hinzu
@@ -356,16 +337,6 @@ final class CitiesViewModel {
             errorMessage = "Failed to delete spots"
             showError = true
         }
-    }
-
-    /// Verschiebt Spots in der Liste (UI-only, nicht persistiert)
-    /// - Parameters:
-    ///   - source: Quellindizes
-    ///   - destination: Zielindex
-    ///   - city: Die Stadt, deren Spots verschoben werden
-    func moveSpots(from source: IndexSet, to destination: Int, in city: FavoriteCity) {
-        // Note: Similar to cities, this won't persist without adding sortOrder to CitySpot
-        AppLogger.viewModel.info("Spots verschoben (nur UI, nicht persistiert)")
     }
 
     /// Aktualisiert einen bestehenden Spot

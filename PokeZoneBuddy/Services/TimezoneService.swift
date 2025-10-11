@@ -66,33 +66,7 @@ final class TimezoneService {
     }
     
     // MARK: - Timezone Conversion
-    
-    /// Converts a date from a source timezone to a target timezone by adjusting components
-    /// - Parameters:
-    ///   - date: The original date
-    ///   - fromTZ: Source timezone
-    ///   - toTZ: Target timezone
-    /// - Returns: Converted date
-    func convert(date: Date, from fromTZ: TimeZone, to toTZ: TimeZone) -> Date {
-        var calendar = Calendar(identifier: .gregorian)
-        calendar.timeZone = fromTZ
-        let comps = calendar.dateComponents([.year, .month, .day, .hour, .minute, .second, .nanosecond], from: date)
-        var targetCal = Calendar(identifier: .gregorian)
-        targetCal.timeZone = toTZ
-        return targetCal.date(from: comps) ?? date
-    }
-    
-    /// Does not convert a Date object (Date is always UTC),
-    /// but returns the same Date for display in a different timezone
-    /// - Parameters:
-    ///   - date: The date to convert
-    ///   - timezone: The target timezone
-    /// - Returns: The same Date (Dates are timezone-agnostic)
-    func convertToTimezone(_ date: Date, to timezone: TimeZone) -> Date {
-        // Date objects are always in UTC, the timezone is only used for display
-        return date
-    }
-    
+
     /// Formats a date for a specific timezone
     /// - Parameters:
     ///   - date: The date to format
@@ -158,18 +132,7 @@ final class TimezoneService {
             return "\(startTime)-\(endTime) \(tzAbbreviation)"
         }
     }
-    
-    /// Returns a compact range string like "14:00–17:00" or including date when needed
-    func rangeString(start: Date, end: Date, in tz: TimeZone, includeDate: Bool = false) -> String {
-        let startStr = format(start, style: .time, in: tz)
-        let endStr = format(end, style: .time, in: tz)
-        if includeDate {
-            let dateStr = format(start, style: .date, in: tz)
-            return "\(dateStr) \(startStr)–\(endStr)"
-        }
-        return "\(startStr)–\(endStr)"
-    }
-    
+
     /// Formats a time range for events, considering if they are global or local time
     /// - Parameters:
     ///   - startDate: Start time (stored as UTC)
@@ -280,7 +243,7 @@ final class TimezoneService {
         let toOffset = toTimezone.secondsFromGMT(for: date)
         return (toOffset - fromOffset) / 3600
     }
-    
+
     /// Creates a text that explains the time difference
     /// - Parameters:
     ///   - sourceTimezone: The source timezone
@@ -293,7 +256,7 @@ final class TimezoneService {
         at date: Date = Date()
     ) -> String {
         let difference = timeDifference(from: sourceTimezone, to: targetTimezone, at: date)
-        
+
         if difference == 0 {
             return String(localized: "time.same_as_yours")
         } else if difference > 0 {
@@ -302,7 +265,7 @@ final class TimezoneService {
             return String(format: String(localized: "time.hours_behind"), abs(difference))
         }
     }
-    
+
     // MARK: - User's Current Timezone
     
     /// The current timezone of the user

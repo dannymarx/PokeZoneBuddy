@@ -55,9 +55,6 @@ struct CitiesContentView: View {
             .onDelete { offsets in
                 viewModel.removeCities(at: offsets)
             }
-            .onMove { source, destination in
-                viewModel.moveCities(from: source, to: destination)
-            }
         }
         .listStyle(.inset)
         .onChange(of: selectedCityID) { _, newID in

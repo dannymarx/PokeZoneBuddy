@@ -62,9 +62,6 @@ struct AllSpotsContentView: View {
                         .onDelete { offsets in
                             viewModel.deleteSpots(at: offsets, from: city)
                         }
-                        .onMove { source, destination in
-                            viewModel.moveSpots(from: source, to: destination, in: city)
-                        }
                     }
                 }
             }

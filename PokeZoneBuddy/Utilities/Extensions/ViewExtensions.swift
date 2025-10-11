@@ -25,39 +25,11 @@ extension View {
                     .shadow(color: .black.opacity(0.03), radius: 8, y: 2)
             )
     }
-    
-    /// Glassmorphism Effect für macOS
-    func glassCard(padding: CGFloat = 20) -> some View {
-        self
-            .padding(padding)
-            .background(
-                RoundedRectangle(cornerRadius: 16, style: .continuous)
-                    .fill(.ultraThinMaterial)
-            )
-    }
-    
-    /// Hover-Effekt für interaktive Elemente
-    func hoverEffect() -> some View {
-        #if os(iOS)
-        self
-            .contentShape(Rectangle())
-            .hoverEffect(.highlight)
-        #else
-        self
-        #endif
-    }
 }
 
 // MARK: - Typography Extensions
 
 extension Text {
-    /// Große Display-Überschrift
-    func displayStyle() -> some View {
-        self
-            .font(.system(size: 32, weight: .bold, design: .rounded))
-            .foregroundStyle(.primary)
-    }
-    
     /// Titel-Stil
     func titleStyle() -> some View {
         self
@@ -91,24 +63,6 @@ extension Text {
 // MARK: - Color Extensions
 
 extension Color {
-    /// Primary Accent Color (Pokemon Red)
-    static let pokeRed = Color(red: 0.93, green: 0.26, blue: 0.21)
-    
-    /// Secondary Accent (Pokemon Blue)
-    static let pokeBlue = Color(red: 0.16, green: 0.57, blue: 0.95)
-    
-    /// Success Green
-    static let successGreen = Color(red: 0.20, green: 0.78, blue: 0.35)
-    
-    /// Warning Orange
-    static let warningOrange = Color(red: 1.0, green: 0.58, blue: 0.0)
-    
-#if os(macOS)
-    static let subtleBackground = Color(nsColor: .windowBackgroundColor).opacity(0.5)
-#else
-    static let subtleBackground = Color(uiColor: .secondarySystemBackground).opacity(0.5)
-#endif
-    
     /// Cross-platform default background color
     static var appBackground: Color {
 #if os(macOS)

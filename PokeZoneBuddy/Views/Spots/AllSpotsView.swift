@@ -119,9 +119,6 @@ struct AllSpotsView: View {
                         .onDelete { offsets in
                             citiesViewModel.deleteSpots(at: offsets, from: city)
                         }
-                        .onMove { source, destination in
-                            citiesViewModel.moveSpots(from: source, to: destination, in: city)
-                        }
                     } header: {
                         HStack {
                             Image(systemName: "mappin.circle.fill")

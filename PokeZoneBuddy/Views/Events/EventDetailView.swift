@@ -126,7 +126,7 @@ struct EventDetailView: View {
                 ModernBadge(event.eventType, icon: "tag.fill", color: .blue)
 
                 if event.isCurrentlyActive {
-                    ModernBadge(String(localized: "badge.live_now"), icon: "circle.fill", color: .successGreen)
+                    ModernBadge(String(localized: "badge.live_now"), icon: "circle.fill", color: .green)
                         .shimmer()
                 }
 
@@ -426,9 +426,9 @@ struct EventDetailView: View {
     
     private var statusColor: Color {
         if event.isCurrentlyActive {
-            return .successGreen
+            return .green
         } else if event.isUpcoming {
-            return .warningOrange
+            return .orange
         } else {
             return .secondary
         }
