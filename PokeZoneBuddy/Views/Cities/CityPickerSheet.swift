@@ -17,14 +17,14 @@ struct CityPickerSheet: View {
 
     // MARK: - Properties
 
-    let cities: [FavoriteCity]
+    var cities: [FavoriteCity]
     let onCitySelected: (FavoriteCity) -> Void
 
     // MARK: - Body
 
     var body: some View {
         NavigationStack {
-            VStack(spacing: 0) {
+            Group {
                 if cities.isEmpty {
                     emptyStateView
                 } else {
@@ -33,10 +33,16 @@ struct CityPickerSheet: View {
             }
             .background(Color.appBackground)
             .navigationTitle(String(localized: "spots.select_city.title"))
+            #if os(iOS)
+            .navigationBarTitleDisplayMode(.inline)
+            #endif
             .toolbar {
                 toolbarContent
             }
         }
+        #if os(macOS)
+        .frame(minWidth: 480, idealWidth: 520, minHeight: 400, idealHeight: 500)
+        #endif
     }
 
     // MARK: - View Components
@@ -65,7 +71,7 @@ struct CityPickerSheet: View {
     /// List of cities
     private var citiesList: some View {
         List {
-            ForEach(cities) { city in
+            ForEach(cities, id: \.persistentModelID) { city in
                 Button {
                     onCitySelected(city)
                     dismiss()
@@ -80,31 +86,32 @@ struct CityPickerSheet: View {
                                     endPoint: .bottomTrailing
                                 )
                             )
-                            .frame(width: 40, height: 40)
+                            .frame(width: 44, height: 44)
                             .overlay(
                                 Image(systemName: "mappin.circle.fill")
-                                    .font(.system(size: 18))
+                                    .font(.system(size: 20))
                                     .foregroundStyle(.white)
                             )
 
                         // City Info
-                        VStack(alignment: .leading, spacing: 4) {
+                        VStack(alignment: .leading, spacing: 6) {
                             Text(city.name)
-                                .font(.system(size: 15, weight: .semibold))
-                                .lineLimit(1)
+                                .font(.system(size: 16, weight: .semibold))
+                                .foregroundStyle(.primary)
 
                             Text(city.fullName)
-                                .font(.system(size: 12))
+                                .font(.system(size: 13))
                                 .foregroundStyle(.secondary)
                         }
 
                         Spacer()
 
                         Image(systemName: "chevron.right")
-                            .font(.system(size: 12, weight: .semibold))
+                            .font(.system(size: 13, weight: .semibold))
                             .foregroundStyle(.tertiary)
                     }
-                    .padding(.vertical, 4)
+                    .padding(.vertical, 8)
+                    .contentShape(Rectangle())
                 }
                 .buttonStyle(.plain)
             }

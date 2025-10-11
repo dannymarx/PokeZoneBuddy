@@ -65,6 +65,9 @@ struct AddSpotSheet: View {
             }
             .formStyle(.grouped)
             .navigationTitle(String(localized: "spots.add.title"))
+            #if os(iOS)
+            .navigationBarTitleDisplayMode(.inline)
+            #endif
             .toolbar {
                 toolbarContent
             }
@@ -74,6 +77,9 @@ struct AddSpotSheet: View {
                 Text(errorMessage)
             }
         }
+        #if os(macOS)
+        .frame(minWidth: 500, idealWidth: 550, minHeight: 500, idealHeight: 600)
+        #endif
     }
 
     // MARK: - View Components
