@@ -114,13 +114,13 @@ struct MacOSSidebarView: View {
 
             VStack(spacing: 6) {
                 ForEach(favoriteEvents.prefix(15)) { event in
-                    Button {
-                        selectedItem = .events
-                        selectedEvent = event
-                    } label: {
-                        SidebarFavoriteEventRow(event: event)
-                    }
-                    .buttonStyle(.plain)
+                    SidebarFavoriteEventRow(
+                        event: event,
+                        onTap: {
+                            selectedItem = .events
+                            selectedEvent = event
+                        }
+                    )
                 }
             }
         }
@@ -195,15 +195,16 @@ struct MacOSSidebarView: View {
 
     // MARK: - Favorite Event Row
 
-    /// Modern Liquid Glass card style for sidebar favorite events
+    /// Full-bleed image card with blur overlay and event title
     private struct SidebarFavoriteEventRow: View {
         let event: Event
+        let onTap: () -> Void
         @State private var isHovered = false
 
         var body: some View {
-            HStack(spacing: 12) {
-                // Circular thumbnail with glow
-                ZStack {
+            ZStack {
+                // Background: Full image
+                Group {
                     if let imageURL = event.imageURL, let url = URL(string: imageURL) {
                         AsyncImage(url: url) { phase in
                             switch phase {
@@ -212,80 +213,71 @@ struct MacOSSidebarView: View {
                                     .resizable()
                                     .aspectRatio(contentMode: .fill)
                             case .failure, .empty:
-                                Circle()
-                                    .fill(.quaternary)
-                                    .overlay(
-                                        ProgressView()
-                                            .controlSize(.mini)
+                                // Fallback gradient
+                                Rectangle()
+                                    .fill(
+                                        LinearGradient(
+                                            colors: [.blue.opacity(0.6), .purple.opacity(0.6)],
+                                            startPoint: .topLeading,
+                                            endPoint: .bottomTrailing
+                                        )
                                     )
                             @unknown default:
-                                Circle()
+                                Rectangle()
                                     .fill(.quaternary)
                             }
                         }
-                        .frame(width: 36, height: 36)
-                        .clipShape(Circle())
-                        .overlay(
-                            Circle()
-                                .strokeBorder(.white.opacity(0.2), lineWidth: 1.5)
-                        )
                     } else {
-                        Circle()
-                            .fill(.blue.opacity(0.15))
-                            .frame(width: 36, height: 36)
-                            .overlay(
-                                Image(systemName: "calendar")
-                                    .font(.system(size: 16, weight: .semibold))
-                                    .foregroundStyle(.blue)
-                            )
-                            .overlay(
-                                Circle()
-                                    .strokeBorder(.blue.opacity(0.3), lineWidth: 1.5)
+                        // Fallback gradient
+                        Rectangle()
+                            .fill(
+                                LinearGradient(
+                                    colors: [.blue.opacity(0.6), .cyan.opacity(0.6)],
+                                    startPoint: .topLeading,
+                                    endPoint: .bottomTrailing
+                                )
                             )
                     }
                 }
-                .shadow(color: .blue.opacity(0.2), radius: isHovered ? 6 : 4, x: 0, y: 2)
+                .frame(maxWidth: .infinity, maxHeight: .infinity)
 
-                // Event info
-                VStack(alignment: .leading, spacing: 3) {
-                    Text(event.displayName)
-                        .font(.system(size: 13, weight: .medium))
-                        .foregroundStyle(.primary)
-                        .lineLimit(2)
-                        .fixedSize(horizontal: false, vertical: true)
-
-                    Text(event.displayHeading)
-                        .font(.system(size: 11))
-                        .foregroundStyle(.secondary)
-                        .lineLimit(1)
-                }
-                .frame(maxWidth: .infinity, alignment: .leading)
-
-                Spacer(minLength: 0)
-            }
-            .padding(.horizontal, 12)
-            .padding(.vertical, 10)
-            .background(
-                RoundedRectangle(cornerRadius: 12, style: .continuous)
+                // Blur layer over the image
+                Rectangle()
                     .fill(.ultraThinMaterial)
-                    .overlay(
-                        RoundedRectangle(cornerRadius: 12, style: .continuous)
-                            .strokeBorder(
-                                isHovered ? Color.blue.opacity(0.3) : .white.opacity(0.1),
-                                lineWidth: 1
-                            )
+                    .opacity(0.8)
+                    .frame(maxWidth: .infinity, maxHeight: .infinity)
+
+                // Event title on top
+                Text(event.displayName)
+                    .font(.system(size: 13, weight: .semibold))
+                    .foregroundStyle(.white)
+                    .lineLimit(2)
+                    .multilineTextAlignment(.center)
+                    .shadow(color: .black.opacity(0.5), radius: 4, x: 0, y: 2)
+                    .padding(.horizontal, 12)
+            }
+            .frame(height: 80)
+            .clipShape(RoundedRectangle(cornerRadius: 14, style: .continuous))
+            .overlay(
+                RoundedRectangle(cornerRadius: 14, style: .continuous)
+                    .strokeBorder(
+                        .white.opacity(isHovered ? 0.4 : 0.2),
+                        lineWidth: isHovered ? 2 : 1
                     )
             )
             .shadow(
-                color: .black.opacity(isHovered ? 0.08 : 0.04),
-                radius: isHovered ? 8 : 4,
+                color: .black.opacity(isHovered ? 0.25 : 0.15),
+                radius: isHovered ? 10 : 6,
                 x: 0,
-                y: isHovered ? 4 : 2
+                y: isHovered ? 5 : 3
             )
             .scaleEffect(isHovered ? 1.02 : 1.0)
-            .animation(.spring(response: 0.25, dampingFraction: 0.8), value: isHovered)
+            .animation(.spring(response: 0.3, dampingFraction: 0.7), value: isHovered)
             .onHover { hovering in
                 isHovered = hovering
+            }
+            .onTapGesture {
+                onTap()
             }
         }
     }
