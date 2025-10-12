@@ -137,19 +137,19 @@ struct MacOSSidebarView: View {
 
         var body: some View {
             Button(action: onTap) {
-                HStack(spacing: 14) {
+                HStack(spacing: 10) {
                     // Icon with Liquid Glass effect
                     ZStack {
                         if isSelected {
-                            RoundedRectangle(cornerRadius: 10, style: .continuous)
+                            RoundedRectangle(cornerRadius: 8, style: .continuous)
                                 .fill(item.accentColor.gradient)
-                                .frame(width: 44, height: 44)
+                                .frame(width: 34, height: 34)
                         } else {
-                            RoundedRectangle(cornerRadius: 10, style: .continuous)
+                            RoundedRectangle(cornerRadius: 8, style: .continuous)
                                 .fill(.ultraThinMaterial)
-                                .frame(width: 44, height: 44)
+                                .frame(width: 34, height: 34)
                                 .overlay(
-                                    RoundedRectangle(cornerRadius: 10, style: .continuous)
+                                    RoundedRectangle(cornerRadius: 8, style: .continuous)
                                         .strokeBorder(
                                             isHovered ? item.accentColor.opacity(0.4) : .white.opacity(0.15),
                                             lineWidth: isHovered ? 1.5 : 1
@@ -158,28 +158,28 @@ struct MacOSSidebarView: View {
                         }
 
                         Image(systemName: item.icon)
-                            .font(.system(size: 20, weight: .semibold))
+                            .font(.system(size: 16, weight: .semibold))
                             .foregroundStyle(isSelected ? .white : item.accentColor)
                             .symbolRenderingMode(.hierarchical)
                     }
                     .shadow(
                         color: isSelected ? item.accentColor.opacity(0.3) : .clear,
-                        radius: 8,
+                        radius: 6,
                         x: 0,
                         y: 2
                     )
 
                     // Label
                     Text(item.title)
-                        .font(.system(size: 15, weight: isSelected ? .semibold : .medium))
+                        .font(.system(size: 13, weight: isSelected ? .semibold : .medium))
                         .foregroundStyle(isSelected ? .primary : .secondary)
 
                     Spacer()
                 }
-                .padding(.horizontal, 12)
-                .padding(.vertical, 8)
+                .padding(.horizontal, 10)
+                .padding(.vertical, 6)
                 .background(
-                    RoundedRectangle(cornerRadius: 12, style: .continuous)
+                    RoundedRectangle(cornerRadius: 10, style: .continuous)
                         .fill(isHovered && !isSelected ? Color.primary.opacity(0.05) : .clear)
                 )
             }
