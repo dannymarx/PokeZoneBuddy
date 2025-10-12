@@ -17,12 +17,26 @@ import Observation
 final class CitiesViewModel {
     
     // MARK: - Properties
-    
+
     /// Liste aller Lieblingsstädte
     private(set) var favoriteCities: [FavoriteCity] = []
-    
+
     /// Suchergebnisse bei der Städtesuche
     private(set) var searchResults: [MKLocalSearchCompletion] = []
+
+    /// Current sort option
+    var sortOption: CitySortOption = .name {
+        didSet {
+            sortCities()
+        }
+    }
+
+    /// Current sort order (ascending/descending)
+    var sortOrder: SortOrder = .ascending {
+        didSet {
+            sortCities()
+        }
+    }
     
     /// Aktueller Suchtext
     var searchText: String = "" {
@@ -100,14 +114,58 @@ final class CitiesViewModel {
     /// Lädt Lieblingsstädte aus der lokalen Datenbank
     func loadFavoriteCitiesFromDatabase() {
         do {
-            let descriptor = FetchDescriptor<FavoriteCity>(
-                sortBy: [SortDescriptor(\.name, order: .forward)]
-            )
+            let descriptor = FetchDescriptor<FavoriteCity>()
             favoriteCities = try modelContext.fetch(descriptor)
+            sortCities()
         } catch {
             AppLogger.viewModel.error("Fehler beim Laden der Städte: \(String(describing: error))")
             errorMessage = "Failed to load saved cities"
             showError = true
+        }
+    }
+
+    /// Sorts the cities list based on current sort option and order
+    private func sortCities() {
+        let ascending = sortOrder == .ascending
+
+        switch sortOption {
+        case .name:
+            favoriteCities.sort { city1, city2 in
+                ascending ? city1.name < city2.name : city1.name > city2.name
+            }
+
+        case .country:
+            favoriteCities.sort { city1, city2 in
+                let country1 = CityDisplayHelpers.extractCountry(from: city1.fullName) ?? ""
+                let country2 = CityDisplayHelpers.extractCountry(from: city2.fullName) ?? ""
+                return ascending ? country1 < country2 : country1 > country2
+            }
+
+        case .continent:
+            favoriteCities.sort { city1, city2 in
+                let continent1 = CityDisplayHelpers.continent(from: city1.timeZoneIdentifier)
+                let continent2 = CityDisplayHelpers.continent(from: city2.timeZoneIdentifier)
+                return ascending ? continent1 < continent2 : continent1 > continent2
+            }
+
+        case .timeZone:
+            favoriteCities.sort { city1, city2 in
+                let offset1 = city1.utcOffsetHours
+                let offset2 = city2.utcOffsetHours
+                return ascending ? offset1 < offset2 : offset1 > offset2
+            }
+
+        case .dateAdded:
+            favoriteCities.sort { city1, city2 in
+                return ascending ? city1.addedDate < city2.addedDate : city1.addedDate > city2.addedDate
+            }
+
+        case .spotCount:
+            favoriteCities.sort { city1, city2 in
+                let count1 = city1.spotCount
+                let count2 = city2.spotCount
+                return ascending ? count1 < count2 : count1 > count2
+            }
         }
     }
     

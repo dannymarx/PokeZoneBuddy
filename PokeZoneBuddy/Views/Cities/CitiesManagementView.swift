@@ -40,6 +40,10 @@ struct CitiesManagementView: View {
                         ToolbarItem(placement: .topBarLeading) {
                             EditButton()
                         }
+
+                        ToolbarItem(placement: .secondaryAction) {
+                            CitySortPicker(viewModel: viewModel)
+                        }
                     }
                 }
 #else
@@ -49,6 +53,12 @@ struct CitiesManagementView: View {
                             dismiss()
                         }
                         .keyboardShortcut(.cancelAction)
+                    }
+
+                    if !viewModel.favoriteCities.isEmpty {
+                        ToolbarItem(placement: .automatic) {
+                            CitySortPicker(viewModel: viewModel)
+                        }
                     }
                 }
 #endif

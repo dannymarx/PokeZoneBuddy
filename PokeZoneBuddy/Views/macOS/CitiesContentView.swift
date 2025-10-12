@@ -32,6 +32,10 @@ struct CitiesContentView: View {
         .navigationTitle(String(localized: "sidebar.your_cities"))
         .toolbar {
             if !viewModel.favoriteCities.isEmpty {
+                ToolbarItem(placement: .automatic) {
+                    CitySortPicker(viewModel: viewModel)
+                }
+
                 ToolbarItem(placement: .primaryAction) {
                     Button {
                         onAddCity()
