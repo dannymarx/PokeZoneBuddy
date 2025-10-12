@@ -3925,6 +3925,7 @@
       }
     },
     "sidebar.navigation" : {
+      "extractionState" : "stale",
       "localizations" : {
         "de" : {
           "stringUnit" : {
