@@ -61,6 +61,15 @@ struct CityTimeRowView: View {
                     .font(.system(size: 17, weight: .semibold))
 
                 HStack(spacing: 6) {
+                    if let country = countryName {
+                        Text(country)
+                            .font(.system(size: 12, weight: .medium))
+                            .foregroundStyle(.secondary)
+
+                        Text("•")
+                            .foregroundStyle(.tertiary)
+                    }
+
                     Text(continent)
                         .font(.system(size: 12, weight: .medium))
                         .foregroundStyle(.secondary)
@@ -98,7 +107,11 @@ struct CityTimeRowView: View {
     private var continent: String {
         CityDisplayHelpers.continent(from: city.timeZoneIdentifier)
     }
-    
+
+    private var countryName: String? {
+        CityDisplayHelpers.countryName(from: city.fullName)
+    }
+
     // MARK: - Time Conversion Content
     
     private func timeConversionContent(cityTimezone: TimeZone) -> some View {
