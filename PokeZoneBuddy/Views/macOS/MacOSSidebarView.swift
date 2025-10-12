@@ -2,7 +2,7 @@
 //  MacOSSidebarView.swift
 //  PokeZoneBuddy
 //
-//  Sidebar for macOS main window
+//  Sidebar for macOS main window with Liquid Glass design
 //
 
 #if os(macOS)
@@ -24,6 +24,10 @@ struct MacOSSidebarView: View {
 
     @Query(sort: \FavoriteEvent.addedDate, order: .reverse) private var favoriteEventModels: [FavoriteEvent]
 
+    // MARK: - State
+
+    @State private var hoveredItem: SidebarItem?
+
     // MARK: - Computed Properties
 
     private var favoriteEvents: [Event] {
@@ -39,103 +43,250 @@ struct MacOSSidebarView: View {
     // MARK: - Body
 
     var body: some View {
-        VStack(spacing: 0) {
-            List(selection: $selectedItem) {
-                Section(String(localized: "sidebar.navigation")) {
-                    ForEach(SidebarItem.allCases) { item in
-                        NavigationLink(value: item) {
-                            Label(item.title, systemImage: item.icon)
+        ZStack {
+            // Liquid Glass background
+            Rectangle()
+                .fill(.ultraThinMaterial)
+                .ignoresSafeArea()
+
+            VStack(spacing: 0) {
+                ScrollView {
+                    VStack(spacing: 12) {
+                        // Navigation section
+                        navigationSection
+
+                        // Favorite events section
+                        if !favoriteEvents.isEmpty {
+                            Divider()
+                                .padding(.vertical, 8)
+
+                            favoriteEventsSection
                         }
                     }
+                    .padding(.horizontal, 12)
+                    .padding(.top, 16)
+                    .padding(.bottom, 16)
                 }
 
-                if !favoriteEvents.isEmpty {
-                    Section(String(localized: "sidebar.favorite_events")) {
-                        ForEach(favoriteEvents.prefix(15)) { event in
-                            Button {
-                                selectedItem = .events
-                                selectedEvent = event
-                            } label: {
-                                SidebarFavoriteEventRow(event: event)
-                            }
-                            .buttonStyle(.plain)
+                Spacer()
+
+                Divider()
+                    .padding(.horizontal, 12)
+
+                creditsFooter
+            }
+        }
+    }
+
+    // MARK: - Navigation Section
+
+    private var navigationSection: some View {
+        VStack(spacing: 8) {
+            ForEach(SidebarItem.allCases) { item in
+                NavigationItemView(
+                    item: item,
+                    isSelected: selectedItem == item,
+                    isHovered: hoveredItem == item,
+                    onTap: {
+                        withAnimation(.spring(response: 0.3, dampingFraction: 0.7)) {
+                            selectedItem = item
                         }
+                    },
+                    onHover: { isHovering in
+                        hoveredItem = isHovering ? item : nil
                     }
+                )
+            }
+        }
+    }
+
+    // MARK: - Favorite Events Section
+
+    private var favoriteEventsSection: some View {
+        VStack(alignment: .leading, spacing: 12) {
+            Text(String(localized: "sidebar.favorite_events"))
+                .font(.system(size: 11, weight: .semibold))
+                .foregroundStyle(.secondary)
+                .textCase(.uppercase)
+                .tracking(0.5)
+                .padding(.horizontal, 12)
+                .padding(.top, 4)
+
+            VStack(spacing: 6) {
+                ForEach(favoriteEvents.prefix(15)) { event in
+                    Button {
+                        selectedItem = .events
+                        selectedEvent = event
+                    } label: {
+                        SidebarFavoriteEventRow(event: event)
+                    }
+                    .buttonStyle(.plain)
                 }
             }
-            .listStyle(.sidebar)
-
-            Divider()
-
-            creditsFooter
         }
-        .navigationTitle("PokeZoneBuddy")
+    }
+
+    // MARK: - Navigation Item View
+
+    private struct NavigationItemView: View {
+        let item: SidebarItem
+        let isSelected: Bool
+        let isHovered: Bool
+        let onTap: () -> Void
+        let onHover: (Bool) -> Void
+
+        var body: some View {
+            Button(action: onTap) {
+                HStack(spacing: 14) {
+                    // Icon with Liquid Glass effect
+                    ZStack {
+                        if isSelected {
+                            RoundedRectangle(cornerRadius: 10, style: .continuous)
+                                .fill(item.accentColor.gradient)
+                                .frame(width: 44, height: 44)
+                        } else {
+                            RoundedRectangle(cornerRadius: 10, style: .continuous)
+                                .fill(.ultraThinMaterial)
+                                .frame(width: 44, height: 44)
+                                .overlay(
+                                    RoundedRectangle(cornerRadius: 10, style: .continuous)
+                                        .strokeBorder(
+                                            isHovered ? item.accentColor.opacity(0.4) : .white.opacity(0.15),
+                                            lineWidth: isHovered ? 1.5 : 1
+                                        )
+                                )
+                        }
+
+                        Image(systemName: item.icon)
+                            .font(.system(size: 20, weight: .semibold))
+                            .foregroundStyle(isSelected ? .white : item.accentColor)
+                            .symbolRenderingMode(.hierarchical)
+                    }
+                    .shadow(
+                        color: isSelected ? item.accentColor.opacity(0.3) : .clear,
+                        radius: 8,
+                        x: 0,
+                        y: 2
+                    )
+
+                    // Label
+                    Text(item.title)
+                        .font(.system(size: 15, weight: isSelected ? .semibold : .medium))
+                        .foregroundStyle(isSelected ? .primary : .secondary)
+
+                    Spacer()
+                }
+                .padding(.horizontal, 12)
+                .padding(.vertical, 8)
+                .background(
+                    RoundedRectangle(cornerRadius: 12, style: .continuous)
+                        .fill(isHovered && !isSelected ? Color.primary.opacity(0.05) : .clear)
+                )
+            }
+            .buttonStyle(.plain)
+            .scaleEffect(isSelected ? 1.02 : 1.0)
+            .animation(.spring(response: 0.3, dampingFraction: 0.7), value: isSelected)
+            .animation(.spring(response: 0.25, dampingFraction: 0.8), value: isHovered)
+            .onHover { hovering in
+                onHover(hovering)
+            }
+        }
     }
 
     // MARK: - Favorite Event Row
 
-    /// Compact circular thumbnail style for sidebar favorite events
-    /// Optimized for sidebars 220-280pt width with proper text wrapping
+    /// Modern Liquid Glass card style for sidebar favorite events
     private struct SidebarFavoriteEventRow: View {
         let event: Event
+        @State private var isHovered = false
 
         var body: some View {
-            HStack(spacing: 10) {
-                // Circular thumbnail
-                if let imageURL = event.imageURL, let url = URL(string: imageURL) {
-                    AsyncImage(url: url) { phase in
-                        switch phase {
-                        case .success(let image):
-                            image
-                                .resizable()
-                                .aspectRatio(contentMode: .fill)
-                        case .failure, .empty:
-                            Circle()
-                                .fill(.quaternary)
-                                .overlay(
-                                    ProgressView()
-                                        .controlSize(.mini)
-                                )
-                        @unknown default:
-                            Circle()
-                                .fill(.quaternary)
+            HStack(spacing: 12) {
+                // Circular thumbnail with glow
+                ZStack {
+                    if let imageURL = event.imageURL, let url = URL(string: imageURL) {
+                        AsyncImage(url: url) { phase in
+                            switch phase {
+                            case .success(let image):
+                                image
+                                    .resizable()
+                                    .aspectRatio(contentMode: .fill)
+                            case .failure, .empty:
+                                Circle()
+                                    .fill(.quaternary)
+                                    .overlay(
+                                        ProgressView()
+                                            .controlSize(.mini)
+                                    )
+                            @unknown default:
+                                Circle()
+                                    .fill(.quaternary)
+                            }
                         }
-                    }
-                    .frame(width: 32, height: 32)
-                    .clipShape(Circle())
-                } else {
-                    // Fallback icon
-                    Circle()
-                        .fill(.blue.opacity(0.2))
-                        .frame(width: 32, height: 32)
+                        .frame(width: 36, height: 36)
+                        .clipShape(Circle())
                         .overlay(
-                            Image(systemName: "calendar")
-                                .font(.system(size: 14))
-                                .foregroundStyle(.blue)
+                            Circle()
+                                .strokeBorder(.white.opacity(0.2), lineWidth: 1.5)
                         )
+                    } else {
+                        Circle()
+                            .fill(.blue.opacity(0.15))
+                            .frame(width: 36, height: 36)
+                            .overlay(
+                                Image(systemName: "calendar")
+                                    .font(.system(size: 16, weight: .semibold))
+                                    .foregroundStyle(.blue)
+                            )
+                            .overlay(
+                                Circle()
+                                    .strokeBorder(.blue.opacity(0.3), lineWidth: 1.5)
+                            )
+                    }
                 }
+                .shadow(color: .blue.opacity(0.2), radius: isHovered ? 6 : 4, x: 0, y: 2)
 
-                // Event info with wrapping text
-                VStack(alignment: .leading, spacing: 2) {
+                // Event info
+                VStack(alignment: .leading, spacing: 3) {
                     Text(event.displayName)
-                        .font(.system(size: 12, weight: .medium))
+                        .font(.system(size: 13, weight: .medium))
                         .foregroundStyle(.primary)
                         .lineLimit(2)
                         .fixedSize(horizontal: false, vertical: true)
-                        .minimumScaleFactor(0.85)
 
                     Text(event.displayHeading)
-                        .font(.system(size: 10))
+                        .font(.system(size: 11))
                         .foregroundStyle(.secondary)
                         .lineLimit(1)
-                        .fixedSize(horizontal: false, vertical: true)
-                        .minimumScaleFactor(0.85)
                 }
                 .frame(maxWidth: .infinity, alignment: .leading)
 
                 Spacer(minLength: 0)
             }
-            .padding(.vertical, 4)
+            .padding(.horizontal, 12)
+            .padding(.vertical, 10)
+            .background(
+                RoundedRectangle(cornerRadius: 12, style: .continuous)
+                    .fill(.ultraThinMaterial)
+                    .overlay(
+                        RoundedRectangle(cornerRadius: 12, style: .continuous)
+                            .strokeBorder(
+                                isHovered ? Color.blue.opacity(0.3) : .white.opacity(0.1),
+                                lineWidth: 1
+                            )
+                    )
+            )
+            .shadow(
+                color: .black.opacity(isHovered ? 0.08 : 0.04),
+                radius: isHovered ? 8 : 4,
+                x: 0,
+                y: isHovered ? 4 : 2
+            )
+            .scaleEffect(isHovered ? 1.02 : 1.0)
+            .animation(.spring(response: 0.25, dampingFraction: 0.8), value: isHovered)
+            .onHover { hovering in
+                isHovered = hovering
+            }
         }
     }
 

@@ -279,6 +279,19 @@ enum SidebarItem: String, CaseIterable, Identifiable {
             return "gearshape"
         }
     }
+
+    var accentColor: Color {
+        switch self {
+        case .events:
+            return .blue
+        case .cities:
+            return .purple
+        case .allSpots:
+            return .green
+        case .settings:
+            return .gray
+        }
+    }
 }
 
 // MARK: - Preview
