@@ -102,11 +102,12 @@ struct SettingsView: View {
     @State private var showDeleteOldConfirmation = false
     @State private var showDeleteAllDataConfirmation = false
     @State private var isRefreshing = false
+    @State private var navigationPath = NavigationPath()
 
     // MARK: - Body
 
     var body: some View {
-        NavigationStack {
+        NavigationStack(path: $navigationPath) {
             ScrollView(.vertical, showsIndicators: false) {
                 VStack(spacing: 32) {
                     if displayMode.includesPrimarySections {
@@ -143,8 +144,19 @@ struct SettingsView: View {
                 }
             }
 #endif
+            .navigationDestination(for: String.self) { destination in
+                if destination == "notifications" {
+                    NotificationSettingsView()
+                }
+            }
             .onAppear {
                 updateStats()
+                // Reset navigation when view appears
+                navigationPath = NavigationPath()
+            }
+            .onDisappear {
+                // Clear navigation path when leaving
+                navigationPath = NavigationPath()
             }
             .confirmationDialog(
                 String(localized: "cache.confirm.clear_images.title"),
@@ -192,6 +204,7 @@ struct SettingsView: View {
     private var primarySectionGroup: some View {
         VStack(spacing: 32) {
             appearanceSection
+            notificationsNavigationSection
             statisticsSection
             actionsSection
         }
@@ -259,6 +272,69 @@ struct SettingsView: View {
                     )
             )
             .shadow(color: .black.opacity(0.05), radius: 8, x: 0, y: 2)
+        }
+    }
+
+    // MARK: - Notifications Navigation Section
+
+    private var notificationsNavigationSection: some View {
+        VStack(spacing: 16) {
+            HStack {
+                Text("Notifications")
+                    .font(.system(size: 18, weight: .semibold))
+                    .foregroundStyle(.primary)
+                Spacer()
+            }
+
+            NavigationLink(value: "notifications") {
+                HStack(spacing: 12) {
+                    Image(systemName: "bell.fill")
+                        .font(.system(size: 20))
+                        .foregroundStyle(.blue)
+                        .frame(width: 40, height: 40)
+                        .background(
+                            Circle()
+                                .fill(.blue.opacity(0.1))
+                        )
+
+                    VStack(alignment: .leading, spacing: 4) {
+                        Text("Event Reminders")
+                            .font(.system(size: 14, weight: .medium))
+                            .foregroundStyle(.primary)
+
+                        Text("Get notified before your favorite events")
+                            .font(.system(size: 12))
+                            .foregroundStyle(.secondary)
+                    }
+
+                    Spacer()
+
+                    Image(systemName: "chevron.right")
+                        .font(.system(size: 12, weight: .semibold))
+                        .foregroundStyle(.tertiary)
+                }
+                .padding(16)
+                .background(
+                    RoundedRectangle(cornerRadius: 12, style: .continuous)
+                        .fill(.ultraThinMaterial)
+                )
+                .overlay(
+                    RoundedRectangle(cornerRadius: 12, style: .continuous)
+                        .strokeBorder(
+                            LinearGradient(
+                                colors: [
+                                    .white.opacity(0.25),
+                                    .blue.opacity(0.15)
+                                ],
+                                startPoint: .topLeading,
+                                endPoint: .bottomTrailing
+                            ),
+                            lineWidth: 1
+                        )
+                )
+                .shadow(color: .black.opacity(0.05), radius: 8, x: 0, y: 2)
+            }
+            .buttonStyle(.plain)
         }
     }
 

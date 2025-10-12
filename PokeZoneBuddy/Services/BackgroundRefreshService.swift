@@ -82,10 +82,14 @@ final class BackgroundRefreshService {
         
         isRefreshing = true
         defer { isRefreshing = false }
-        
+
         await onRefresh?()
         lastRefreshDate = Date()
-        
+
+        // Clean up expired notifications and temporary images after refresh
+        await NotificationManager.shared.cleanupExpiredNotifications()
+        NotificationImageService.shared.cleanupTemporaryImages()
+
         AppLogger.background.info("Background refresh completed")
     }
 }
