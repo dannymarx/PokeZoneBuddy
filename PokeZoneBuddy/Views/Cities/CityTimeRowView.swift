@@ -41,51 +41,77 @@ struct CityTimeRowView: View {
     }
     
     // MARK: - City Header
-    
+
     private var cityHeader: some View {
         HStack(spacing: 12) {
-            Circle()
-                .fill(
-                    LinearGradient(
-                        colors: [.blue, .purple],
-                        startPoint: .topLeading,
-                        endPoint: .bottomTrailing
-                    )
-                )
-                .frame(width: 44, height: 44)
-                .overlay(
-                    Image(systemName: "mappin.circle.fill")
-                        .font(.system(size: 20))
-                        .foregroundStyle(.white)
-                )
-            
-            VStack(alignment: .leading, spacing: 2) {
+            // Flag/Icon
+            if !flagOrIcon.isEmpty {
+                Text(flagOrIcon)
+                    .font(.system(size: 40))
+                    .frame(width: 50, height: 50)
+            } else {
+                Image(systemName: "location.circle.fill")
+                    .font(.system(size: 28))
+                    .foregroundStyle(.blue.gradient)
+                    .frame(width: 50, height: 50)
+            }
+
+            VStack(alignment: .leading, spacing: 4) {
                 Text(city.name)
-                    .font(.system(size: 16, weight: .semibold))
-                
+                    .font(.system(size: 17, weight: .semibold))
+
                 HStack(spacing: 6) {
-                    Text(city.fullName)
-                        .captionStyle()
-                    
+                    if let country = countryName {
+                        Text(country)
+                            .font(.system(size: 12, weight: .medium))
+                            .foregroundStyle(.secondary)
+
+                        Text("•")
+                            .foregroundStyle(.tertiary)
+                    }
+
+                    Text(continent)
+                        .font(.system(size: 12, weight: .medium))
+                        .foregroundStyle(.secondary)
+
                     Text("•")
                         .foregroundStyle(.tertiary)
-                    
+
                     Text(city.abbreviatedTimeZone)
-                        .captionStyle()
-                    
+                        .font(.system(size: 12, weight: .medium))
+                        .foregroundStyle(.secondary)
+
                     Text("•")
                         .foregroundStyle(.tertiary)
-                    
+
                     Text(city.formattedUTCOffset)
-                        .font(.system(size: 11, weight: .medium))
+                        .font(.system(size: 12, weight: .semibold))
                         .foregroundStyle(.blue)
                 }
             }
-            
+
             Spacer()
         }
     }
-    
+
+    // MARK: - Helper Properties
+
+    private var flagOrIcon: String {
+        if let country = CityDisplayHelpers.extractCountry(from: city.fullName),
+           let flag = CityDisplayHelpers.flagEmoji(for: country) {
+            return flag
+        }
+        return ""
+    }
+
+    private var continent: String {
+        CityDisplayHelpers.continent(from: city.timeZoneIdentifier)
+    }
+
+    private var countryName: String? {
+        CityDisplayHelpers.countryName(from: city.fullName)
+    }
+
     // MARK: - Time Conversion Content
     
     private func timeConversionContent(cityTimezone: TimeZone) -> some View {
