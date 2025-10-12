@@ -244,17 +244,20 @@ struct MacOSSidebarView: View {
                 // Blur layer over the image
                 Rectangle()
                     .fill(.ultraThinMaterial)
-                    .opacity(0.8)
+                    .opacity(0.9)
                     .frame(maxWidth: .infinity, maxHeight: .infinity)
 
                 // Event title on top
-                Text(event.displayName)
-                    .font(.system(size: 13, weight: .semibold))
-                    .foregroundStyle(.white)
-                    .lineLimit(2)
-                    .multilineTextAlignment(.center)
-                    .shadow(color: .black.opacity(0.5), radius: 4, x: 0, y: 2)
-                    .padding(.horizontal, 12)
+                HStack {
+                    Text(event.displayName)
+                        .font(.system(size: 13, weight: .semibold))
+                        .foregroundStyle(.white)
+                        .lineLimit(2)
+                        .multilineTextAlignment(.leading)
+                        .shadow(color: .black.opacity(0.5), radius: 4, x: 0, y: 2)
+                    Spacer()
+                }
+                .padding(.horizontal, 12)
             }
             .frame(height: 80)
             .clipShape(RoundedRectangle(cornerRadius: 14, style: .continuous))
