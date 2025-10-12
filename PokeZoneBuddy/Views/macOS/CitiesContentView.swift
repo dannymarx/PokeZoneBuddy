@@ -104,6 +104,10 @@ private struct CityRowView: View {
         CityDisplayHelpers.continent(from: city.timeZoneIdentifier)
     }
 
+    private var countryName: String? {
+        CityDisplayHelpers.countryName(from: city.fullName)
+    }
+
     var body: some View {
         HStack(spacing: 16) {
             // Flag/Icon
@@ -124,6 +128,15 @@ private struct CityRowView: View {
                     .font(.system(size: 18, weight: .semibold))
 
                 HStack(spacing: 8) {
+                    if let country = countryName {
+                        Text(country)
+                            .font(.system(size: 13, weight: .medium))
+                            .foregroundStyle(.secondary)
+
+                        Text("•")
+                            .foregroundStyle(.quaternary)
+                    }
+
                     Text(continent)
                         .font(.system(size: 13, weight: .medium))
                         .foregroundStyle(.secondary)

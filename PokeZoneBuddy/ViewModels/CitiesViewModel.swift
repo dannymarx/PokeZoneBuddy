@@ -71,6 +71,7 @@ final class CitiesViewModel {
     /// MKLocalSearchCompleter für Städte-Suche
     private let searchCompleter: MKLocalSearchCompleter = {
         let completer = MKLocalSearchCompleter()
+        // Use address but filter results to show only cities
         completer.resultTypes = [.address]
         return completer
     }()
@@ -134,22 +135,38 @@ final class CitiesViewModel {
                 throw CityError.timezoneNotFound
             }
             
-            // Extrahiere Stadt-Informationen mit neuer MapKit API
+            // Extrahiere Stadt-Informationen
             let cityName: String
             let fullName: String
-            
+
+            // Get city name
             if #available(macOS 15.0, iOS 18.0, *) {
-                // Neue API: addressRepresentations für strukturierte Daten
                 cityName = mapItem.addressRepresentations?.cityName ?? completion.title
-                
-                // cityWithContext gibt automatisch "City, Country" oder "City, Region" zurück
-                // z.B. "Tokyo, Japan" oder "Los Angeles, California"
-                fullName = mapItem.addressRepresentations?.cityWithContext ?? completion.title
             } else {
-                // Fallback für ältere Versionen
                 cityName = mapItem.placemark.locality ?? completion.title
-                // Für ältere Versionen nutzen wir completion.title als fullName
-                fullName = completion.title
+            }
+
+            // Build full name with city and country
+            // Extract country from completion subtitle or use subtitle as is
+            let subtitle = completion.subtitle
+
+            // Check if subtitle has format "City, Country" or just "Country"
+            // If it contains the city name, extract the country part
+            if subtitle.contains(cityName) {
+                // Subtitle is like "Berlin, Germany" - extract everything after city
+                let components = subtitle.components(separatedBy: ",").map { $0.trimmingCharacters(in: .whitespaces) }
+                if components.count >= 2 {
+                    // Take the last component as country
+                    fullName = "\(cityName), \(components.last!)"
+                } else {
+                    fullName = "\(cityName), \(subtitle)"
+                }
+            } else if !subtitle.isEmpty {
+                // Subtitle is the country/region
+                fullName = "\(cityName), \(subtitle)"
+            } else {
+                // No subtitle, just use city name
+                fullName = cityName
             }
             
             // Prüfen ob Stadt bereits existiert (basierend auf fullName)
@@ -397,10 +414,74 @@ final class CitiesViewModel {
     }
 
     // MARK: - Internal Methods (for SearchCompleterDelegate)
-    
+
     /// Updates search results - called by delegate
     func updateSearchResults(_ results: [MKLocalSearchCompletion]) {
-        searchResults = results
+        // Filter to only show city-like results
+        searchResults = results.filter { isCityResult($0) }
+    }
+
+    /// Determines if a search completion result appears to be a city
+    /// - Parameter completion: The search completion to check
+    /// - Returns: true if the result looks like a city
+    private func isCityResult(_ completion: MKLocalSearchCompletion) -> Bool {
+        let title = completion.title
+        let titleLower = title.lowercased()
+        let subtitle = completion.subtitle
+        let subtitleLower = subtitle.lowercased()
+
+        // Exclude "Search Nearby" results
+        if subtitleLower.contains("search nearby") ||
+           subtitleLower.contains("suche in der nähe") ||
+           subtitleLower.contains("nearby") {
+            return false
+        }
+
+        // Exclude if title contains numbers (street addresses often have numbers)
+        if titleLower.rangeOfCharacter(from: .decimalDigits) != nil {
+            return false
+        }
+
+        // Check if subtitle contains the title (street within a city)
+        // Example: title "Main Street", subtitle "Main Street, New York"
+        if !subtitle.isEmpty && subtitleLower.contains(titleLower) {
+            return false
+        }
+
+        // Comprehensive street indicators
+        let streetIndicators = [
+            "street", "str.", "str ", "straße", "strasse",
+            "avenue", "ave.", "ave ",
+            "road", "rd.", "rd ",
+            "boulevard", "blvd.", "blvd ",
+            "lane", "ln.", "ln ",
+            "drive", "dr.", "dr ",
+            "way", "weg",
+            "court", "ct.", "ct ",
+            "place", "pl.", "pl ",
+            "circle", "cir.", "cir ",
+            "parkway", "pkwy",
+            "allee", "alley",
+            "gasse",
+            "platz",
+            "terrace",
+            "highway", "hwy"
+        ]
+
+        // Check if title ends with or contains street indicators
+        for indicator in streetIndicators {
+            // Check if word ends with indicator or has it as a separate word
+            if titleLower.hasSuffix(indicator) ||
+               titleLower.hasSuffix("." + indicator) ||
+               titleLower.contains(" " + indicator + " ") ||
+               titleLower.contains(" " + indicator) {
+                return false
+            }
+        }
+
+        // Cities typically have comma-separated subtitle with region/country
+        // Streets typically have the full address in subtitle
+        return true
     }
 }
 

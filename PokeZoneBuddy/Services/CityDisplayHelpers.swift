@@ -193,4 +193,11 @@ enum CityDisplayHelpers {
 
         return nil
     }
+
+    /// Returns the readable country name from full city name
+    /// - Parameter fullName: Full city name (e.g., "Tokyo, Japan")
+    /// - Returns: Country name suitable for display
+    static func countryName(from fullName: String) -> String? {
+        return extractCountry(from: fullName)
+    }
 }
