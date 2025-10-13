@@ -5,6 +5,22 @@ This project follows [Semantic Versioning](https://semver.org/).
 
 ---
 
+## [1.4.0] – 2025-10-13
+
+### Changed
+- **City Spots Interface** completely redesigned with enhanced user experience.
+  - Improved SpotDetailView with better layout, visual hierarchy, and information display.
+  - Enhanced SpotListView with refined filtering, sorting, and spot management capabilities.
+  - Updated SpotRowView with modern card-based design and better visual feedback.
+  - Redesigned AllSpotsView and AllSpotsContentView for improved navigation and spot discovery.
+  - Refined CitiesManagementView and CityTimeRowView for better city management workflow.
+  - Enhanced CityDetailView with improved layout and spot integration on macOS.
+  - Updated MacOSMainView navigation patterns for better user flow.
+- **Localization** expanded with additional strings for improved UI labels and descriptions.
+- **UI/UX Polish** across spots-related views with consistent design language and improved accessibility.
+
+---
+
 ## [1.3.0] – 2025-10-13
 
 ### Added
