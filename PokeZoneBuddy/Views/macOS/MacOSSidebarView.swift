@@ -312,6 +312,9 @@ struct MacOSSidebarView: View {
 // MARK: - Preview
 
 #Preview {
+    @Previewable @State var selectedItem: SidebarItem = .events
+    @Previewable @State var selectedEvent: Event? = nil
+
     let config = ModelConfiguration(isStoredInMemoryOnly: true)
     let container = try! ModelContainer(
         for: FavoriteCity.self,
@@ -322,9 +325,6 @@ struct MacOSSidebarView: View {
     let context = container.mainContext
     let citiesVM = CitiesViewModel(modelContext: context)
     let eventsVM = EventsViewModel(modelContext: context, networkMonitor: NetworkMonitor())
-
-    @State var selectedItem: SidebarItem = .events
-    @State var selectedEvent: Event? = nil
 
     MacOSSidebarView(
         selectedItem: $selectedItem,
