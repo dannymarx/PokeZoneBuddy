@@ -151,8 +151,6 @@ struct SettingsView: View {
             }
             .onAppear {
                 updateStats()
-                // Reset navigation when view appears
-                navigationPath = NavigationPath()
             }
             .onDisappear {
                 // Clear navigation path when leaving
