@@ -172,57 +172,74 @@ private struct FavoriteCityRowContent: View {
     }
 
     var body: some View {
-        HStack(spacing: 16) {
-            // Flag/Icon
+        HStack(spacing: 12) {
+            // Flag/Icon - Smaller and more compact
             if !flagOrIcon.isEmpty {
                 Text(flagOrIcon)
-                    .font(.system(size: 44))
-                    .frame(width: 56, height: 56)
-            } else {
-                Image(systemName: "location.circle.fill")
                     .font(.system(size: 32))
-                    .foregroundStyle(.blue.gradient)
-                    .frame(width: 56, height: 56)
+                    .frame(width: 40, height: 40)
+            } else {
+                Circle()
+                    .fill(.blue.gradient)
+                    .frame(width: 40, height: 40)
+                    .overlay(
+                        Image(systemName: "location.circle.fill")
+                            .font(.system(size: 20))
+                            .foregroundStyle(.white)
+                    )
+                    .shadow(color: .blue.opacity(0.2), radius: 3, x: 0, y: 1)
             }
 
-            // Info
-            VStack(alignment: .leading, spacing: 6) {
+            // Info - Compact layout
+            VStack(alignment: .leading, spacing: 3) {
                 Text(city.name)
-                    .font(.system(size: 18, weight: .semibold))
+                    .font(.system(size: 16, weight: .semibold))
+                    .lineLimit(1)
 
-                HStack(spacing: 8) {
+                // Compact single-line info with truncation
+                HStack(spacing: 4) {
                     if let country = countryName {
                         Text(country)
-                            .font(.system(size: 13, weight: .medium))
+                            .font(.system(size: 11, weight: .medium))
                             .foregroundStyle(.secondary)
+                            .lineLimit(1)
 
                         Text("•")
+                            .font(.system(size: 11))
                             .foregroundStyle(.quaternary)
                     }
 
                     Text(continent)
-                        .font(.system(size: 13, weight: .medium))
+                        .font(.system(size: 11, weight: .medium))
                         .foregroundStyle(.secondary)
+                        .lineLimit(1)
 
                     Text("•")
+                        .font(.system(size: 11))
                         .foregroundStyle(.quaternary)
 
                     Text(city.abbreviatedTimeZone)
-                        .font(.system(size: 13, weight: .medium))
+                        .font(.system(size: 11, weight: .medium))
                         .foregroundStyle(.secondary)
+                        .lineLimit(1)
 
                     Text("•")
+                        .font(.system(size: 11))
                         .foregroundStyle(.quaternary)
 
                     Text(city.formattedUTCOffset)
-                        .font(.system(size: 13, weight: .semibold))
+                        .font(.system(size: 11, weight: .semibold))
                         .foregroundStyle(.blue)
+                        .lineLimit(1)
                 }
+                .lineLimit(1)
+                .truncationMode(.tail)
             }
 
-            Spacer()
+            Spacer(minLength: 0)
         }
-        .padding(.vertical, 12)
+        .padding(.vertical, 6)
+        .padding(.horizontal, 4)
     }
 }
 

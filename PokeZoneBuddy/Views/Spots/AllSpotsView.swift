@@ -13,11 +13,11 @@ struct AllSpotsView: View {
     // MARK: - Properties
 
     @Bindable var citiesViewModel: CitiesViewModel
-    @State private var selectedCity: FavoriteCity?
     @State private var selectedSpot: CitySpot?
     @State private var showCityPicker = false
     @State private var showAddSpot = false
     @State private var cityForNewSpot: FavoriteCity?
+    @State private var editingSpot: CitySpot?
 
     // MARK: - Body
 
@@ -50,14 +50,21 @@ struct AllSpotsView: View {
                 }
             }
 #endif
-            .sheet(item: $selectedCity) { city in
-                SpotListView(
-                    viewModel: citiesViewModel,
-                    city: city,
-                    initialSpot: selectedSpot
-                )
+            .sheet(item: $selectedSpot) { spot in
+                SpotDetailView(spot: spot, viewModel: citiesViewModel) { spot in
+                    editingSpot = spot
+                }
 #if os(iOS)
-                .presentationDetents([.fraction(0.9), .large])
+                .presentationDetents([.large])
+                .presentationDragIndicator(.visible)
+#elseif os(macOS)
+                .presentationSizing(.fitted)
+#endif
+            }
+            .sheet(item: $editingSpot) { spot in
+                EditSpotSheet(spot: spot, viewModel: citiesViewModel)
+#if os(iOS)
+                .presentationDetents([.large])
                 .presentationDragIndicator(.visible)
 #elseif os(macOS)
                 .presentationSizing(.fitted)
@@ -89,11 +96,6 @@ struct AllSpotsView: View {
 #endif
                 }
             }
-            .onChange(of: selectedCity) { oldValue, newValue in
-                if case .none = newValue {
-                    selectedSpot = nil
-                }
-            }
             .onChange(of: showAddSpot) { _, newValue in
                 if !newValue {
                     cityForNewSpot = nil
@@ -113,7 +115,6 @@ struct AllSpotsView: View {
                         ForEach(spots, id: \.persistentModelID) { spot in
                             Button {
                                 selectedSpot = spot
-                                selectedCity = city
                             } label: {
                                 SpotRowContent(spot: spot)
                             }
@@ -174,7 +175,7 @@ private struct SpotRowContent: View {
 
     var body: some View {
         HStack(spacing: 12) {
-            // Category Icon
+            // Category Icon with liquid glass styling
             Circle()
                 .fill(categoryColor.gradient)
                 .frame(width: 36, height: 36)
@@ -182,13 +183,37 @@ private struct SpotRowContent: View {
                     Image(systemName: categoryIcon)
                         .font(.system(size: 16))
                         .foregroundStyle(.white)
+                        .symbolRenderingMode(.hierarchical)
                 )
+                .shadow(color: categoryColor.opacity(0.25), radius: 3, x: 0, y: 1.5)
 
-            // Spot Info
-            VStack(alignment: .leading, spacing: 4) {
-                Text(spot.name)
-                    .font(.system(size: 14, weight: .semibold))
-                    .lineLimit(1)
+            // Spot Info - Compact layout with inline badge
+            VStack(alignment: .leading, spacing: 3) {
+                HStack(spacing: 6) {
+                    Text(spot.name)
+                        .font(.system(size: 15, weight: .semibold))
+                        .lineLimit(1)
+
+                    // Inline category badge
+                    HStack(spacing: 3) {
+                        Image(systemName: categoryIcon)
+                            .font(.system(size: 9))
+                        Text(spot.category.localizedName)
+                            .font(.system(size: 9, weight: .medium))
+                    }
+                    .foregroundStyle(categoryColor)
+                    .padding(.horizontal, 5)
+                    .padding(.vertical, 2)
+                    .background(
+                        Capsule()
+                            .fill(.ultraThinMaterial)
+                    )
+                    .overlay(
+                        Capsule()
+                            .strokeBorder(categoryColor.opacity(0.3), lineWidth: 0.5)
+                    )
+                    .shadow(color: categoryColor.opacity(0.1), radius: 1, x: 0, y: 0.5)
+                }
 
                 if !spot.notes.isEmpty {
                     Text(spot.notes)
@@ -198,16 +223,19 @@ private struct SpotRowContent: View {
                 }
             }
 
-            Spacer()
+            Spacer(minLength: 0)
 
             // Favorite Indicator
             if spot.isFavorite {
                 Image(systemName: "star.fill")
                     .font(.system(size: 12))
                     .foregroundStyle(.yellow)
+                    .symbolRenderingMode(.hierarchical)
+                    .shadow(color: .yellow.opacity(0.3), radius: 2, x: 0, y: 1)
             }
         }
-        .padding(.vertical, 4)
+        .padding(.vertical, 6)
+        .padding(.horizontal, 4)
     }
 
     private var categoryIcon: String {

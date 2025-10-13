@@ -1135,6 +1135,7 @@
       }
     },
     "common.details" : {
+      "extractionState" : "stale",
       "localizations" : {
         "de" : {
           "stringUnit" : {
@@ -1169,7 +1170,24 @@
         }
       }
     },
+    "common.edit" : {
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Bearbeiten"
+          }
+        },
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Edit"
+          }
+        }
+      }
+    },
     "common.no" : {
+      "extractionState" : "stale",
       "localizations" : {
         "de" : {
           "stringUnit" : {
@@ -1205,6 +1223,7 @@
       }
     },
     "common.yes" : {
+      "extractionState" : "stale",
       "localizations" : {
         "de" : {
           "stringUnit" : {
@@ -2479,6 +2498,7 @@
       }
     },
     "favorites.title" : {
+      "extractionState" : "stale",
       "localizations" : {
         "de" : {
           "stringUnit" : {
@@ -2939,6 +2959,9 @@
           }
         }
       }
+    },
+    "Information" : {
+
     },
     "Invalid coordinates" : {
       "localizations" : {
@@ -4545,6 +4568,7 @@
       }
     },
     "spots.action.share" : {
+      "extractionState" : "stale",
       "localizations" : {
         "de" : {
           "stringUnit" : {
@@ -4948,6 +4972,22 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Add important locations."
+          }
+        }
+      }
+    },
+    "spots.section.manage_title" : {
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Spots verwalten"
+          }
+        },
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Manage Spots"
           }
         }
       }

@@ -32,6 +32,7 @@ struct SpotListView: View {
     @State private var showingAddSpot = false
     @State private var editingSpot: CitySpot?
     @State private var didSeedSelection = false
+    @State private var isEditMode = false
 
     // MARK: - Types
 
@@ -102,7 +103,7 @@ struct SpotListView: View {
                         splitList(columnWidth: columnWidth)
                     }
                 }
-                .navigationTitle(city.displayName)
+                .navigationTitle(String(localized: "spots.section.manage_title"))
             } detail: {
                 if let spot = spot(for: activeSpotID) {
                     SpotDetailView(spot: spot, viewModel: viewModel) { editingSpot = $0 }
@@ -118,6 +119,18 @@ struct SpotListView: View {
                         dismiss()
                     }
                 }
+
+                #if os(macOS)
+                if !spots.isEmpty {
+                    ToolbarItem(placement: .automatic) {
+                        Button(isEditMode ? String(localized: "common.done") : String(localized: "common.edit")) {
+                            withAnimation {
+                                isEditMode.toggle()
+                            }
+                        }
+                    }
+                }
+                #endif
 
                 ToolbarItem(placement: .primaryAction) {
                     addSpotButton
@@ -142,7 +155,7 @@ struct SpotListView: View {
                     stackList
                 }
             }
-            .navigationTitle(city.displayName)
+            .navigationTitle(String(localized: "spots.section.manage_title"))
             .navigationDestination(for: CitySpot.ID.self) { id in
                 if let spot = spot(for: id) {
                     SpotDetailView(spot: spot, viewModel: viewModel) { editingSpot = $0 }
@@ -156,6 +169,18 @@ struct SpotListView: View {
                         dismiss()
                     }
                 }
+
+                #if os(macOS)
+                if !spots.isEmpty {
+                    ToolbarItem(placement: .automatic) {
+                        Button(isEditMode ? String(localized: "common.done") : String(localized: "common.edit")) {
+                            withAnimation {
+                                isEditMode.toggle()
+                            }
+                        }
+                    }
+                }
+                #endif
 
                 ToolbarItem(placement: .primaryAction) {
                     addSpotButton
@@ -180,13 +205,22 @@ struct SpotListView: View {
                 .contentShape(Rectangle())
                 .swipeActions(edge: .trailing, allowsFullSwipe: false) {
                     deleteButton(for: spot)
+                }
+                .swipeActions(edge: .leading, allowsFullSwipe: false) {
+                    editButton(for: spot)
                     favoriteButton(for: spot)
                 }
                 .onTapGesture {
                     activeSpotID = spot.id
                 }
             }
+            .onDelete { offsets in
+                deleteSpots(at: offsets)
+            }
         }
+        #if !os(macOS)
+        .environment(\.editMode, .constant(isEditMode ? .active : .inactive))
+        #endif
         .scrollIndicators(.hidden)
         .hideScrollIndicatorsCompat()
         #if os(macOS)
@@ -211,10 +245,19 @@ struct SpotListView: View {
                 }
                 .swipeActions(edge: .trailing, allowsFullSwipe: false) {
                     deleteButton(for: spot)
+                }
+                .swipeActions(edge: .leading, allowsFullSwipe: false) {
+                    editButton(for: spot)
                     favoriteButton(for: spot)
                 }
             }
+            .onDelete { offsets in
+                deleteSpots(at: offsets)
+            }
         }
+        #if !os(macOS)
+        .environment(\.editMode, .constant(isEditMode ? .active : .inactive))
+        #endif
         .scrollIndicators(.hidden)
         .hideScrollIndicatorsCompat()
         #if os(macOS)
@@ -232,6 +275,17 @@ struct SpotListView: View {
         Button(String(localized: "spots.add.title")) {
             showingAddSpot = true
         }
+    }
+
+    /// Edit Button für Swipe Actions
+    @ViewBuilder
+    private func editButton(for spot: CitySpot) -> some View {
+        Button {
+            editingSpot = spot
+        } label: {
+            Label(String(localized: "spots.action.edit"), systemImage: "pencil")
+        }
+        .tint(.blue)
     }
 
     /// Delete Button für Swipe Actions
@@ -325,6 +379,14 @@ struct SpotListView: View {
             navigationPath.removeAll()
         }
         viewModel.deleteSpot(spot)
+    }
+
+    /// Löscht Spots an den angegebenen Offsets
+    private func deleteSpots(at offsets: IndexSet) {
+        for index in offsets {
+            let spot = spots[index]
+            deleteSpot(spot)
+        }
     }
 
     /// Toggelt den Favoriten-Status
