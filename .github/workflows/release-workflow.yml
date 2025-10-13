@@ -9,8 +9,8 @@ permissions:
   contents: write   # nötig für Release + Commit in /docs
 
 env:
-  APP_NAME: PokeZoneBuddy            # passe an
-  SCHEME: PokeZoneBuddy              # passe an
+  APP_NAME: PokeZoneBuddy
+  SCHEME: PokeZoneBuddy
   CONFIG: Release
 
 jobs:
@@ -22,29 +22,30 @@ jobs:
 
       - name: Read VERSION
         id: v
-        run: echo "ver=$(tr -d ' \n\r' < VERSION)" >> "$GITHUB_OUTPUT"
+        run: |
+          echo "ver=$(tr -d ' \n\r' < VERSION)" >> "$GITHUB_OUTPUT"
 
-   - name: Xcode archive (unsigned)
-  run: |
-    set -e
-    xcodebuild -scheme "$SCHEME" -configuration "$CONFIG" \
-      -archivePath build/App.xcarchive \
-      -destination "generic/platform=macOS" archive \
-      CODE_SIGNING_ALLOWED=NO \
-      CODE_SIGNING_REQUIRED=NO \
-      CODE_SIGN_IDENTITY="" \
-      DEVELOPMENT_TEAM=""
+      - name: Xcode archive (unsigned)
+        run: |
+          set -e
+          xcodebuild -scheme "$SCHEME" -configuration "$CONFIG" \
+            -archivePath build/App.xcarchive \
+            -destination "generic/platform=macOS" archive \
+            CODE_SIGNING_ALLOWED=NO \
+            CODE_SIGNING_REQUIRED=NO \
+            CODE_SIGN_IDENTITY="" \
+            DEVELOPMENT_TEAM=""
 
-- name: Prepare DMG payload
-  run: |
-    set -e
-    APP_PATH="build/App.xcarchive/Products/Applications/${APP_NAME}.app"
-    test -d "$APP_PATH" || { echo "App not found at $APP_PATH"; exit 1; }
-    mkdir -p build/dmg_src
-    cp -R "$APP_PATH" "build/dmg_src/"
-    ln -s /Applications "build/dmg_src/Applications"
+      - name: Prepare DMG payload
+        run: |
+          set -e
+          APP_PATH="build/App.xcarchive/Products/Applications/${APP_NAME}.app"
+          test -d "$APP_PATH" || { echo "App not found at $APP_PATH"; exit 1; }
+          mkdir -p build/dmg_src
+          cp -R "$APP_PATH" "build/dmg_src/"
+          ln -s /Applications "build/dmg_src/Applications"
 
-- name: Create DMG
+      - name: Create DMG
         id: dmg
         run: |
           set -e
@@ -54,7 +55,7 @@ jobs:
                          -ov -format UDZO "$DMG"
           echo "path=$DMG" >> "$GITHUB_OUTPUT"
 
-- name: Create Git tag and GitHub Release
+      - name: Create Git tag and GitHub Release
         id: rel
         uses: softprops/action-gh-release@v2
         with:
@@ -65,29 +66,29 @@ jobs:
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
-- name: Build manifest -> /docs/version.json
+      - name: Build manifest -> /docs/version.json
         run: |
           set -e
           VER="${{ steps.v.outputs.ver }}"
           URL="${{ steps.rel.outputs.html_url }}"
           NOW="$(date -u +%Y-%m-%dT%H:%M:%SZ)"
           mkdir -p docs
-          cat > docs/version.json <<JSON
-          {
-            "latest": "${VER}",
-            "minSupported": "${VER}",
-            "releasedAt": "${NOW}",
-            "notesURL": "${URL}",
-            "destinations": {
-              "macOS": "${URL}"
-            },
-            "critical": false
-          }
-          JSON
+          cat > docs/version.json <<EOF
+{
+  "latest": "${VER}",
+  "minSupported": "${VER}",
+  "releasedAt": "${NOW}",
+  "notesURL": "${URL}",
+  "destinations": {
+    "macOS": "${URL}"
+  },
+  "critical": false
+}
+EOF
           echo "Wrote docs/version.json:"
           cat docs/version.json
 
-- name: Commit manifest to repo
+      - name: Commit manifest to repo
         run: |
           set -e
           git config user.name "github-actions[bot]"
