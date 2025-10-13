@@ -33,7 +33,8 @@ jobs:
             CODE_SIGNING_ALLOWED=NO \
             CODE_SIGNING_REQUIRED=NO \
             CODE_SIGN_IDENTITY="" \
-            DEVELOPMENT_TEAM=""
+            DEVELOPMENT_TEAM="" \
+            MACOSX_DEPLOYMENT_TARGET=15.0
 
       - name: Prepare DMG payload
         run: |
