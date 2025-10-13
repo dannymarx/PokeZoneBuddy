@@ -10,6 +10,7 @@ enum AppLogger {
     static let viewModel = Logger(subsystem: subsystem, category: "ViewModel")
     static let calendar = Logger(subsystem: subsystem, category: "Calendar")
     static let cache = Logger(subsystem: subsystem, category: "Cache")
+    static let notifications = Logger(subsystem: subsystem, category: "Notifications")
 }
 
 extension Logger {

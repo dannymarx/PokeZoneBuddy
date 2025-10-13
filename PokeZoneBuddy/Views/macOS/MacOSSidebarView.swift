@@ -244,7 +244,7 @@ struct MacOSSidebarView: View {
                 // Blur layer over the image
                 Rectangle()
                     .fill(.ultraThinMaterial)
-                    .opacity(0.9)
+                    .opacity(0.8)
                     .frame(maxWidth: .infinity, maxHeight: .infinity)
 
                 // Event title on top

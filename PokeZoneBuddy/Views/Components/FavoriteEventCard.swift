@@ -7,11 +7,15 @@
 //
 
 import SwiftUI
+import SwiftData
 
 /// Compact event card for sidebar favorite events display
 struct FavoriteEventCard: View {
     let event: Event
     @State private var isHovered = false
+    @State private var hasReminders = false
+
+    @Environment(\.modelContext) private var modelContext
 
     private static let dateFormatter: DateFormatter = {
         let formatter = DateFormatter()
@@ -64,10 +68,18 @@ struct FavoriteEventCard: View {
                         .foregroundStyle(.primary)
                         .lineLimit(2)
 
-                    Text(formatEventDate(event.startTime))
-                        .font(.system(size: 11))
-                        .foregroundStyle(.secondary)
-                        .monospacedDigit()
+                    HStack(spacing: 6) {
+                        Text(formatEventDate(event.startTime))
+                            .font(.system(size: 11))
+                            .foregroundStyle(.secondary)
+                            .monospacedDigit()
+
+                        if hasReminders {
+                            Image(systemName: "bell.fill")
+                                .font(.system(size: 10))
+                                .foregroundStyle(.blue)
+                        }
+                    }
                 }
 
                 Spacer(minLength: 0)
@@ -105,5 +117,13 @@ struct FavoriteEventCard: View {
         .onHover { hovering in
             isHovered = hovering
         }
+        .task {
+            checkReminders()
+        }
+    }
+
+    private func checkReminders() {
+        let preferencesManager = ReminderPreferencesManager(modelContext: modelContext)
+        hasReminders = preferencesManager.isEnabled(for: event.id)
     }
 }
