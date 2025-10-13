@@ -196,35 +196,69 @@ extension View {
 #if os(macOS)
 private struct MacScrollIndicatorHider: ViewModifier {
     func body(content: Content) -> some View {
-        content.background(ScrollViewHider())
+        content
+            .background(ScrollViewConfigurator())
+            .onAppear {
+                // Configure scrollbars on appear
+                DispatchQueue.main.asyncAfter(deadline: .now() + 0.1) {
+                    configureAllScrollbars()
+                }
+            }
+    }
+
+    private func configureAllScrollbars() {
+        guard let window = NSApplication.shared.keyWindow else { return }
+        window.contentView?.configureScrollbarsInSubviews()
     }
 }
 
-private struct ScrollViewHider: NSViewRepresentable {
+private struct ScrollViewConfigurator: NSViewRepresentable {
     func makeNSView(context: Context) -> NSView {
-        let view = NSView(frame: .zero)
-        DispatchQueue.main.async {
-            view.hideScrollIndicatorsRecursively()
-        }
+        let view = NSView()
         return view
     }
+
     func updateNSView(_ nsView: NSView, context: Context) {
         DispatchQueue.main.async {
-            nsView.hideScrollIndicatorsRecursively()
+            nsView.window?.contentView?.configureScrollbarsInSubviews()
         }
     }
 }
 
 private extension NSView {
-    func hideScrollIndicatorsRecursively() {
-        if let scrollView = enclosingScrollView {
-            scrollView.scrollerStyle = .overlay
-            scrollView.verticalScroller?.alphaValue = 0
-            scrollView.horizontalScroller?.alphaValue = 0
+    func configureScrollbarsInSubviews() {
+        // Configure scrollbars for this view if it's a scroll view
+        if let scrollView = self as? NSScrollView {
+            configureScrollView(scrollView)
         }
+
+        // Check enclosing scroll view
+        if let enclosingScroll = self.enclosingScrollView {
+            configureScrollView(enclosingScroll)
+        }
+
+        // Recursively configure in all subviews
         for subview in subviews {
-            subview.hideScrollIndicatorsRecursively()
+            subview.configureScrollbarsInSubviews()
         }
+    }
+
+    private func configureScrollView(_ scrollView: NSScrollView) {
+        // Use overlay style - scrollbars appear only when scrolling or hovering
+        scrollView.scrollerStyle = .overlay
+
+        // Enable scrollers so they can appear on demand
+        scrollView.hasVerticalScroller = true
+        scrollView.hasHorizontalScroller = true
+
+        // Overlay style automatically handles show/hide behavior:
+        // - Scrollers are hidden by default
+        // - Scrollers appear when scrolling
+        // - Scrollers appear when hovering over the scroll area
+        // - Scrollers fade out after inactivity
+
+        // Optional: Force immediate update
+        scrollView.flashScrollers()
     }
 }
 

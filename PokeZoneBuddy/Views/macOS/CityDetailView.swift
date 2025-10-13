@@ -44,6 +44,7 @@ struct CityDetailView: View {
             }
             .padding(32)
         }
+        .hideScrollIndicatorsCompat()
         .background(Color.appBackground)
         .navigationTitle(city.name)
         .toolbar {
