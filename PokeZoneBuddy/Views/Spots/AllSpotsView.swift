@@ -119,6 +119,7 @@ struct AllSpotsView: View {
                                 SpotRowContent(spot: spot)
                             }
                             .buttonStyle(.plain)
+                            .contentShape(Rectangle())
                         }
                         .onDelete { offsets in
                             citiesViewModel.deleteSpots(at: offsets, from: city)
@@ -162,7 +163,9 @@ struct AllSpotsView: View {
     // MARK: - Computed Properties
 
     private var allSpots: [CitySpot] {
-        citiesViewModel.favoriteCities.flatMap { city in
+        // Force recomputation when favoriteCities changes
+        _ = citiesViewModel.favoriteCities.count
+        return citiesViewModel.favoriteCities.flatMap { city in
             citiesViewModel.getSpots(for: city)
         }
     }
@@ -174,66 +177,58 @@ private struct SpotRowContent: View {
     let spot: CitySpot
 
     var body: some View {
-        HStack(spacing: 12) {
-            // Category Icon with liquid glass styling
-            Circle()
-                .fill(categoryColor.gradient)
-                .frame(width: 36, height: 36)
-                .overlay(
-                    Image(systemName: categoryIcon)
-                        .font(.system(size: 16))
-                        .foregroundStyle(.white)
+        VStack(spacing: 8) {
+            // Title and Badge Row
+            HStack(spacing: 12) {
+                // Name - Left aligned
+                Text(spot.name)
+                    .font(.system(size: 15, weight: .semibold))
+                    .lineLimit(1)
+
+                Spacer(minLength: 8)
+
+                // Favorite Indicator
+                if spot.isFavorite {
+                    Image(systemName: "star.fill")
+                        .font(.system(size: 12))
+                        .foregroundStyle(.yellow)
                         .symbolRenderingMode(.hierarchical)
-                )
-                .shadow(color: categoryColor.opacity(0.25), radius: 3, x: 0, y: 1.5)
-
-            // Spot Info - Compact layout with inline badge
-            VStack(alignment: .leading, spacing: 3) {
-                HStack(spacing: 6) {
-                    Text(spot.name)
-                        .font(.system(size: 15, weight: .semibold))
-                        .lineLimit(1)
-
-                    // Inline category badge
-                    HStack(spacing: 3) {
-                        Image(systemName: categoryIcon)
-                            .font(.system(size: 9))
-                        Text(spot.category.localizedName)
-                            .font(.system(size: 9, weight: .medium))
-                    }
-                    .foregroundStyle(categoryColor)
-                    .padding(.horizontal, 5)
-                    .padding(.vertical, 2)
-                    .background(
-                        Capsule()
-                            .fill(.ultraThinMaterial)
-                    )
-                    .overlay(
-                        Capsule()
-                            .strokeBorder(categoryColor.opacity(0.3), lineWidth: 0.5)
-                    )
-                    .shadow(color: categoryColor.opacity(0.1), radius: 1, x: 0, y: 0.5)
+                        .shadow(color: .yellow.opacity(0.3), radius: 2, x: 0, y: 1)
                 }
 
-                if !spot.notes.isEmpty {
+                // Category badge - Right aligned
+                HStack(spacing: 4) {
+                    Image(systemName: categoryIcon)
+                        .font(.system(size: 11, weight: .semibold))
+                    Text(spot.category.localizedName)
+                        .font(.system(size: 12, weight: .semibold))
+                }
+                .foregroundStyle(categoryColor)
+                .padding(.horizontal, 8)
+                .padding(.vertical, 4)
+                .background(
+                    Capsule()
+                        .fill(categoryColor.opacity(0.15))
+                )
+                .overlay(
+                    Capsule()
+                        .strokeBorder(categoryColor.opacity(0.4), lineWidth: 1)
+                )
+                .shadow(color: categoryColor.opacity(0.2), radius: 2, x: 0, y: 1)
+            }
+
+            // Notes
+            if !spot.notes.isEmpty {
+                HStack {
                     Text(spot.notes)
                         .font(.system(size: 12))
                         .foregroundStyle(.secondary)
                         .lineLimit(1)
+                    Spacer(minLength: 0)
                 }
             }
-
-            Spacer(minLength: 0)
-
-            // Favorite Indicator
-            if spot.isFavorite {
-                Image(systemName: "star.fill")
-                    .font(.system(size: 12))
-                    .foregroundStyle(.yellow)
-                    .symbolRenderingMode(.hierarchical)
-                    .shadow(color: .yellow.opacity(0.3), radius: 2, x: 0, y: 1)
-            }
         }
+        .frame(maxWidth: .infinity, alignment: .leading)
         .padding(.vertical, 6)
         .padding(.horizontal, 4)
     }

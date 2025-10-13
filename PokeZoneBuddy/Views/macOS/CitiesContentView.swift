@@ -93,7 +93,9 @@ private struct CityRowView: View {
     let viewModel: CitiesViewModel
 
     private var spotCount: Int {
-        viewModel.getSpots(for: city).count
+        // Force recomputation when favoriteCities changes
+        _ = viewModel.favoriteCities.count
+        return viewModel.getSpots(for: city).count
     }
 
     private var flagOrIcon: String {

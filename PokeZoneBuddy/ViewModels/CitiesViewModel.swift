@@ -359,6 +359,7 @@ final class CitiesViewModel {
 
         do {
             try modelContext.save()
+            loadFavoriteCitiesFromDatabase() // Reload to update spot counts
             AppLogger.viewModel.info(
                 "Spot hinzugefügt: \(name) in \(city.name) (\(category.localizedName))"
             )
@@ -383,6 +384,7 @@ final class CitiesViewModel {
 
         do {
             try modelContext.save()
+            loadFavoriteCitiesFromDatabase() // Reload to update spot counts
             AppLogger.viewModel.info("Spot gelöscht: \(spotName) aus \(cityName)")
         } catch {
             AppLogger.viewModel.error(
@@ -406,6 +408,7 @@ final class CitiesViewModel {
 
         do {
             try modelContext.save()
+            loadFavoriteCitiesFromDatabase() // Reload to update spot counts
             AppLogger.viewModel.info("Spots gelöscht: \(offsets.count) Spot(s) aus \(city.name)")
         } catch {
             AppLogger.viewModel.error("Fehler beim Löschen: \(String(describing: error))")
@@ -432,6 +435,7 @@ final class CitiesViewModel {
 
         do {
             try modelContext.save()
+            loadFavoriteCitiesFromDatabase() // Reload to trigger view updates
             AppLogger.viewModel.info(
                 "Spot aktualisiert: \(name) (\(category.localizedName))"
             )
@@ -452,6 +456,7 @@ final class CitiesViewModel {
 
         do {
             try modelContext.save()
+            loadFavoriteCitiesFromDatabase() // Reload to trigger view updates
             AppLogger.viewModel.info(
                 "Spot Favoriten-Status geändert: \(spot.name) -> \(newStatus)"
             )
