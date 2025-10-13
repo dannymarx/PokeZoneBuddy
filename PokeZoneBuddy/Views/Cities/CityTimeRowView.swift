@@ -44,53 +44,69 @@ struct CityTimeRowView: View {
 
     private var cityHeader: some View {
         HStack(spacing: 12) {
-            // Flag/Icon
+            // Flag/Icon - Compact with liquid glass
             if !flagOrIcon.isEmpty {
                 Text(flagOrIcon)
-                    .font(.system(size: 40))
-                    .frame(width: 50, height: 50)
+                    .font(.system(size: 32))
+                    .frame(width: 40, height: 40)
             } else {
-                Image(systemName: "location.circle.fill")
-                    .font(.system(size: 28))
-                    .foregroundStyle(.blue.gradient)
-                    .frame(width: 50, height: 50)
+                Circle()
+                    .fill(.blue.gradient)
+                    .frame(width: 40, height: 40)
+                    .overlay(
+                        Image(systemName: "location.circle.fill")
+                            .font(.system(size: 20))
+                            .foregroundStyle(.white)
+                    )
+                    .shadow(color: .blue.opacity(0.2), radius: 3, x: 0, y: 1)
             }
 
-            VStack(alignment: .leading, spacing: 4) {
+            VStack(alignment: .leading, spacing: 3) {
                 Text(city.name)
-                    .font(.system(size: 17, weight: .semibold))
+                    .font(.system(size: 16, weight: .semibold))
+                    .lineLimit(1)
 
-                HStack(spacing: 6) {
+                // Compact single-line info
+                HStack(spacing: 4) {
                     if let country = countryName {
                         Text(country)
-                            .font(.system(size: 12, weight: .medium))
+                            .font(.system(size: 11, weight: .medium))
                             .foregroundStyle(.secondary)
+                            .lineLimit(1)
 
                         Text("•")
-                            .foregroundStyle(.tertiary)
+                            .font(.system(size: 11))
+                            .foregroundStyle(.quaternary)
                     }
 
                     Text(continent)
-                        .font(.system(size: 12, weight: .medium))
+                        .font(.system(size: 11, weight: .medium))
                         .foregroundStyle(.secondary)
+                        .lineLimit(1)
 
                     Text("•")
-                        .foregroundStyle(.tertiary)
+                        .font(.system(size: 11))
+                        .foregroundStyle(.quaternary)
 
                     Text(city.abbreviatedTimeZone)
-                        .font(.system(size: 12, weight: .medium))
+                        .font(.system(size: 11, weight: .medium))
                         .foregroundStyle(.secondary)
+                        .lineLimit(1)
 
                     Text("•")
-                        .foregroundStyle(.tertiary)
+                        .font(.system(size: 11))
+                        .foregroundStyle(.quaternary)
 
                     Text(city.formattedUTCOffset)
-                        .font(.system(size: 12, weight: .semibold))
+                        .font(.system(size: 11, weight: .semibold))
                         .foregroundStyle(.blue)
+                        .lineLimit(1)
                 }
+                .lineLimit(1)
+                .truncationMode(.tail)
             }
 
-            Spacer()
+            Spacer(minLength: 0)
         }
     }
 
