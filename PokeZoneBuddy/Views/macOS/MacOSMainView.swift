@@ -81,6 +81,7 @@ private struct MacOSContentView: View {
     @State private var cityForNewSpot: FavoriteCity?
     @State private var selectedCity: FavoriteCity?
     @State private var selectedSpot: CitySpot?
+    @State private var editingSpot: CitySpot?
     @State private var columnVisibility: NavigationSplitViewVisibility = .all
 
     // MARK: - Body
@@ -126,6 +127,10 @@ private struct MacOSContentView: View {
                 cityForNewSpot = city
             }
             .presentationSizing(.fitted)
+        }
+        .sheet(item: $editingSpot) { spot in
+            EditSpotSheet(spot: spot, viewModel: citiesViewModel)
+                .presentationSizing(.fitted)
         }
         .onChange(of: selectedSidebarItem) { _, newValue in
             if newValue == .settings {
@@ -213,7 +218,7 @@ private struct MacOSContentView: View {
         case .allSpots:
             if let spot = selectedSpot {
                 SpotDetailView(spot: spot, viewModel: citiesViewModel) { editSpot in
-                    // Handle edit
+                    editingSpot = editSpot
                 }
             } else {
                 EmptyStateView(

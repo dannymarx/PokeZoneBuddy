@@ -121,9 +121,10 @@ struct CitiesManagementView: View {
                             activeSpotForSpots = viewModel.getSpots(for: city).first
                             activeCityForSpots = city
                         } label: {
-                            FavoriteCityRowContent(city: city)
+                            FavoriteCityRowContent(city: city, viewModel: viewModel)
                         }
                         .buttonStyle(.plain)
+                        .contentShape(Rectangle())
                     }
                     .onDelete { offsets in
                         viewModel.removeCities(at: offsets)
@@ -154,6 +155,13 @@ struct CitiesManagementView: View {
 
 private struct FavoriteCityRowContent: View {
     let city: FavoriteCity
+    let viewModel: CitiesViewModel
+
+    private var spotCount: Int {
+        // Force recomputation when favoriteCities changes
+        _ = viewModel.favoriteCities.count
+        return viewModel.getSpots(for: city).count
+    }
 
     private var flagOrIcon: String {
         if let country = CityDisplayHelpers.extractCountry(from: city.fullName),
@@ -172,57 +180,98 @@ private struct FavoriteCityRowContent: View {
     }
 
     var body: some View {
-        HStack(spacing: 16) {
-            // Flag/Icon
+        HStack(spacing: 12) {
+            // Flag/Icon - Smaller and more compact
             if !flagOrIcon.isEmpty {
                 Text(flagOrIcon)
-                    .font(.system(size: 44))
-                    .frame(width: 56, height: 56)
-            } else {
-                Image(systemName: "location.circle.fill")
                     .font(.system(size: 32))
-                    .foregroundStyle(.blue.gradient)
-                    .frame(width: 56, height: 56)
+                    .frame(width: 40, height: 40)
+            } else {
+                Circle()
+                    .fill(.blue.gradient)
+                    .frame(width: 40, height: 40)
+                    .overlay(
+                        Image(systemName: "location.circle.fill")
+                            .font(.system(size: 20))
+                            .foregroundStyle(.white)
+                    )
+                    .shadow(color: .blue.opacity(0.2), radius: 3, x: 0, y: 1)
             }
 
-            // Info
-            VStack(alignment: .leading, spacing: 6) {
+            // Info - Compact layout
+            VStack(alignment: .leading, spacing: 3) {
                 Text(city.name)
-                    .font(.system(size: 18, weight: .semibold))
+                    .font(.system(size: 16, weight: .semibold))
+                    .lineLimit(1)
 
-                HStack(spacing: 8) {
+                // Compact single-line info with truncation
+                HStack(spacing: 4) {
                     if let country = countryName {
                         Text(country)
-                            .font(.system(size: 13, weight: .medium))
+                            .font(.system(size: 11, weight: .medium))
                             .foregroundStyle(.secondary)
+                            .lineLimit(1)
 
                         Text("•")
+                            .font(.system(size: 11))
                             .foregroundStyle(.quaternary)
                     }
 
                     Text(continent)
-                        .font(.system(size: 13, weight: .medium))
+                        .font(.system(size: 11, weight: .medium))
                         .foregroundStyle(.secondary)
+                        .lineLimit(1)
 
                     Text("•")
+                        .font(.system(size: 11))
                         .foregroundStyle(.quaternary)
 
                     Text(city.abbreviatedTimeZone)
-                        .font(.system(size: 13, weight: .medium))
+                        .font(.system(size: 11, weight: .medium))
                         .foregroundStyle(.secondary)
+                        .lineLimit(1)
 
                     Text("•")
+                        .font(.system(size: 11))
                         .foregroundStyle(.quaternary)
 
                     Text(city.formattedUTCOffset)
-                        .font(.system(size: 13, weight: .semibold))
+                        .font(.system(size: 11, weight: .semibold))
                         .foregroundStyle(.blue)
+                        .lineLimit(1)
                 }
+                .lineLimit(1)
+                .truncationMode(.tail)
             }
 
-            Spacer()
+            Spacer(minLength: 0)
+
+            // Spot Count Badge
+            if spotCount > 0 {
+                HStack(spacing: 3) {
+                    Image(systemName: "mappin.circle.fill")
+                        .font(.system(size: 10))
+                        .symbolRenderingMode(.hierarchical)
+                    Text("\(spotCount)")
+                        .font(.system(size: 10, weight: .semibold))
+                }
+                .foregroundStyle(.blue)
+                .padding(.horizontal, 7)
+                .padding(.vertical, 4)
+                .background(
+                    Capsule()
+                        .fill(.ultraThinMaterial)
+                )
+                .overlay(
+                    Capsule()
+                        .strokeBorder(.blue.opacity(0.3), lineWidth: 0.5)
+                )
+                .shadow(color: .blue.opacity(0.12), radius: 2, x: 0, y: 1)
+            }
         }
-        .padding(.vertical, 12)
+        .frame(maxWidth: .infinity, alignment: .leading)
+        .padding(.vertical, 6)
+        .padding(.horizontal, 4)
     }
 }
 
