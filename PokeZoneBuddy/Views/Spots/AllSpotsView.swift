@@ -13,11 +13,11 @@ struct AllSpotsView: View {
     // MARK: - Properties
 
     @Bindable var citiesViewModel: CitiesViewModel
-    @State private var selectedCity: FavoriteCity?
     @State private var selectedSpot: CitySpot?
     @State private var showCityPicker = false
     @State private var showAddSpot = false
     @State private var cityForNewSpot: FavoriteCity?
+    @State private var editingSpot: CitySpot?
 
     // MARK: - Body
 
@@ -50,14 +50,21 @@ struct AllSpotsView: View {
                 }
             }
 #endif
-            .sheet(item: $selectedCity) { city in
-                SpotListView(
-                    viewModel: citiesViewModel,
-                    city: city,
-                    initialSpot: selectedSpot
-                )
+            .sheet(item: $selectedSpot) { spot in
+                SpotDetailView(spot: spot, viewModel: citiesViewModel) { spot in
+                    editingSpot = spot
+                }
 #if os(iOS)
-                .presentationDetents([.fraction(0.9), .large])
+                .presentationDetents([.large])
+                .presentationDragIndicator(.visible)
+#elseif os(macOS)
+                .presentationSizing(.fitted)
+#endif
+            }
+            .sheet(item: $editingSpot) { spot in
+                EditSpotSheet(spot: spot, viewModel: citiesViewModel)
+#if os(iOS)
+                .presentationDetents([.large])
                 .presentationDragIndicator(.visible)
 #elseif os(macOS)
                 .presentationSizing(.fitted)
@@ -89,11 +96,6 @@ struct AllSpotsView: View {
 #endif
                 }
             }
-            .onChange(of: selectedCity) { oldValue, newValue in
-                if case .none = newValue {
-                    selectedSpot = nil
-                }
-            }
             .onChange(of: showAddSpot) { _, newValue in
                 if !newValue {
                     cityForNewSpot = nil
@@ -113,11 +115,11 @@ struct AllSpotsView: View {
                         ForEach(spots, id: \.persistentModelID) { spot in
                             Button {
                                 selectedSpot = spot
-                                selectedCity = city
                             } label: {
                                 SpotRowContent(spot: spot)
                             }
                             .buttonStyle(.plain)
+                            .contentShape(Rectangle())
                         }
                         .onDelete { offsets in
                             citiesViewModel.deleteSpots(at: offsets, from: city)
@@ -161,7 +163,9 @@ struct AllSpotsView: View {
     // MARK: - Computed Properties
 
     private var allSpots: [CitySpot] {
-        citiesViewModel.favoriteCities.flatMap { city in
+        // Force recomputation when favoriteCities changes
+        _ = citiesViewModel.favoriteCities.count
+        return citiesViewModel.favoriteCities.flatMap { city in
             citiesViewModel.getSpots(for: city)
         }
     }
@@ -173,41 +177,60 @@ private struct SpotRowContent: View {
     let spot: CitySpot
 
     var body: some View {
-        HStack(spacing: 12) {
-            // Category Icon
-            Circle()
-                .fill(categoryColor.gradient)
-                .frame(width: 36, height: 36)
-                .overlay(
-                    Image(systemName: categoryIcon)
-                        .font(.system(size: 16))
-                        .foregroundStyle(.white)
-                )
-
-            // Spot Info
-            VStack(alignment: .leading, spacing: 4) {
+        VStack(spacing: 8) {
+            // Title and Badge Row
+            HStack(spacing: 12) {
+                // Name - Left aligned
                 Text(spot.name)
-                    .font(.system(size: 14, weight: .semibold))
+                    .font(.system(size: 15, weight: .semibold))
                     .lineLimit(1)
 
-                if !spot.notes.isEmpty {
+                Spacer(minLength: 8)
+
+                // Favorite Indicator
+                if spot.isFavorite {
+                    Image(systemName: "star.fill")
+                        .font(.system(size: 12))
+                        .foregroundStyle(.yellow)
+                        .symbolRenderingMode(.hierarchical)
+                        .shadow(color: .yellow.opacity(0.3), radius: 2, x: 0, y: 1)
+                }
+
+                // Category badge - Right aligned
+                HStack(spacing: 4) {
+                    Image(systemName: categoryIcon)
+                        .font(.system(size: 11, weight: .semibold))
+                    Text(spot.category.localizedName)
+                        .font(.system(size: 12, weight: .semibold))
+                }
+                .foregroundStyle(categoryColor)
+                .padding(.horizontal, 8)
+                .padding(.vertical, 4)
+                .background(
+                    Capsule()
+                        .fill(categoryColor.opacity(0.15))
+                )
+                .overlay(
+                    Capsule()
+                        .strokeBorder(categoryColor.opacity(0.4), lineWidth: 1)
+                )
+                .shadow(color: categoryColor.opacity(0.2), radius: 2, x: 0, y: 1)
+            }
+
+            // Notes
+            if !spot.notes.isEmpty {
+                HStack {
                     Text(spot.notes)
                         .font(.system(size: 12))
                         .foregroundStyle(.secondary)
                         .lineLimit(1)
+                    Spacer(minLength: 0)
                 }
             }
-
-            Spacer()
-
-            // Favorite Indicator
-            if spot.isFavorite {
-                Image(systemName: "star.fill")
-                    .font(.system(size: 12))
-                    .foregroundStyle(.yellow)
-            }
         }
-        .padding(.vertical, 4)
+        .frame(maxWidth: .infinity, alignment: .leading)
+        .padding(.vertical, 6)
+        .padding(.horizontal, 4)
     }
 
     private var categoryIcon: String {

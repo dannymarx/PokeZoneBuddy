@@ -24,7 +24,9 @@ struct CityDetailView: View {
     // MARK: - Computed Properties
 
     private var spots: [CitySpot] {
-        viewModel.getSpots(for: city)
+        // Force recomputation when favoriteCities changes (which happens after any spot operation)
+        _ = viewModel.favoriteCities.count
+        return viewModel.getSpots(for: city)
     }
 
     // MARK: - Body
@@ -333,58 +335,70 @@ private struct SpotDetailRow: View {
     let spot: CitySpot
     let viewModel: CitiesViewModel
 
-    @State private var showEditSpot = false
+    @State private var showSpotDetail = false
 
     var body: some View {
         Button {
-            showEditSpot = true
+            showSpotDetail = true
         } label: {
-            HStack(spacing: 12) {
-                Circle()
-                    .fill(categoryColor.gradient)
-                    .frame(width: 36, height: 36)
-                    .overlay(
-                        Image(systemName: categoryIcon)
-                            .font(.system(size: 16))
-                            .foregroundStyle(.white)
-                    )
-
-                VStack(alignment: .leading, spacing: 4) {
+            VStack(spacing: 8) {
+                // Title and Badge Row
+                HStack(spacing: 12) {
+                    // Name - Left aligned
                     Text(spot.name)
                         .font(.system(size: 14, weight: .semibold))
                         .lineLimit(1)
 
+                    Spacer(minLength: 8)
+
+                    if spot.isFavorite {
+                        Image(systemName: "star.fill")
+                            .font(.system(size: 11))
+                            .foregroundStyle(.yellow)
+                            .symbolRenderingMode(.hierarchical)
+                            .shadow(color: .yellow.opacity(0.3), radius: 2, x: 0, y: 1)
+                    }
+
+                    // Category badge - Right aligned
                     HStack(spacing: 4) {
+                        Image(systemName: categoryIcon)
+                            .font(.system(size: 11, weight: .semibold))
                         Text(spot.category.localizedName)
-                            .font(.system(size: 11, weight: .medium))
-                            .foregroundStyle(categoryColor)
+                            .font(.system(size: 12, weight: .semibold))
+                    }
+                    .foregroundStyle(categoryColor)
+                    .padding(.horizontal, 8)
+                    .padding(.vertical, 4)
+                    .background(
+                        Capsule()
+                            .fill(categoryColor.opacity(0.15))
+                    )
+                    .overlay(
+                        Capsule()
+                            .strokeBorder(categoryColor.opacity(0.4), lineWidth: 1)
+                    )
+                    .shadow(color: categoryColor.opacity(0.2), radius: 2, x: 0, y: 1)
+                }
 
-                        if !spot.notes.isEmpty {
-                            Text("•")
-                                .foregroundStyle(.quaternary)
-
-                            Text(spot.notes)
-                                .font(.system(size: 11))
-                                .foregroundStyle(.secondary)
-                                .lineLimit(1)
-                        }
+                // Notes
+                if !spot.notes.isEmpty {
+                    HStack {
+                        Text(spot.notes)
+                            .font(.system(size: 11))
+                            .foregroundStyle(.secondary)
+                            .lineLimit(1)
+                        Spacer(minLength: 0)
                     }
                 }
-
-                Spacer()
-
-                if spot.isFavorite {
-                    Image(systemName: "star.fill")
-                        .font(.system(size: 12))
-                        .foregroundStyle(.yellow)
-                }
             }
-            .padding(.vertical, 4)
+            .frame(maxWidth: .infinity, alignment: .leading)
+            .padding(.vertical, 6)
+            .padding(.horizontal, 4)
+            .contentShape(Rectangle())
         }
         .buttonStyle(.plain)
-        .sheet(isPresented: $showEditSpot) {
-            EditSpotSheet(spot: spot, viewModel: viewModel)
-                .presentationSizing(.fitted)
+        .sheet(isPresented: $showSpotDetail) {
+            SpotDetailView(spot: spot, viewModel: viewModel, isSheet: true)
         }
     }
 
