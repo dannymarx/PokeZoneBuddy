@@ -27,20 +27,23 @@ final class APIService {
         let config = URLSessionConfiguration.default
         config.timeoutIntervalForRequest = 30
         config.timeoutIntervalForResource = 60
-        
+
+        // Reduce network error verbosity
+        config.waitsForConnectivity = true
+
         // OPTIMIZED: URLCache für automatisches Image + API Caching
         let cachesDirectory = FileManager.default.urls(for: .cachesDirectory, in: .userDomainMask)[0]
         let cacheURL = cachesDirectory.appendingPathComponent("PokeZoneBuddyCache")
-        
+
         let cache = URLCache(
             memoryCapacity: 50_000_000,   // 50 MB memory (Images + API responses)
             diskCapacity: 200_000_000,    // 200 MB disk (plenty for offline mode)
             directory: cacheURL
         )
-        
+
         config.urlCache = cache
         config.requestCachePolicy = .returnCacheDataElseLoad
-        
+
         return URLSession(configuration: config)
     }()
     
