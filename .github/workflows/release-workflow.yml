@@ -15,7 +15,7 @@ env:
 
 jobs:
   release:
-    runs-on: macos-latest
+    runs-on: macos-26
     steps:
       - uses: actions/checkout@v4
 
@@ -34,7 +34,7 @@ jobs:
             CODE_SIGNING_REQUIRED=NO \
             CODE_SIGN_IDENTITY="" \
             DEVELOPMENT_TEAM="" \
-            MACOSX_DEPLOYMENT_TARGET=15.0
+            MACOSX_DEPLOYMENT_TARGET=26.0
 
       - name: Prepare DMG payload
         run: |
