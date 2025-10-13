@@ -44,7 +44,7 @@ jobs:
     cp -R "$APP_PATH" "build/dmg_src/"
     ln -s /Applications "build/dmg_src/Applications"
 
-      - name: Create DMG
+- name: Create DMG
         id: dmg
         run: |
           set -e
@@ -54,7 +54,7 @@ jobs:
                          -ov -format UDZO "$DMG"
           echo "path=$DMG" >> "$GITHUB_OUTPUT"
 
-      - name: Create Git tag and GitHub Release
+- name: Create Git tag and GitHub Release
         id: rel
         uses: softprops/action-gh-release@v2
         with:
@@ -65,7 +65,7 @@ jobs:
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
-      - name: Build manifest -> /docs/version.json
+- name: Build manifest -> /docs/version.json
         run: |
           set -e
           VER="${{ steps.v.outputs.ver }}"
@@ -87,7 +87,7 @@ jobs:
           echo "Wrote docs/version.json:"
           cat docs/version.json
 
-      - name: Commit manifest to repo
+- name: Commit manifest to repo
         run: |
           set -e
           git config user.name "github-actions[bot]"
