@@ -6,7 +6,7 @@ on:
     paths: [ "VERSION" ]
 
 permissions:
-  contents: write   # nötig für Release + Commit in /docs
+  contents: write
 
 env:
   APP_NAME: PokeZoneBuddy
@@ -16,7 +16,6 @@ env:
 jobs:
   release:
     runs-on: macos-latest
-
     steps:
       - uses: actions/checkout@v4
 
@@ -42,8 +41,8 @@ jobs:
           APP_PATH="build/App.xcarchive/Products/Applications/${APP_NAME}.app"
           test -d "$APP_PATH" || { echo "App not found at $APP_PATH"; exit 1; }
           mkdir -p build/dmg_src
-          cp -R "$APP_PATH" "build/dmg_src/"
-          ln -s /Applications "build/dmg_src/Applications"
+          cp -R "$APP_PATH" build/dmg_src/
+          ln -s /Applications build/dmg_src/Applications
 
       - name: Create DMG
         id: dmg
@@ -73,18 +72,16 @@ jobs:
           URL="${{ steps.rel.outputs.html_url }}"
           NOW="$(date -u +%Y-%m-%dT%H:%M:%SZ)"
           mkdir -p docs
-          cat > docs/version.json <<EOF
-{
-  "latest": "${VER}",
-  "minSupported": "${VER}",
-  "releasedAt": "${NOW}",
-  "notesURL": "${URL}",
-  "destinations": {
-    "macOS": "${URL}"
-  },
-  "critical": false
-}
-EOF
+          printf '%s\n' '{' \
+            "  \"latest\": \"${VER}\"," \
+            "  \"minSupported\": \"${VER}\"," \
+            "  \"releasedAt\": \"${NOW}\"," \
+            "  \"notesURL\": \"${URL}\"," \
+            '  "destinations": {' \
+            "    \"macOS\": \"${URL}\"" \
+            '  },' \
+            '  "critical": false' \
+            '}' > docs/version.json
           echo "Wrote docs/version.json:"
           cat docs/version.json
 
