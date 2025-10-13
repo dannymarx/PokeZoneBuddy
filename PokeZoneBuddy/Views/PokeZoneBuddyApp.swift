@@ -8,10 +8,18 @@
 
 import SwiftUI
 import SwiftData
+import UserNotifications
 
 @main
 struct PokeZoneBuddyApp: App {
-    
+
+    // MARK: - Initialization
+
+    init() {
+        // Set up notification delegate
+        UNUserNotificationCenter.current().delegate = NotificationDelegate.shared
+    }
+
     // MARK: - SwiftData Container
     @AppStorage(ThemePreference.storageKey) private var themePreferenceRaw = ThemePreference.system.rawValue
     
@@ -23,7 +31,8 @@ struct PokeZoneBuddyApp: App {
             Event.self,
             FavoriteCity.self,
             CitySpot.self,
-            FavoriteEvent.self
+            FavoriteEvent.self,
+            ReminderPreferences.self
         ])
 
         let modelConfiguration = ModelConfiguration(
