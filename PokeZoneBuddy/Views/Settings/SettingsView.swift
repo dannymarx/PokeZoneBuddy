@@ -103,6 +103,7 @@ struct SettingsView: View {
     @State private var showDeleteAllDataConfirmation = false
     @State private var isRefreshing = false
     @State private var navigationPath = NavigationPath()
+    @State private var citiesViewModel: CitiesViewModel?
 
     // MARK: - Body
 
@@ -150,6 +151,9 @@ struct SettingsView: View {
                 }
             }
             .onAppear {
+                if citiesViewModel == nil {
+                    citiesViewModel = CitiesViewModel(modelContext: modelContext)
+                }
                 updateStats()
             }
             .onDisappear {
@@ -203,6 +207,7 @@ struct SettingsView: View {
         VStack(spacing: 32) {
             appearanceSection
             notificationsNavigationSection
+            dataManagementSection
             statisticsSection
             actionsSection
         }
@@ -333,6 +338,27 @@ struct SettingsView: View {
                 .shadow(color: .black.opacity(0.05), radius: 8, x: 0, y: 2)
             }
             .buttonStyle(.plain)
+        }
+    }
+
+    // MARK: - Data Management Section
+
+    private var dataManagementSection: some View {
+        VStack(spacing: 16) {
+            HStack {
+                Text("Data Management")
+                    .font(.system(size: 18, weight: .semibold))
+                    .foregroundStyle(.primary)
+                Spacer()
+            }
+
+            if let viewModel = citiesViewModel {
+                ImportExportView(viewModel: viewModel)
+            } else {
+                Text("Loading...")
+                    .font(.system(size: 13))
+                    .foregroundStyle(.secondary)
+            }
         }
     }
 
