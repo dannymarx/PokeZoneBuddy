@@ -17,19 +17,24 @@ struct SpotDetailView: View {
     let spot: CitySpot
     let viewModel: CitiesViewModel
     let onEdit: (CitySpot) -> Void
+    let isSheet: Bool
 
     // MARK: - State
 
     @State private var showCopiedAlert: Bool = false
+    @State private var showEditSheet: Bool = false
     @State private var cameraPosition: MapCameraPosition
+    @Environment(\.dismiss) private var dismiss
 
     init(
         spot: CitySpot,
         viewModel: CitiesViewModel,
+        isSheet: Bool = false,
         onEdit: @escaping (CitySpot) -> Void = { _ in }
     ) {
         self.spot = spot
         self.viewModel = viewModel
+        self.isSheet = isSheet
         self.onEdit = onEdit
 
         // Initialize camera position to spot location
@@ -65,10 +70,31 @@ struct SpotDetailView: View {
         .toolbar {
             toolbarContent
         }
+        .sheet(isPresented: $showEditSheet) {
+            EditSpotSheet(spot: spot, viewModel: viewModel)
+                #if os(macOS)
+                .presentationSizing(.fitted)
+                #endif
+        }
         .alert(String(localized: "spots.copied"), isPresented: $showCopiedAlert) {
             Button(String(localized: "common.ok"), role: .cancel) {}
         } message: {
             Text(String(localized: "spots.copied"))
+        }
+        .onChange(of: spot.persistentModelID) { _, _ in
+            // Update camera position when spot changes
+            let coordinate = CLLocationCoordinate2D(
+                latitude: spot.latitude,
+                longitude: spot.longitude
+            )
+            withAnimation {
+                cameraPosition = .region(
+                    MKCoordinateRegion(
+                        center: coordinate,
+                        span: MKCoordinateSpan(latitudeDelta: 0.01, longitudeDelta: 0.01)
+                    )
+                )
+            }
         }
     }
 
@@ -78,46 +104,14 @@ struct SpotDetailView: View {
     @ViewBuilder
     private var spotHeader: some View {
         VStack(spacing: 16) {
-            // Category Icon
-            Circle()
-                .fill(categoryColor.gradient)
-                .frame(width: 80, height: 80)
-                .overlay(
-                    Image(systemName: categoryIcon)
-                        .font(.system(size: 36))
-                        .foregroundStyle(.white)
-                        .symbolRenderingMode(.hierarchical)
-                )
-                .shadow(color: categoryColor.opacity(0.3), radius: 8, x: 0, y: 4)
-
             // Spot Name
             Text(spot.name)
                 .font(.system(size: 28, weight: .bold))
                 .multilineTextAlignment(.center)
 
-            // Category Badge
-            HStack(spacing: 6) {
-                Image(systemName: categoryIcon)
-                    .font(.system(size: 12))
-                Text(spot.category.localizedName)
-                    .font(.system(size: 14, weight: .semibold))
-            }
-            .foregroundStyle(categoryColor)
-            .padding(.horizontal, 16)
-            .padding(.vertical, 8)
-            .background(
-                Capsule()
-                    .fill(.ultraThinMaterial)
-            )
-            .overlay(
-                Capsule()
-                    .strokeBorder(categoryColor.opacity(0.3), lineWidth: 1)
-            )
-            .shadow(color: categoryColor.opacity(0.15), radius: 3, x: 0, y: 2)
-
             // Location Information
             if let city = spot.city {
-                VStack(spacing: 8) {
+                VStack(spacing: 12) {
                     HStack(spacing: 8) {
                         Image(systemName: "building.2.fill")
                             .font(.system(size: 14))
@@ -141,6 +135,26 @@ struct SpotDetailView: View {
                             .foregroundStyle(.secondary)
                             .monospacedDigit()
                     }
+
+                    // Category Badge - Below location info
+                    HStack(spacing: 4) {
+                        Image(systemName: categoryIcon)
+                            .font(.system(size: 12, weight: .semibold))
+                        Text(spot.category.localizedName)
+                            .font(.system(size: 13, weight: .semibold))
+                    }
+                    .foregroundStyle(categoryColor)
+                    .padding(.horizontal, 12)
+                    .padding(.vertical, 6)
+                    .background(
+                        Capsule()
+                            .fill(categoryColor.opacity(0.15))
+                    )
+                    .overlay(
+                        Capsule()
+                            .strokeBorder(categoryColor.opacity(0.4), lineWidth: 1)
+                    )
+                    .shadow(color: categoryColor.opacity(0.2), radius: 3, x: 0, y: 2)
                 }
             }
         }
@@ -286,19 +300,53 @@ struct SpotDetailView: View {
     @ToolbarContentBuilder
     private var toolbarContent: some ToolbarContent {
         #if os(macOS)
-        // macOS: Explicit Edit button
+        // macOS: Close button when presented as sheet
+        if isSheet {
+            ToolbarItem(placement: .cancellationAction) {
+                Button {
+                    dismiss()
+                } label: {
+                    Label(String(localized: "common.close"), systemImage: "xmark.circle.fill")
+                }
+            }
+        }
+
+        // macOS: Edit button
         ToolbarItem(placement: .primaryAction) {
             Button {
-                onEdit(spot)
+                if isSheet {
+                    // When presented as sheet, use internal sheet
+                    showEditSheet = true
+                } else {
+                    // Otherwise, call the callback
+                    onEdit(spot)
+                }
             } label: {
                 Label(String(localized: "spots.action.edit"), systemImage: "pencil")
             }
         }
         #else
+        // iOS: Close button when presented as sheet
+        if isSheet {
+            ToolbarItem(placement: .cancellationAction) {
+                Button {
+                    dismiss()
+                } label: {
+                    Label(String(localized: "common.close"), systemImage: "xmark.circle.fill")
+                }
+            }
+        }
+
         // iOS: Edit button
         ToolbarItem(placement: .primaryAction) {
             Button {
-                onEdit(spot)
+                if isSheet {
+                    // When presented as sheet, use internal sheet
+                    showEditSheet = true
+                } else {
+                    // Otherwise, call the callback
+                    onEdit(spot)
+                }
             } label: {
                 Label(String(localized: "spots.action.edit"), systemImage: "pencil")
             }

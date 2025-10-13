@@ -194,25 +194,18 @@ struct SpotListView: View {
     /// Liste für Split-Layout mit Selection-Binding
     @ViewBuilder
     private func splitList(columnWidth: CGFloat) -> some View {
-        List(selection: bindingToActiveSpot) {
-            ForEach(spots) { spot in
-                SpotRowView(
-                    spot: spot,
-                    onEdit: { editingSpot = spot },
-                    onDelete: { deleteSpot(spot) }
-                )
-                .tag(spot.id)
-                .contentShape(Rectangle())
-                .swipeActions(edge: .trailing, allowsFullSwipe: false) {
-                    deleteButton(for: spot)
-                }
-                .swipeActions(edge: .leading, allowsFullSwipe: false) {
-                    editButton(for: spot)
-                    favoriteButton(for: spot)
-                }
-                .onTapGesture {
-                    activeSpotID = spot.id
-                }
+        List(selection: $activeSpotID) {
+            ForEach(spots, id: \.persistentModelID) { spot in
+                SimpleSpotRow(spot: spot)
+                    .tag(spot.persistentModelID)
+                    .contentShape(Rectangle())
+                    .swipeActions(edge: .trailing, allowsFullSwipe: false) {
+                        deleteButton(for: spot)
+                    }
+                    .swipeActions(edge: .leading, allowsFullSwipe: false) {
+                        editButton(for: spot)
+                        favoriteButton(for: spot)
+                    }
             }
             .onDelete { offsets in
                 deleteSpots(at: offsets)
@@ -228,15 +221,14 @@ struct SpotListView: View {
         #else
         .listStyle(.insetGrouped)
         #endif
-        .listRowInsets(EdgeInsets(top: 10, leading: 14, bottom: 10, trailing: 12))
         .frame(width: columnWidth)
     }
 
     /// Liste für Stack-Layout mit NavigationLinks
     private var stackList: some View {
         List {
-            ForEach(spots) { spot in
-                NavigationLink(value: spot.id) {
+            ForEach(spots, id: \.persistentModelID) { spot in
+                NavigationLink(value: spot.persistentModelID) {
                     SpotRowView(
                         spot: spot,
                         onEdit: { editingSpot = spot },
@@ -265,7 +257,6 @@ struct SpotListView: View {
         #else
         .listStyle(.insetGrouped)
         #endif
-        .listRowInsets(EdgeInsets(top: 10, leading: 14, bottom: 10, trailing: 12))
     }
 
     // MARK: - Buttons
@@ -372,10 +363,10 @@ struct SpotListView: View {
 
     /// Löscht einen Spot und aktualisiert Selektionen
     private func deleteSpot(_ spot: CitySpot) {
-        if activeSpotID == spot.id {
+        if activeSpotID == spot.persistentModelID {
             activeSpotID = nil
         }
-        if navigationPath.last == spot.id {
+        if navigationPath.last == spot.persistentModelID {
             navigationPath.removeAll()
         }
         viewModel.deleteSpot(spot)
@@ -397,21 +388,21 @@ struct SpotListView: View {
     /// Liefert den Spot für eine ID, falls vorhanden
     private func spot(for id: CitySpot.ID?) -> CitySpot? {
         guard let id else { return nil }
-        return spots.first(where: { $0.id == id })
+        return spots.first(where: { $0.persistentModelID == id })
     }
 
     /// Prüft ob eine ID in der aktuellen Liste existiert
     private func resolveExistingID(from id: CitySpot.ID?) -> CitySpot.ID? {
         guard let id else { return nil }
-        return spots.contains(where: { $0.id == id }) ? id : nil
+        return spots.contains(where: { $0.persistentModelID == id }) ? id : nil
     }
 
     /// Initialisiert die Auswahl nur einmal
     private func seedSelectionIfNeeded(for style: LayoutStyle) {
         guard !didSeedSelection else { return }
 
-        let initialID = resolveExistingID(from: initialSpot?.id)
-        let fallbackID = initialID ?? spots.first?.id
+        let initialID = resolveExistingID(from: initialSpot?.persistentModelID)
+        let fallbackID = initialID ?? spots.first?.persistentModelID
 
         switch style {
         case .split:
@@ -434,7 +425,7 @@ struct SpotListView: View {
                let resolved = resolveExistingID(from: pathID) {
                 activeSpotID = resolved
             } else if activeSpotID == nil {
-                activeSpotID = spots.first?.id
+                activeSpotID = spots.first?.persistentModelID
             }
         case .stack:
             if let activeSpotID,
@@ -442,7 +433,7 @@ struct SpotListView: View {
                 if navigationPath.last != activeSpotID {
                     navigationPath = [activeSpotID]
                 }
-            } else if let firstID = spots.first?.id {
+            } else if let firstID = spots.first?.persistentModelID {
                 activeSpotID = firstID
                 navigationPath = [firstID]
             } else {
@@ -455,8 +446,8 @@ struct SpotListView: View {
     private func cleanupSelection(for style: LayoutStyle) {
         if resolveExistingID(from: activeSpotID) == nil {
             if style == .split {
-                activeSpotID = spots.first?.id
-            } else if let firstID = spots.first?.id {
+                activeSpotID = spots.first?.persistentModelID
+            } else if let firstID = spots.first?.persistentModelID {
                 activeSpotID = firstID
                 navigationPath = [firstID]
             } else {
@@ -466,11 +457,92 @@ struct SpotListView: View {
 
         if let last = navigationPath.last,
            resolveExistingID(from: last) == nil {
-            if let firstID = spots.first?.id {
+            if let firstID = spots.first?.persistentModelID {
                 navigationPath = [firstID]
             } else {
                 navigationPath.removeAll()
             }
+        }
+    }
+}
+
+// MARK: - Simple Spot Row (for selectable lists)
+
+private struct SimpleSpotRow: View {
+    let spot: CitySpot
+
+    var body: some View {
+        VStack(spacing: 8) {
+            // Title and Badge Row
+            HStack(spacing: 12) {
+                // Name - Left aligned
+                Text(spot.name)
+                    .font(.system(size: 15, weight: .semibold))
+                    .lineLimit(1)
+
+                Spacer(minLength: 8)
+
+                // Favorite Star
+                if spot.isFavorite {
+                    Image(systemName: "star.fill")
+                        .font(.system(size: 12))
+                        .foregroundStyle(.yellow)
+                        .symbolRenderingMode(.hierarchical)
+                        .shadow(color: .yellow.opacity(0.3), radius: 2, x: 0, y: 1)
+                }
+
+                // Category badge - Right aligned
+                HStack(spacing: 4) {
+                    Image(systemName: categoryIcon)
+                        .font(.system(size: 11, weight: .semibold))
+                    Text(spot.category.localizedName)
+                        .font(.system(size: 12, weight: .semibold))
+                }
+                .foregroundStyle(categoryColor)
+                .padding(.horizontal, 8)
+                .padding(.vertical, 4)
+                .background(
+                    Capsule()
+                        .fill(categoryColor.opacity(0.15))
+                )
+                .overlay(
+                    Capsule()
+                        .strokeBorder(categoryColor.opacity(0.4), lineWidth: 1)
+                )
+                .shadow(color: categoryColor.opacity(0.2), radius: 2, x: 0, y: 1)
+            }
+
+            // Notes
+            if !spot.notes.isEmpty {
+                HStack {
+                    Text(spot.notes)
+                        .font(.system(size: 12))
+                        .foregroundStyle(.secondary)
+                        .lineLimit(1)
+                        .truncationMode(.tail)
+                    Spacer(minLength: 0)
+                }
+            }
+        }
+        .padding(.vertical, 8)
+        .padding(.horizontal, 8)
+    }
+
+    private var categoryIcon: String {
+        switch spot.category {
+        case .pokestop: return "mappin.circle.fill"
+        case .gym: return "dumbbell.fill"
+        case .meetingPoint: return "person.2.fill"
+        case .other: return "mappin.and.ellipse"
+        }
+    }
+
+    private var categoryColor: Color {
+        switch spot.category {
+        case .pokestop: return .blue
+        case .gym: return .red
+        case .meetingPoint: return .purple
+        case .other: return .gray
         }
     }
 }
