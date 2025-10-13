@@ -36,12 +36,28 @@ class FavoritesManager {
         if let existing = fetchFavorite(eventID: eventID) {
             // Event is favorited - remove it
             modelContext.delete(existing)
+
+            // Cancel notifications and delete preferences
+            Task { @MainActor in
+                await NotificationManager.shared.cancelNotifications(for: eventID)
+                let preferencesManager = ReminderPreferencesManager(modelContext: modelContext)
+                preferencesManager.deletePreferences(for: eventID)
+            }
         } else {
             // Event is not favorited - add it
             let favorite = FavoriteEvent(eventID: eventID)
             modelContext.insert(favorite)
+
+            // Schedule notifications using custom preferences
+            Task { @MainActor in
+                if let event = fetchEvent(eventID: eventID) {
+                    let preferencesManager = ReminderPreferencesManager(modelContext: modelContext)
+                    let offsets = preferencesManager.getEnabledOffsets(for: eventID)
+                    await NotificationManager.shared.scheduleNotifications(for: event, offsets: offsets)
+                }
+            }
         }
-        
+
         // Save changes
         try? modelContext.save()
     }
@@ -68,7 +84,7 @@ class FavoritesManager {
     }
     
     // MARK: - Private Methods
-    
+
     /// Fetches a favorite event by ID
     /// - Parameter eventID: The unique ID of the event
     /// - Returns: The FavoriteEvent if found, nil otherwise
@@ -76,7 +92,18 @@ class FavoritesManager {
         let descriptor = FetchDescriptor<FavoriteEvent>(
             predicate: #Predicate { $0.eventID == eventID }
         )
-        
+
+        return try? modelContext.fetch(descriptor).first
+    }
+
+    /// Fetches an event by ID
+    /// - Parameter eventID: The unique ID of the event
+    /// - Returns: The Event if found, nil otherwise
+    private func fetchEvent(eventID: String) -> Event? {
+        let descriptor = FetchDescriptor<Event>(
+            predicate: #Predicate { $0.id == eventID }
+        )
+
         return try? modelContext.fetch(descriptor).first
     }
 }

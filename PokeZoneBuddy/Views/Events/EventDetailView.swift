@@ -47,7 +47,12 @@ struct EventDetailView: View {
                     
                     // Pokemon Details (Spotlight/Raid/CD)
                     pokemonDetailsSection
-                    
+
+                    // Event Reminder Settings
+                    if event.isUpcoming {
+                        EventReminderDetailView(event: event)
+                    }
+
                     // Time Zones Section
                     if !favoriteCities.isEmpty {
                         timeZonesSection
