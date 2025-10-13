@@ -24,22 +24,25 @@ jobs:
         id: v
         run: echo "ver=$(tr -d ' \n\r' < VERSION)" >> "$GITHUB_OUTPUT"
 
-      - name: Xcode archive
-        run: |
-          set -e
-          xcodebuild -scheme "$SCHEME" -configuration "$CONFIG" \
-            -archivePath build/App.xcarchive \
-            -destination "generic/platform=macOS" \
-            archive
+   - name: Xcode archive (unsigned)
+  run: |
+    set -e
+    xcodebuild -scheme "$SCHEME" -configuration "$CONFIG" \
+      -archivePath build/App.xcarchive \
+      -destination "generic/platform=macOS" archive \
+      CODE_SIGNING_ALLOWED=NO \
+      CODE_SIGNING_REQUIRED=NO \
+      CODE_SIGN_IDENTITY="" \
+      DEVELOPMENT_TEAM=""
 
-      - name: Prepare DMG payload
-        run: |
-          set -e
-          APP_PATH="build/App.xcarchive/Products/Applications/${APP_NAME}.app"
-          test -d "$APP_PATH" || { echo "App not found at $APP_PATH"; exit 1; }
-          mkdir -p build/dmg_src
-          cp -R "$APP_PATH" "build/dmg_src/"
-          ln -s /Applications "build/dmg_src/Applications"
+- name: Prepare DMG payload
+  run: |
+    set -e
+    APP_PATH="build/App.xcarchive/Products/Applications/${APP_NAME}.app"
+    test -d "$APP_PATH" || { echo "App not found at $APP_PATH"; exit 1; }
+    mkdir -p build/dmg_src
+    cp -R "$APP_PATH" "build/dmg_src/"
+    ln -s /Applications "build/dmg_src/Applications"
 
       - name: Create DMG
         id: dmg
