@@ -32,6 +32,10 @@ struct CitiesContentView: View {
         .navigationTitle(String(localized: "sidebar.your_cities"))
         .toolbar {
             if !viewModel.favoriteCities.isEmpty {
+                ToolbarItem(placement: .automatic) {
+                    CitySortPicker(viewModel: viewModel)
+                }
+
                 ToolbarItem(placement: .primaryAction) {
                     Button {
                         onAddCity()
@@ -92,48 +96,67 @@ private struct CityRowView: View {
         viewModel.getSpots(for: city).count
     }
 
+    private var flagOrIcon: String {
+        if let country = CityDisplayHelpers.extractCountry(from: city.fullName),
+           let flag = CityDisplayHelpers.flagEmoji(for: country) {
+            return flag
+        }
+        return ""
+    }
+
+    private var continent: String {
+        CityDisplayHelpers.continent(from: city.timeZoneIdentifier)
+    }
+
+    private var countryName: String? {
+        CityDisplayHelpers.countryName(from: city.fullName)
+    }
+
     var body: some View {
         HStack(spacing: 16) {
-            // Icon with Liquid Glass styling
-            Circle()
-                .fill(
-                    LinearGradient(
-                        colors: [.blue, .cyan],
-                        startPoint: .topLeading,
-                        endPoint: .bottomTrailing
-                    )
-                )
-                .frame(width: 48, height: 48)
-                .overlay(
-                    Image(systemName: "mappin.circle.fill")
-                        .font(.system(size: 22))
-                        .foregroundStyle(.white)
-                        .symbolRenderingMode(.hierarchical)
-                )
-                .shadow(color: .blue.opacity(0.3), radius: 6, x: 0, y: 2)
+            // Flag/Icon
+            if !flagOrIcon.isEmpty {
+                Text(flagOrIcon)
+                    .font(.system(size: 44))
+                    .frame(width: 56, height: 56)
+            } else {
+                Image(systemName: "location.circle.fill")
+                    .font(.system(size: 32))
+                    .foregroundStyle(.blue.gradient)
+                    .frame(width: 56, height: 56)
+            }
 
             // Info
             VStack(alignment: .leading, spacing: 6) {
                 Text(city.name)
-                    .font(.system(size: 16, weight: .semibold))
+                    .font(.system(size: 18, weight: .semibold))
 
                 HStack(spacing: 8) {
-                    Text(city.fullName)
-                        .font(.system(size: 12, weight: .medium))
+                    if let country = countryName {
+                        Text(country)
+                            .font(.system(size: 13, weight: .medium))
+                            .foregroundStyle(.secondary)
+
+                        Text("•")
+                            .foregroundStyle(.quaternary)
+                    }
+
+                    Text(continent)
+                        .font(.system(size: 13, weight: .medium))
                         .foregroundStyle(.secondary)
 
                     Text("•")
                         .foregroundStyle(.quaternary)
 
                     Text(city.abbreviatedTimeZone)
-                        .font(.system(size: 12, weight: .medium))
+                        .font(.system(size: 13, weight: .medium))
                         .foregroundStyle(.secondary)
 
                     Text("•")
                         .foregroundStyle(.quaternary)
 
                     Text(city.formattedUTCOffset)
-                        .font(.system(size: 12, weight: .semibold))
+                        .font(.system(size: 13, weight: .semibold))
                         .foregroundStyle(.blue)
                 }
             }
@@ -150,8 +173,8 @@ private struct CityRowView: View {
                         .font(.system(size: 12, weight: .semibold))
                 }
                 .foregroundStyle(.blue)
-                .padding(.horizontal, 8)
-                .padding(.vertical, 4)
+                .padding(.horizontal, 10)
+                .padding(.vertical, 6)
                 .background(
                     Capsule()
                         .fill(.ultraThinMaterial)
@@ -160,10 +183,10 @@ private struct CityRowView: View {
                     Capsule()
                         .strokeBorder(.blue.opacity(0.3), lineWidth: 1)
                 )
-                .shadow(color: .blue.opacity(0.15), radius: 3, x: 0, y: 1)
+                .shadow(color: .blue.opacity(0.15), radius: 4, x: 0, y: 2)
             }
         }
-        .padding(.vertical, 8)
+        .padding(.vertical, 12)
     }
 }
 

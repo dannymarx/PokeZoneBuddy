@@ -9,6 +9,7 @@
 import SwiftUI
 import SwiftData
 import MapKit
+import CoreLocation
 
 struct CityDetailView: View {
 
@@ -74,49 +75,57 @@ struct CityDetailView: View {
         VStack(spacing: 20) {
             // City Header
             HStack(spacing: 16) {
-                Circle()
-                    .fill(
-                        LinearGradient(
-                            colors: [.blue, .cyan],
-                            startPoint: .topLeading,
-                            endPoint: .bottomTrailing
-                        )
-                    )
-                    .frame(width: 64, height: 64)
-                    .overlay(
-                        Image(systemName: "mappin.circle.fill")
-                            .font(.system(size: 32))
-                            .foregroundStyle(.white)
-                            .symbolRenderingMode(.hierarchical)
-                    )
-                    .shadow(color: .blue.opacity(0.3), radius: 6, x: 0, y: 2)
+                // Flag/Icon
+                if !flagOrIcon.isEmpty {
+                    Text(flagOrIcon)
+                        .font(.system(size: 56))
+                        .frame(width: 72, height: 72)
+                } else {
+                    Image(systemName: "location.circle.fill")
+                        .font(.system(size: 44))
+                        .foregroundStyle(.blue.gradient)
+                        .frame(width: 72, height: 72)
+                }
 
                 VStack(alignment: .leading, spacing: 6) {
                     Text(city.name)
                         .font(.system(size: 24, weight: .bold))
 
-                    Text(city.fullName)
-                        .font(.system(size: 14))
-                        .foregroundStyle(.secondary)
+                    HStack(spacing: 8) {
+                        if let country = countryName {
+                            Text(country)
+                                .font(.system(size: 14, weight: .medium))
+                                .foregroundStyle(.secondary)
+
+                            Text("•")
+                                .foregroundStyle(.quaternary)
+                        }
+
+                        Text(continent)
+                            .font(.system(size: 14, weight: .medium))
+                            .foregroundStyle(.secondary)
+
+                        Text("•")
+                            .foregroundStyle(.quaternary)
+
+                        Text(city.abbreviatedTimeZone)
+                            .font(.system(size: 14, weight: .medium))
+                            .foregroundStyle(.secondary)
+
+                        Text("•")
+                            .foregroundStyle(.quaternary)
+
+                        Text(city.formattedUTCOffset)
+                            .font(.system(size: 14, weight: .semibold))
+                            .foregroundStyle(.blue)
+                    }
                 }
 
                 Spacer()
             }
 
-            // Time Zone Info
+            // Time Zone Info Card
             VStack(spacing: 12) {
-                infoRow(
-                    icon: "clock",
-                    title: String(localized: "cities.timezone"),
-                    value: city.abbreviatedTimeZone
-                )
-
-                infoRow(
-                    icon: "globe",
-                    title: String(localized: "cities.utc_offset"),
-                    value: city.formattedUTCOffset
-                )
-
                 infoRow(
                     icon: "clock.fill",
                     title: String(localized: "cities.current_time"),
@@ -130,20 +139,38 @@ struct CityDetailView: View {
             )
             .overlay(
                 RoundedRectangle(cornerRadius: 12, style: .continuous)
-                    .strokeBorder(
-                        LinearGradient(
-                            colors: [
-                                .white.opacity(0.25),
-                                .blue.opacity(0.15)
-                            ],
-                            startPoint: .topLeading,
-                            endPoint: .bottomTrailing
-                        ),
-                        lineWidth: 1
-                    )
+                    .strokeBorder(.primary.opacity(0.1), lineWidth: 0.5)
             )
             .shadow(color: .black.opacity(0.05), radius: 8, x: 0, y: 2)
+
+            // Open in Maps Button
+            Button {
+                openInMaps()
+            } label: {
+                Label(String(localized: "cities.open_in_maps"), systemImage: "map.fill")
+                    .frame(maxWidth: .infinity)
+            }
+            .buttonStyle(.borderedProminent)
+            .controlSize(.large)
         }
+    }
+
+    // MARK: - Helper Properties
+
+    private var flagOrIcon: String {
+        if let country = CityDisplayHelpers.extractCountry(from: city.fullName),
+           let flag = CityDisplayHelpers.flagEmoji(for: country) {
+            return flag
+        }
+        return ""
+    }
+
+    private var continent: String {
+        CityDisplayHelpers.continent(from: city.timeZoneIdentifier)
+    }
+
+    private var countryName: String? {
+        CityDisplayHelpers.countryName(from: city.fullName)
     }
 
     // MARK: - Spots Section
@@ -251,6 +278,51 @@ struct CityDetailView: View {
         formatter.timeZone = TimeZone(identifier: city.timeZoneIdentifier)
         formatter.dateFormat = "HH:mm"
         return formatter.string(from: Date())
+    }
+
+    // MARK: - Actions
+
+    /// Opens the city in the Maps app
+    private func openInMaps() {
+        // Create a search request for the city
+        let searchRequest = MKLocalSearch.Request()
+        searchRequest.naturalLanguageQuery = city.fullName
+
+        // Perform the search
+        let search = MKLocalSearch(request: searchRequest)
+        search.start { response, error in
+            guard let response = response,
+                  let mapItem = response.mapItems.first else {
+                // If search fails, try with just the city name
+                openInMapsWithCityName()
+                return
+            }
+
+            // Open the map item in Maps app
+            mapItem.name = city.name
+
+            // Use location coordinate
+            let coordinate = mapItem.location.coordinate
+            mapItem.openInMaps(launchOptions: [
+                MKLaunchOptionsMapCenterKey: NSValue(mkCoordinate: coordinate),
+                MKLaunchOptionsMapSpanKey: NSValue(mkCoordinateSpan: MKCoordinateSpan(latitudeDelta: 0.1, longitudeDelta: 0.1))
+            ])
+        }
+    }
+
+    /// Fallback method to open Maps with just the city name
+    private func openInMapsWithCityName() {
+        let searchRequest = MKLocalSearch.Request()
+        searchRequest.naturalLanguageQuery = city.name
+
+        let search = MKLocalSearch(request: searchRequest)
+        search.start { response, _ in
+            guard let mapItem = response?.mapItems.first else {
+                return
+            }
+            mapItem.name = city.name
+            mapItem.openInMaps()
+        }
     }
 }
 
