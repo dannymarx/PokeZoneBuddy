@@ -5,6 +5,32 @@ This project follows [Semantic Versioning](https://semver.org/).
 
 ---
 
+## [1.3.0] – 2025-10-13
+
+### Added
+- **Event Reminders & Local Notifications** system that automatically sends notifications for favorited events.
+  - Automatic notification scheduling 30 minutes before event start when favoriting an event.
+  - Comprehensive notification management in Settings with permission handling and test functionality.
+  - Timezone-aware notifications with automatic rescheduling on timezone changes.
+  - Background cleanup of expired and orphaned notifications.
+  - Support for multiple reminder offsets (15 min, 30 min, 1 hour, 3 hours, 1 day).
+- **Import/Export functionality** for Cities and Spots data.
+  - Export all cities and spots to portable JSON format with metadata.
+  - Import data with merge or replace options and duplicate detection.
+  - Data validation for coordinates, timezones, and spot categories.
+  - Progress indicators and detailed import summaries.
+  - Compatible across iOS and macOS for easy data transfer.
+
+### Changed
+- Background refresh service now includes automatic notification cleanup after each refresh cycle.
+- Settings interface enhanced with new sections for Notifications and Import/Export.
+- FavoritesManager automatically manages notification lifecycle when favoriting/unfavoriting events.
+
+### Fixed
+- Various bug fixes to improve app stability and performance.
+
+---
+
 ## [1.2.0] – 2025-10-12
 
 ### Added
