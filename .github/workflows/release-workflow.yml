@@ -28,12 +28,14 @@ jobs:
         run: |
           set -e
           xcodebuild -scheme "$SCHEME" -configuration "$CONFIG" \
-            -archivePath build/App.xcarchive \
-            -destination "generic/platform=macOS" archive \
-            CODE_SIGNING_ALLOWED=NO \
-            CODE_SIGNING_REQUIRED=NO \
-            CODE_SIGN_IDENTITY="" \
-            DEVELOPMENT_TEAM=""
+          -archivePath build/App.xcarchive \
+          -destination "generic/platform=macOS" archive \
+          SDKROOT=$(xcrun --sdk macosx path) \
+          MACOSX_DEPLOYMENT_TARGET=26.0 \
+          CODE_SIGNING_ALLOWED=NO \
+          CODE_SIGNING_REQUIRED=NO \
+          CODE_SIGN_IDENTITY="" \
+          DEVELOPMENT_TEAM=""
 
       - name: Prepare DMG payload
         run: |
