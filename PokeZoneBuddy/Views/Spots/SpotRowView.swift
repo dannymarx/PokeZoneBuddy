@@ -24,57 +24,63 @@ struct SpotRowView: View {
 
     var body: some View {
         HStack(spacing: 12) {
-            // Category Icon
+            // Category Icon - Compact liquid glass style
             categoryIcon
 
-            // Content
-            VStack(alignment: .leading, spacing: 4) {
-                // Name
-                Text(spot.name)
-                    .font(.headline)
-                    .foregroundStyle(.primary)
+            // Content - Compact layout
+            VStack(alignment: .leading, spacing: 3) {
+                // Name and Category in one line
+                HStack(spacing: 6) {
+                    Text(spot.name)
+                        .font(.system(size: 15, weight: .semibold))
+                        .foregroundStyle(.primary)
+                        .lineLimit(1)
 
-                // Notes (truncated to 2 lines)
+                    // Inline category badge
+                    HStack(spacing: 3) {
+                        Image(systemName: spot.category.icon)
+                            .font(.system(size: 9))
+                        Text(spot.category.localizedName)
+                            .font(.system(size: 9, weight: .medium))
+                    }
+                    .foregroundStyle(categoryColor)
+                    .padding(.horizontal, 5)
+                    .padding(.vertical, 2)
+                    .background(
+                        Capsule()
+                            .fill(.ultraThinMaterial)
+                    )
+                    .overlay(
+                        Capsule()
+                            .strokeBorder(categoryColor.opacity(0.3), lineWidth: 0.5)
+                    )
+                    .shadow(color: categoryColor.opacity(0.1), radius: 1, x: 0, y: 0.5)
+                }
+
+                // Notes (truncated to 1 line for compactness)
                 if !spot.notes.isEmpty {
                     Text(spot.notes)
-                        .font(.caption)
+                        .font(.system(size: 12))
                         .foregroundStyle(.secondary)
-                        .lineLimit(2)
+                        .lineLimit(1)
                         .truncationMode(.tail)
                 }
-
-                // Category Badge with Liquid Glass
-                HStack(spacing: 4) {
-                    Image(systemName: spot.category.icon)
-                        .font(.caption2)
-                    Text(spot.category.localizedName)
-                        .font(.caption2)
-                }
-                .foregroundStyle(categoryColor)
-                .padding(.horizontal, 6)
-                .padding(.vertical, 2)
-                .background(
-                    Capsule()
-                        .fill(.ultraThinMaterial)
-                )
-                .overlay(
-                    Capsule()
-                        .strokeBorder(categoryColor.opacity(0.3), lineWidth: 1)
-                )
-                .shadow(color: categoryColor.opacity(0.15), radius: 2, x: 0, y: 1)
             }
 
-            Spacer()
+            Spacer(minLength: 0)
 
             // Favorite Star
             if spot.isFavorite {
                 Image(systemName: "star.fill")
-                    .font(.subheadline)
+                    .font(.system(size: 12))
                     .foregroundStyle(.yellow)
+                    .symbolRenderingMode(.hierarchical)
+                    .shadow(color: .yellow.opacity(0.3), radius: 2, x: 0, y: 1)
                     .accessibilityLabel("Favorite spot")
             }
         }
-        .padding(.vertical, 8)
+        .padding(.vertical, 6)
+        .padding(.horizontal, 4)
         .contentShape(Rectangle())
         .contextMenu {
             contextMenuItems
@@ -91,20 +97,16 @@ struct SpotRowView: View {
     /// Category Icon mit passendem SF Symbol and Liquid Glass styling
     @ViewBuilder
     private var categoryIcon: some View {
-        Image(systemName: spot.category.icon)
-            .font(.title2)
-            .foregroundStyle(
-                LinearGradient(
-                    colors: [
-                        categoryColor,
-                        categoryColor.opacity(0.8)
-                    ],
-                    startPoint: .topLeading,
-                    endPoint: .bottomTrailing
-                )
+        Circle()
+            .fill(categoryColor.gradient)
+            .frame(width: 36, height: 36)
+            .overlay(
+                Image(systemName: spot.category.icon)
+                    .font(.system(size: 16))
+                    .foregroundStyle(.white)
+                    .symbolRenderingMode(.hierarchical)
             )
-            .symbolRenderingMode(.hierarchical)
-            .frame(width: 32, height: 32)
+            .shadow(color: categoryColor.opacity(0.25), radius: 3, x: 0, y: 1.5)
             .accessibilityLabel("\(spot.category.localizedName) icon")
     }
 

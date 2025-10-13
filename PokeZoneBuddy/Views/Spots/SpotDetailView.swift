@@ -7,6 +7,7 @@
 
 import SwiftUI
 import SwiftData
+import MapKit
 
 /// Detail-Ansicht für einen einzelnen Spot
 struct SpotDetailView: View {
@@ -20,6 +21,7 @@ struct SpotDetailView: View {
     // MARK: - State
 
     @State private var showCopiedAlert: Bool = false
+    @State private var cameraPosition: MapCameraPosition
 
     init(
         spot: CitySpot,
@@ -29,168 +31,321 @@ struct SpotDetailView: View {
         self.spot = spot
         self.viewModel = viewModel
         self.onEdit = onEdit
+
+        // Initialize camera position to spot location
+        let coordinate = CLLocationCoordinate2D(
+            latitude: spot.latitude,
+            longitude: spot.longitude
+        )
+        _cameraPosition = State(initialValue: .region(
+            MKCoordinateRegion(
+                center: coordinate,
+                span: MKCoordinateSpan(latitudeDelta: 0.01, longitudeDelta: 0.01)
+            )
+        ))
     }
 
     // MARK: - Body
 
     var body: some View {
-        NavigationStack {
-            Form {
+        ScrollView {
+            VStack(spacing: 0) {
+                spotHeader
                 coordinatesSection
-                detailsSection
+                mapSection
                 notesSection
+                metadataSection
             }
-            .formStyle(.grouped)
-            .navigationTitle(spot.name)
-            .toolbar {
-                toolbarContent
-            }
-            .alert(String(localized: "spots.copied"), isPresented: $showCopiedAlert) {
-                Button(String(localized: "common.ok"), role: .cancel) {}
-            } message: {
-                Text(String(localized: "spots.copied"))
-            }
+        }
+        .background(Color.appBackground)
+        .navigationTitle("")
+        #if !os(macOS)
+        .navigationBarTitleDisplayMode(.inline)
+        #endif
+        .toolbar {
+            toolbarContent
+        }
+        .alert(String(localized: "spots.copied"), isPresented: $showCopiedAlert) {
+            Button(String(localized: "common.ok"), role: .cancel) {}
+        } message: {
+            Text(String(localized: "spots.copied"))
         }
     }
 
     // MARK: - View Components
 
-    /// Koordinaten Section mit großer Anzeige und Copy Button
+    /// Modern Spot Header with all key information
+    @ViewBuilder
+    private var spotHeader: some View {
+        VStack(spacing: 16) {
+            // Category Icon
+            Circle()
+                .fill(categoryColor.gradient)
+                .frame(width: 80, height: 80)
+                .overlay(
+                    Image(systemName: categoryIcon)
+                        .font(.system(size: 36))
+                        .foregroundStyle(.white)
+                        .symbolRenderingMode(.hierarchical)
+                )
+                .shadow(color: categoryColor.opacity(0.3), radius: 8, x: 0, y: 4)
+
+            // Spot Name
+            Text(spot.name)
+                .font(.system(size: 28, weight: .bold))
+                .multilineTextAlignment(.center)
+
+            // Category Badge
+            HStack(spacing: 6) {
+                Image(systemName: categoryIcon)
+                    .font(.system(size: 12))
+                Text(spot.category.localizedName)
+                    .font(.system(size: 14, weight: .semibold))
+            }
+            .foregroundStyle(categoryColor)
+            .padding(.horizontal, 16)
+            .padding(.vertical, 8)
+            .background(
+                Capsule()
+                    .fill(.ultraThinMaterial)
+            )
+            .overlay(
+                Capsule()
+                    .strokeBorder(categoryColor.opacity(0.3), lineWidth: 1)
+            )
+            .shadow(color: categoryColor.opacity(0.15), radius: 3, x: 0, y: 2)
+
+            // Location Information
+            if let city = spot.city {
+                VStack(spacing: 8) {
+                    HStack(spacing: 8) {
+                        Image(systemName: "building.2.fill")
+                            .font(.system(size: 14))
+                            .foregroundStyle(.blue)
+                        Text(city.name)
+                            .font(.system(size: 16, weight: .medium))
+                    }
+
+                    HStack(spacing: 12) {
+                        // Continent
+                        Label(continent(for: city), systemImage: "globe")
+                            .font(.system(size: 13))
+                            .foregroundStyle(.secondary)
+
+                        Text("•")
+                            .foregroundStyle(.quaternary)
+
+                        // Current time in city
+                        Label(currentTimeInCity(city), systemImage: "clock.fill")
+                            .font(.system(size: 13))
+                            .foregroundStyle(.secondary)
+                            .monospacedDigit()
+                    }
+                }
+            }
+        }
+        .padding(.vertical, 32)
+        .padding(.horizontal, 20)
+        .frame(maxWidth: .infinity)
+    }
+
+    /// Coordinates Section with Copy Button
     @ViewBuilder
     private var coordinatesSection: some View {
-        Section {
-            VStack(spacing: 12) {
-                // Große Koordinaten-Anzeige
-                Text(spot.formattedCoordinates)
-                    .font(.title2)
-                    .fontWeight(.semibold)
-                    .foregroundStyle(.primary)
-                    .textSelection(.enabled)
-                    .frame(maxWidth: .infinity, alignment: .center)
-                    .padding(.vertical, 8)
+        VStack(spacing: 16) {
+            // Coordinates Display
+            Text(spot.formattedCoordinates)
+                .font(.system(size: 20, weight: .semibold, design: .monospaced))
+                .foregroundStyle(.primary)
+                .textSelection(.enabled)
+                .padding(.horizontal, 20)
+                .padding(.vertical, 16)
+                .frame(maxWidth: .infinity)
+                .background(
+                    RoundedRectangle(cornerRadius: 12, style: .continuous)
+                        .fill(.ultraThinMaterial)
+                )
+                .overlay(
+                    RoundedRectangle(cornerRadius: 12, style: .continuous)
+                        .strokeBorder(.primary.opacity(0.1), lineWidth: 1)
+                )
 
-                // Copy Button
-                Button {
-                    copyCoordinates()
-                } label: {
-                    Label(String(localized: "spots.action.copyCoordinates"), systemImage: "doc.on.doc")
-                        .frame(maxWidth: .infinity)
-                }
-                .buttonStyle(.bordered)
-                .controlSize(.large)
+            // Copy Button
+            Button {
+                copyCoordinates()
+            } label: {
+                Label(String(localized: "spots.action.copyCoordinates"), systemImage: "doc.on.doc")
+                    .frame(maxWidth: .infinity)
+                    .padding(.vertical, 12)
             }
-        } header: {
-            Text(String(localized: "spots.detail.coordinates"))
+            .buttonStyle(.borderedProminent)
+            .controlSize(.large)
         }
-        .accessibilityElement(children: .contain)
+        .padding(.horizontal, 20)
+        .padding(.bottom, 24)
     }
 
-    /// Details Section mit Name, Kategorie, Datum
+    /// Embedded Apple Maps Section
     @ViewBuilder
-    private var detailsSection: some View {
-        Section {
-            // Name
-            LabeledContent(String(localized: "spots.add.name")) {
-                Text(spot.name)
-                    .foregroundStyle(.primary)
-            }
+    private var mapSection: some View {
+        VStack(alignment: .leading, spacing: 12) {
+            Text("Location")
+                .font(.system(size: 18, weight: .semibold))
+                .padding(.horizontal, 20)
 
-            // Kategorie mit Icon
-            LabeledContent(String(localized: "spots.add.category")) {
-                spot.category.label
+            Map(position: $cameraPosition) {
+                Marker(spot.name, coordinate: spotCoordinate)
+                    .tint(categoryColor)
             }
-
-            // Erstellt am
-            LabeledContent(String(localized: "spots.detail.createdAt")) {
-                Text(spot.createdAt, style: .date)
-                    .foregroundStyle(.secondary)
-            }
-
-            // Favorit-Status
-            LabeledContent(String(localized: "favorites.title")) {
-                if spot.isFavorite {
-                    HStack(spacing: 4) {
-                        Image(systemName: "star.fill")
-                            .foregroundStyle(.yellow)
-                        Text(String(localized: "common.yes"))
-                    }
-                } else {
-                    Text(String(localized: "common.no"))
-                        .foregroundStyle(.secondary)
-                }
-            }
-        } header: {
-            Text(String(localized: "common.details"))
+            .mapStyle(.standard(elevation: .realistic))
+            .frame(height: 300)
+            .clipShape(RoundedRectangle(cornerRadius: 16, style: .continuous))
+            .shadow(color: .black.opacity(0.1), radius: 8, x: 0, y: 4)
+            .padding(.horizontal, 20)
         }
+        .padding(.bottom, 24)
     }
 
-    /// Notizen Section (scrollbar wenn länger)
+    /// Notes Section
     @ViewBuilder
     private var notesSection: some View {
         if !spot.notes.isEmpty {
-            Section {
+            VStack(alignment: .leading, spacing: 12) {
+                Text(String(localized: "spots.detail.notes"))
+                    .font(.system(size: 18, weight: .semibold))
+
                 Text(spot.notes)
                     .font(.body)
                     .foregroundStyle(.primary)
                     .textSelection(.enabled)
+                    .padding(16)
                     .frame(maxWidth: .infinity, alignment: .leading)
-            } header: {
-                Text(String(localized: "spots.detail.notes"))
+                    .background(
+                        RoundedRectangle(cornerRadius: 12, style: .continuous)
+                            .fill(.ultraThinMaterial)
+                    )
+                    .overlay(
+                        RoundedRectangle(cornerRadius: 12, style: .continuous)
+                            .strokeBorder(.primary.opacity(0.1), lineWidth: 1)
+                    )
             }
+            .padding(.horizontal, 20)
+            .padding(.bottom, 24)
         }
     }
 
-    /// Toolbar mit Edit und Share Buttons
+    /// Metadata Section
+    @ViewBuilder
+    private var metadataSection: some View {
+        VStack(alignment: .leading, spacing: 12) {
+            Text("Information")
+                .font(.system(size: 18, weight: .semibold))
+
+            VStack(spacing: 0) {
+                metadataRow(
+                    icon: "calendar",
+                    title: String(localized: "spots.detail.createdAt"),
+                    value: spot.createdAt.formatted(date: .long, time: .omitted)
+                )
+            }
+            .background(
+                RoundedRectangle(cornerRadius: 12, style: .continuous)
+                    .fill(.ultraThinMaterial)
+            )
+            .overlay(
+                RoundedRectangle(cornerRadius: 12, style: .continuous)
+                    .strokeBorder(.primary.opacity(0.1), lineWidth: 1)
+            )
+        }
+        .padding(.horizontal, 20)
+        .padding(.bottom, 32)
+    }
+
+    @ViewBuilder
+    private func metadataRow(icon: String, title: String, value: String) -> some View {
+        HStack(spacing: 12) {
+            Image(systemName: icon)
+                .font(.system(size: 16))
+                .foregroundStyle(.blue)
+                .frame(width: 24)
+
+            Text(title)
+                .font(.system(size: 14))
+                .foregroundStyle(.secondary)
+
+            Spacer()
+
+            Text(value)
+                .font(.system(size: 14, weight: .medium))
+                .foregroundStyle(.primary)
+        }
+        .padding(16)
+    }
+
+    /// Toolbar mit Edit Button
     @ToolbarContentBuilder
     private var toolbarContent: some ToolbarContent {
+        #if os(macOS)
+        // macOS: Explicit Edit button
         ToolbarItem(placement: .primaryAction) {
-            Menu {
-                Button {
-                    shareSpot()
-                } label: {
-                    Label(String(localized: "spots.action.share"), systemImage: "square.and.arrow.up")
-                }
-
-                Button {
-                    onEdit(spot)
-                } label: {
-                    Label(String(localized: "spots.action.edit"), systemImage: "pencil")
-                }
-
-                Divider()
-
-                Button {
-                    viewModel.toggleSpotFavorite(spot)
-                } label: {
-                    if spot.isFavorite {
-                        Label(String(localized: "favorites.remove"), systemImage: "star.slash")
-                    } else {
-                        Label(String(localized: "favorites.add"), systemImage: "star")
-                    }
-                }
+            Button {
+                onEdit(spot)
             } label: {
-                Image(systemName: "ellipsis.circle")
+                Label(String(localized: "spots.action.edit"), systemImage: "pencil")
             }
         }
+        #else
+        // iOS: Edit button
+        ToolbarItem(placement: .primaryAction) {
+            Button {
+                onEdit(spot)
+            } label: {
+                Label(String(localized: "spots.action.edit"), systemImage: "pencil")
+            }
+        }
+        #endif
     }
 
     // MARK: - Computed Properties
 
-    /// Formatierter Share-Text
-    private var shareText: String {
-        var text = "📍 \(spot.name)\n"
-        text += String(localized: "spots.add.category") + ": \(spot.category.localizedName)\n"
-        text += String(localized: "spots.detail.coordinates") + ": \(spot.formattedCoordinates)\n"
+    private var spotCoordinate: CLLocationCoordinate2D {
+        CLLocationCoordinate2D(
+            latitude: spot.latitude,
+            longitude: spot.longitude
+        )
+    }
 
-        if !spot.notes.isEmpty {
-            text += "\n\(spot.notes)\n"
+    private var categoryIcon: String {
+        switch spot.category {
+        case .pokestop: return "mappin.circle.fill"
+        case .gym: return "dumbbell.fill"
+        case .meetingPoint: return "person.2.fill"
+        case .other: return "mappin.and.ellipse"
+        }
+    }
+
+    private var categoryColor: Color {
+        switch spot.category {
+        case .pokestop: return .blue
+        case .gym: return .red
+        case .meetingPoint: return .purple
+        case .other: return .gray
+        }
+    }
+
+    private func continent(for city: FavoriteCity) -> String {
+        CityDisplayHelpers.continent(from: city.timeZoneIdentifier)
+    }
+
+    private func currentTimeInCity(_ city: FavoriteCity) -> String {
+        guard let timezone = TimeZone(identifier: city.timeZoneIdentifier) else {
+            return "—"
         }
 
-        if let city = spot.city {
-            text += "\nPokeZoneBuddy - \(city.displayName)"
-        }
-
-        return text
+        let formatter = DateFormatter()
+        formatter.timeZone = timezone
+        formatter.dateFormat = "HH:mm"
+        return formatter.string(from: Date())
     }
 
     // MARK: - Methods
@@ -205,29 +360,6 @@ struct SpotDetailView: View {
         #endif
 
         showCopiedAlert = true
-    }
-
-    /// Teilt den Spot als Text
-    private func shareSpot() {
-        #if os(macOS)
-        let pasteboard = NSPasteboard.general
-        pasteboard.clearContents()
-        pasteboard.setString(shareText, forType: .string)
-
-        // macOS: Zeige Feedback dass Text kopiert wurde
-        showCopiedAlert = true
-        #else
-        // iOS: Nutze UIActivityViewController
-        let activityVC = UIActivityViewController(
-            activityItems: [shareText],
-            applicationActivities: nil
-        )
-
-        if let windowScene = UIApplication.shared.connectedScenes.first as? UIWindowScene,
-           let rootVC = windowScene.windows.first?.rootViewController {
-            rootVC.present(activityVC, animated: true)
-        }
-        #endif
     }
 }
 
@@ -259,9 +391,12 @@ struct SpotDetailView: View {
         city: mockCity
     )
 
+    context.insert(mockCity)
+    context.insert(mockSpot)
+
     let viewModel = CitiesViewModel(modelContext: context)
 
-    SpotDetailView(spot: mockSpot, viewModel: viewModel)
+    return SpotDetailView(spot: mockSpot, viewModel: viewModel)
         .modelContainer(container)
 }
 
@@ -275,17 +410,27 @@ struct SpotDetailView: View {
 
     let context = container.mainContext
 
-    let mockSpot = CitySpot(
-        name: "Tokyo Tower",
-        notes: "Iconic landmark, great for raids",
-        latitude: 35.658517,
-        longitude: 139.745438,
-        category: .gym,
-        isFavorite: false
+    let mockCity = FavoriteCity(
+        name: "Berlin",
+        timeZoneIdentifier: "Europe/Berlin",
+        fullName: "Berlin, Germany"
     )
+
+    let mockSpot = CitySpot(
+        name: "Brandenburg Gate",
+        notes: "Historic landmark, perfect raid spot with multiple gyms nearby.",
+        latitude: 52.516275,
+        longitude: 13.377704,
+        category: .gym,
+        isFavorite: false,
+        city: mockCity
+    )
+
+    context.insert(mockCity)
+    context.insert(mockSpot)
 
     let viewModel = CitiesViewModel(modelContext: context)
 
-    SpotDetailView(spot: mockSpot, viewModel: viewModel)
+    return SpotDetailView(spot: mockSpot, viewModel: viewModel)
         .modelContainer(container)
 }
