@@ -471,6 +471,54 @@ final class CitiesViewModel {
         return city.spots.sorted { $0.createdAt > $1.createdAt }
     }
 
+    // MARK: - Import/Export
+
+    /// Exports all city and spot data to JSON
+    /// - Returns: Data object containing the JSON representation
+    /// - Throws: EncodingError if the data cannot be encoded
+    func exportAllData() throws -> Data {
+        AppLogger.viewModel.info("Starting export of \(favoriteCities.count) cities")
+        let result = try ImportExportService.exportData(cities: favoriteCities)
+        AppLogger.viewModel.info("Export completed successfully, data size: \(result.count) bytes")
+        return result
+    }
+
+    /// Generates a filename for the export
+    /// - Returns: String in format "PokeZoneBuddy_Export_YYYY-MM-DD.json"
+    func generateExportFilename() -> String {
+        return ImportExportService.generateExportFilename()
+    }
+
+    /// Previews import data without actually importing
+    /// - Parameter url: URL to the JSON file
+    /// - Returns: Tuple with city count and spot count
+    /// - Throws: Error if file cannot be read or parsed
+    func previewImport(from url: URL) async throws -> (cities: Int, spots: Int) {
+        let data = try Data(contentsOf: url)
+        return try ImportExportService.previewImportData(from: data)
+    }
+
+    /// Imports data from a JSON file
+    /// - Parameters:
+    ///   - url: URL to the JSON file
+    ///   - mode: Import mode (merge or replace)
+    /// - Returns: ImportResult with statistics
+    /// - Throws: Error if import fails
+    func importData(from url: URL, mode: ImportExportService.ImportMode) async throws -> ImportExportService.ImportResult {
+        let data = try Data(contentsOf: url)
+        let result = try ImportExportService.importData(
+            from: data,
+            mode: mode,
+            modelContext: modelContext,
+            existingCities: favoriteCities
+        )
+
+        // Reload cities after import
+        loadFavoriteCitiesFromDatabase()
+
+        return result
+    }
+
     // MARK: - Internal Methods (for SearchCompleterDelegate)
 
     /// Updates search results - called by delegate

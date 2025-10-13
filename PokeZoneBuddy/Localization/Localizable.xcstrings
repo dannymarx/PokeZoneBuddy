@@ -885,6 +885,9 @@
         }
       }
     },
+    "Cancel" : {
+
+    },
     "Cancel adding spot" : {
       "localizations" : {
         "de" : {
@@ -1235,6 +1238,9 @@
           }
         }
       }
+    },
+    "Confirm Replace" : {
+
     },
     "continent.africa" : {
       "extractionState" : "manual",
@@ -1833,6 +1839,9 @@
           }
         }
       }
+    },
+    "Data Management" : {
+
     },
     "Delete" : {
       "localizations" : {
@@ -2738,6 +2747,16 @@
         }
       }
     },
+    "Found %lld %@ with %lld %@.\n\nMerge: Add new cities, skip duplicates.\nReplace: Delete all existing data first." : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "new",
+            "value" : "Found %1$lld %2$@ with %3$lld %4$@.\n\nMerge: Add new cities, skip duplicates.\nReplace: Delete all existing data first."
+          }
+        }
+      }
+    },
     "Get notified before your favorite events" : {
 
     },
@@ -2816,6 +2835,15 @@
           }
         }
       }
+    },
+    "Import Complete" : {
+
+    },
+    "Import failed: %@" : {
+
+    },
+    "Import Preview" : {
+
     },
     "info.date" : {
       "comment" : "A label describing the date of an event.",
@@ -3267,6 +3295,9 @@
         }
       }
     },
+    "Loading..." : {
+
+    },
     "loading.events" : {
       "comment" : "A loading message displayed while fetching events.",
       "extractionState" : "manual",
@@ -3355,6 +3386,9 @@
           }
         }
       }
+    },
+    "Merge with Existing" : {
+
     },
     "nav.cities" : {
       "extractionState" : "manual",
@@ -3835,6 +3869,9 @@
           }
         }
       }
+    },
+    "Replace All Data" : {
+
     },
     "Save spot" : {
       "localizations" : {
@@ -5065,6 +5102,9 @@
       }
     },
     "Testing" : {
+
+    },
+    "This will permanently delete all your existing cities and spots before importing. This action cannot be undone." : {
 
     },
     "This will permanently delete all your saved cities, spots, and favorite events. This action cannot be undone." : {
