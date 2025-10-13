@@ -17,12 +17,26 @@ import Observation
 final class CitiesViewModel {
     
     // MARK: - Properties
-    
+
     /// Liste aller Lieblingsstädte
     private(set) var favoriteCities: [FavoriteCity] = []
-    
+
     /// Suchergebnisse bei der Städtesuche
     private(set) var searchResults: [MKLocalSearchCompletion] = []
+
+    /// Current sort option
+    var sortOption: CitySortOption = .name {
+        didSet {
+            sortCities()
+        }
+    }
+
+    /// Current sort order (ascending/descending)
+    var sortOrder: SortOrder = .ascending {
+        didSet {
+            sortCities()
+        }
+    }
     
     /// Aktueller Suchtext
     var searchText: String = "" {
@@ -71,6 +85,7 @@ final class CitiesViewModel {
     /// MKLocalSearchCompleter für Städte-Suche
     private let searchCompleter: MKLocalSearchCompleter = {
         let completer = MKLocalSearchCompleter()
+        // Use address but filter results to show only cities
         completer.resultTypes = [.address]
         return completer
     }()
@@ -99,14 +114,58 @@ final class CitiesViewModel {
     /// Lädt Lieblingsstädte aus der lokalen Datenbank
     func loadFavoriteCitiesFromDatabase() {
         do {
-            let descriptor = FetchDescriptor<FavoriteCity>(
-                sortBy: [SortDescriptor(\.name, order: .forward)]
-            )
+            let descriptor = FetchDescriptor<FavoriteCity>()
             favoriteCities = try modelContext.fetch(descriptor)
+            sortCities()
         } catch {
             AppLogger.viewModel.error("Fehler beim Laden der Städte: \(String(describing: error))")
             errorMessage = "Failed to load saved cities"
             showError = true
+        }
+    }
+
+    /// Sorts the cities list based on current sort option and order
+    private func sortCities() {
+        let ascending = sortOrder == .ascending
+
+        switch sortOption {
+        case .name:
+            favoriteCities.sort { city1, city2 in
+                ascending ? city1.name < city2.name : city1.name > city2.name
+            }
+
+        case .country:
+            favoriteCities.sort { city1, city2 in
+                let country1 = CityDisplayHelpers.extractCountry(from: city1.fullName) ?? ""
+                let country2 = CityDisplayHelpers.extractCountry(from: city2.fullName) ?? ""
+                return ascending ? country1 < country2 : country1 > country2
+            }
+
+        case .continent:
+            favoriteCities.sort { city1, city2 in
+                let continent1 = CityDisplayHelpers.continent(from: city1.timeZoneIdentifier)
+                let continent2 = CityDisplayHelpers.continent(from: city2.timeZoneIdentifier)
+                return ascending ? continent1 < continent2 : continent1 > continent2
+            }
+
+        case .timeZone:
+            favoriteCities.sort { city1, city2 in
+                let offset1 = city1.utcOffsetHours
+                let offset2 = city2.utcOffsetHours
+                return ascending ? offset1 < offset2 : offset1 > offset2
+            }
+
+        case .dateAdded:
+            favoriteCities.sort { city1, city2 in
+                return ascending ? city1.addedDate < city2.addedDate : city1.addedDate > city2.addedDate
+            }
+
+        case .spotCount:
+            favoriteCities.sort { city1, city2 in
+                let count1 = city1.spotCount
+                let count2 = city2.spotCount
+                return ascending ? count1 < count2 : count1 > count2
+            }
         }
     }
     
@@ -134,22 +193,38 @@ final class CitiesViewModel {
                 throw CityError.timezoneNotFound
             }
             
-            // Extrahiere Stadt-Informationen mit neuer MapKit API
+            // Extrahiere Stadt-Informationen
             let cityName: String
             let fullName: String
-            
+
+            // Get city name
             if #available(macOS 15.0, iOS 18.0, *) {
-                // Neue API: addressRepresentations für strukturierte Daten
                 cityName = mapItem.addressRepresentations?.cityName ?? completion.title
-                
-                // cityWithContext gibt automatisch "City, Country" oder "City, Region" zurück
-                // z.B. "Tokyo, Japan" oder "Los Angeles, California"
-                fullName = mapItem.addressRepresentations?.cityWithContext ?? completion.title
             } else {
-                // Fallback für ältere Versionen
                 cityName = mapItem.placemark.locality ?? completion.title
-                // Für ältere Versionen nutzen wir completion.title als fullName
-                fullName = completion.title
+            }
+
+            // Build full name with city and country
+            // Extract country from completion subtitle or use subtitle as is
+            let subtitle = completion.subtitle
+
+            // Check if subtitle has format "City, Country" or just "Country"
+            // If it contains the city name, extract the country part
+            if subtitle.contains(cityName) {
+                // Subtitle is like "Berlin, Germany" - extract everything after city
+                let components = subtitle.components(separatedBy: ",").map { $0.trimmingCharacters(in: .whitespaces) }
+                if components.count >= 2 {
+                    // Take the last component as country
+                    fullName = "\(cityName), \(components.last!)"
+                } else {
+                    fullName = "\(cityName), \(subtitle)"
+                }
+            } else if !subtitle.isEmpty {
+                // Subtitle is the country/region
+                fullName = "\(cityName), \(subtitle)"
+            } else {
+                // No subtitle, just use city name
+                fullName = cityName
             }
             
             // Prüfen ob Stadt bereits existiert (basierend auf fullName)
@@ -396,11 +471,123 @@ final class CitiesViewModel {
         return city.spots.sorted { $0.createdAt > $1.createdAt }
     }
 
+    // MARK: - Import/Export
+
+    /// Exports all city and spot data to JSON
+    /// - Returns: Data object containing the JSON representation
+    /// - Throws: EncodingError if the data cannot be encoded
+    func exportAllData() throws -> Data {
+        AppLogger.viewModel.info("Starting export of \(favoriteCities.count) cities")
+        let result = try ImportExportService.exportData(cities: favoriteCities)
+        AppLogger.viewModel.info("Export completed successfully, data size: \(result.count) bytes")
+        return result
+    }
+
+    /// Generates a filename for the export
+    /// - Returns: String in format "PokeZoneBuddy_Export_YYYY-MM-DD.json"
+    func generateExportFilename() -> String {
+        return ImportExportService.generateExportFilename()
+    }
+
+    /// Previews import data without actually importing
+    /// - Parameter url: URL to the JSON file
+    /// - Returns: Tuple with city count and spot count
+    /// - Throws: Error if file cannot be read or parsed
+    func previewImport(from url: URL) async throws -> (cities: Int, spots: Int) {
+        let data = try Data(contentsOf: url)
+        return try ImportExportService.previewImportData(from: data)
+    }
+
+    /// Imports data from a JSON file
+    /// - Parameters:
+    ///   - url: URL to the JSON file
+    ///   - mode: Import mode (merge or replace)
+    /// - Returns: ImportResult with statistics
+    /// - Throws: Error if import fails
+    func importData(from url: URL, mode: ImportExportService.ImportMode) async throws -> ImportExportService.ImportResult {
+        let data = try Data(contentsOf: url)
+        let result = try ImportExportService.importData(
+            from: data,
+            mode: mode,
+            modelContext: modelContext,
+            existingCities: favoriteCities
+        )
+
+        // Reload cities after import
+        loadFavoriteCitiesFromDatabase()
+
+        return result
+    }
+
     // MARK: - Internal Methods (for SearchCompleterDelegate)
-    
+
     /// Updates search results - called by delegate
     func updateSearchResults(_ results: [MKLocalSearchCompletion]) {
-        searchResults = results
+        // Filter to only show city-like results
+        searchResults = results.filter { isCityResult($0) }
+    }
+
+    /// Determines if a search completion result appears to be a city
+    /// - Parameter completion: The search completion to check
+    /// - Returns: true if the result looks like a city
+    private func isCityResult(_ completion: MKLocalSearchCompletion) -> Bool {
+        let title = completion.title
+        let titleLower = title.lowercased()
+        let subtitle = completion.subtitle
+        let subtitleLower = subtitle.lowercased()
+
+        // Exclude "Search Nearby" results
+        if subtitleLower.contains("search nearby") ||
+           subtitleLower.contains("suche in der nähe") ||
+           subtitleLower.contains("nearby") {
+            return false
+        }
+
+        // Exclude if title contains numbers (street addresses often have numbers)
+        if titleLower.rangeOfCharacter(from: .decimalDigits) != nil {
+            return false
+        }
+
+        // Check if subtitle contains the title (street within a city)
+        // Example: title "Main Street", subtitle "Main Street, New York"
+        if !subtitle.isEmpty && subtitleLower.contains(titleLower) {
+            return false
+        }
+
+        // Comprehensive street indicators
+        let streetIndicators = [
+            "street", "str.", "str ", "straße", "strasse",
+            "avenue", "ave.", "ave ",
+            "road", "rd.", "rd ",
+            "boulevard", "blvd.", "blvd ",
+            "lane", "ln.", "ln ",
+            "drive", "dr.", "dr ",
+            "way", "weg",
+            "court", "ct.", "ct ",
+            "place", "pl.", "pl ",
+            "circle", "cir.", "cir ",
+            "parkway", "pkwy",
+            "allee", "alley",
+            "gasse",
+            "platz",
+            "terrace",
+            "highway", "hwy"
+        ]
+
+        // Check if title ends with or contains street indicators
+        for indicator in streetIndicators {
+            // Check if word ends with indicator or has it as a separate word
+            if titleLower.hasSuffix(indicator) ||
+               titleLower.hasSuffix("." + indicator) ||
+               titleLower.contains(" " + indicator + " ") ||
+               titleLower.contains(" " + indicator) {
+                return false
+            }
+        }
+
+        // Cities typically have comma-separated subtitle with region/country
+        // Streets typically have the full address in subtitle
+        return true
     }
 }
 

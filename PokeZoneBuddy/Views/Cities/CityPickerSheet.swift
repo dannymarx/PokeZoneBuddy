@@ -77,42 +77,7 @@ struct CityPickerSheet: View {
                     onCitySelected(city)
                     dismiss()
                 } label: {
-                    HStack(spacing: 16) {
-                        // Icon
-                        Circle()
-                            .fill(
-                                LinearGradient(
-                                    colors: [.blue, .cyan],
-                                    startPoint: .topLeading,
-                                    endPoint: .bottomTrailing
-                                )
-                            )
-                            .frame(width: 44, height: 44)
-                            .overlay(
-                                Image(systemName: "mappin.circle.fill")
-                                    .font(.system(size: 20))
-                                    .foregroundStyle(.white)
-                            )
-
-                        // City Info
-                        VStack(alignment: .leading, spacing: 6) {
-                            Text(city.name)
-                                .font(.system(size: 16, weight: .semibold))
-                                .foregroundStyle(.primary)
-
-                            Text(city.fullName)
-                                .font(.system(size: 13))
-                                .foregroundStyle(.secondary)
-                        }
-
-                        Spacer()
-
-                        Image(systemName: "chevron.right")
-                            .font(.system(size: 13, weight: .semibold))
-                            .foregroundStyle(.tertiary)
-                    }
-                    .padding(.vertical, 8)
-                    .contentShape(Rectangle())
+                    CityPickerRowView(city: city)
                 }
                 .buttonStyle(.plain)
             }
@@ -132,6 +97,81 @@ struct CityPickerSheet: View {
                 dismiss()
             }
         }
+    }
+}
+
+// MARK: - City Picker Row View
+
+private struct CityPickerRowView: View {
+    let city: FavoriteCity
+
+    private var flagOrIcon: String {
+        if let country = CityDisplayHelpers.extractCountry(from: city.fullName),
+           let flag = CityDisplayHelpers.flagEmoji(for: country) {
+            return flag
+        }
+        return ""
+    }
+
+    private var continent: String {
+        CityDisplayHelpers.continent(from: city.timeZoneIdentifier)
+    }
+
+    private var countryName: String? {
+        CityDisplayHelpers.countryName(from: city.fullName)
+    }
+
+    var body: some View {
+        HStack(spacing: 16) {
+            // Flag/Icon
+            if !flagOrIcon.isEmpty {
+                Text(flagOrIcon)
+                    .font(.system(size: 40))
+                    .frame(width: 50, height: 50)
+            } else {
+                Image(systemName: "location.circle.fill")
+                    .font(.system(size: 28))
+                    .foregroundStyle(.blue.gradient)
+                    .frame(width: 50, height: 50)
+            }
+
+            // City Info
+            VStack(alignment: .leading, spacing: 6) {
+                Text(city.name)
+                    .font(.system(size: 17, weight: .semibold))
+                    .foregroundStyle(.primary)
+
+                HStack(spacing: 8) {
+                    if let country = countryName {
+                        Text(country)
+                            .font(.system(size: 13, weight: .medium))
+                            .foregroundStyle(.secondary)
+
+                        Text("•")
+                            .foregroundStyle(.quaternary)
+                    }
+
+                    Text(continent)
+                        .font(.system(size: 13, weight: .medium))
+                        .foregroundStyle(.secondary)
+
+                    Text("•")
+                        .foregroundStyle(.quaternary)
+
+                    Text(city.abbreviatedTimeZone)
+                        .font(.system(size: 13, weight: .medium))
+                        .foregroundStyle(.secondary)
+                }
+            }
+
+            Spacer()
+
+            Image(systemName: "chevron.right")
+                .font(.system(size: 13, weight: .semibold))
+                .foregroundStyle(.tertiary)
+        }
+        .padding(.vertical, 10)
+        .contentShape(Rectangle())
     }
 }
 
