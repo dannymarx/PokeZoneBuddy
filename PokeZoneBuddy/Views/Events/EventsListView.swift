@@ -142,7 +142,7 @@ private struct AdaptiveEventsView: View {
             .presentationSizing(.fitted)
 #endif
         }
-        .onChange(of: activeCityForSpots) { newValue in
+        .onChange(of: activeCityForSpots) { oldValue, newValue in
             if case .none = newValue {
                 activeSpotForSpots = nil
             }

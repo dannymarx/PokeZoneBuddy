@@ -167,7 +167,7 @@ final class EventsViewModel {
 
             try? context.save()
 
-            AppLogger.viewModel.info("Saved \(apiEvents.count) events to local storage")
+            await AppLogger.viewModel.info("Saved \(apiEvents.count) events to local storage")
         }.value
 
         // Reload from storage

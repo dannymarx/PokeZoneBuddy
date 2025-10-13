@@ -32,6 +32,7 @@ final class NetworkMonitor {
     
     private let pathMonitor = NWPathMonitor()
     private let monitorQueue = DispatchQueue(label: "NetworkMonitor")
+    private var lastLoggedStatus: (connected: Bool, type: String?) = (false, nil)
     
     // MARK: - Initialization
     
@@ -62,10 +63,16 @@ final class NetworkMonitor {
                 } else {
                     self?.connectionType = nil
                 }
-                
+
+                // Only log if status actually changed
                 let connected = self?.isConnected ?? false
-                let type = String(describing: self?.connectionType)
-                AppLogger.network.info("Network status: connected=\(connected), type=\(type)")
+                let typeString = String(describing: self?.connectionType)
+
+                if let lastStatus = self?.lastLoggedStatus,
+                   lastStatus.connected != connected || lastStatus.type != typeString {
+                    AppLogger.network.info("Network status: connected=\(connected), type=\(typeString)")
+                    self?.lastLoggedStatus = (connected, typeString)
+                }
             }
         }
         
