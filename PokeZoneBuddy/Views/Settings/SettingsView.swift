@@ -156,10 +156,6 @@ struct SettingsView: View {
                 }
                 updateStats()
             }
-            .onDisappear {
-                // Clear navigation path when leaving
-                navigationPath = NavigationPath()
-            }
             .confirmationDialog(
                 String(localized: "cache.confirm.clear_images.title"),
                 isPresented: $showClearConfirmation
