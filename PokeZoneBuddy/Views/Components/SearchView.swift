@@ -56,7 +56,7 @@ struct SearchView: View {
             .presentationSizing(.fitted)
 #endif
         }
-        .onChange(of: selectedCity) { newValue in
+        .onChange(of: selectedCity) { oldValue, newValue in
             if case .none = newValue {
                 selectedSpot = nil
             }
