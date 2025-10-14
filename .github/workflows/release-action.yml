@@ -1,6 +1,6 @@
-name: Release on VERSION change
+- name: Release on VERSION change
 
-on:
+  on:
   push:
     branches: [ main ]
     paths: [ "VERSION" ]
@@ -9,7 +9,7 @@ on:
 permissions:
   contents: write
 
-jobs:
+  jobs:
   build-release:
     runs-on: macos-26
     env:
