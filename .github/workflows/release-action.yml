@@ -1,6 +1,6 @@
-- name: Release on VERSION change
+name: Release on VERSION change
 
-  on:
+on:
   push:
     branches: [ main ]
     paths: [ "VERSION" ]
@@ -9,7 +9,7 @@
 permissions:
   contents: write
 
-  jobs:
+jobs:
   build-release:
     runs-on: macos-26
     env:
@@ -52,7 +52,15 @@ permissions:
           test -n "$APP_PATH"
           echo "path=$APP_PATH" >> "$GITHUB_OUTPUT"
 
-   - name: Create DMG
+      - name: Install create-dmg
+        run: |
+          export PATH="/opt/homebrew/bin:$PATH"
+          brew update
+          brew install create-dmg
+          which create-dmg
+          create-dmg --version
+
+      - name: Create DMG
         id: dmg
         run: |
           export PATH="/opt/homebrew/bin:$PATH"
