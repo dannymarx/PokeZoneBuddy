@@ -32,6 +32,7 @@ jobs:
 
       - name: Build .app (Release, unsigned)
         run: |
+          rm -rf "$BUILD_DIR"
           mkdir -p "$BUILD_DIR"
           xcodebuild \
             -project "$PROJECT" \
@@ -39,8 +40,8 @@ jobs:
             -configuration Release \
             -destination "platform=macOS" \
             -derivedDataPath "$BUILD_DIR" \
-            CODE_SIGNING_ALLOWED=NO \
-            CODE_SIGNING_REQUIRED=NO \
+            CODE_SIGNING_ALLOWED=YES \
+            CODE_SIGNING_REQUIRED="-" \
             STRINGS_FILE_OUTPUT_ENCODING=UTF-8 \
             build
 
