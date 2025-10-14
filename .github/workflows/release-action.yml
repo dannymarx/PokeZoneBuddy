@@ -41,6 +41,7 @@ jobs:
             -derivedDataPath "$BUILD_DIR" \
             CODE_SIGNING_ALLOWED=NO \
             CODE_SIGNING_REQUIRED=NO \
+            STRINGS_FILE_OUTPUT_ENCODING=UTF-8 \
             build
 
       - name: Locate .app
