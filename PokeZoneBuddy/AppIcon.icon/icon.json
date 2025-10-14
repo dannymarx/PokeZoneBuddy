@@ -6,11 +6,9 @@
     {
       "layers" : [
         {
-          "fill" : "automatic",
-          "glass" : true,
-          "hidden" : false,
-          "image-name" : "PokeZoneBuddyLogo 2.svg",
-          "name" : "PokeZoneBuddyLogo 2"
+          "glass" : false,
+          "image-name" : "Logo.svg",
+          "name" : "Logo"
         }
       ],
       "shadow" : {
