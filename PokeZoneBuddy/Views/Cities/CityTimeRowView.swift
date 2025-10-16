@@ -133,7 +133,7 @@ struct CityTimeRowView: View {
     private func timeConversionContent(cityTimezone: TimeZone) -> some View {
         VStack(alignment: .leading, spacing: 12) {
             if event.isGlobalTime {
-                // Global event: Both times are converted normally
+                // Location-specific event: Both times are converted normally from UTC
                 TimeInfoBlock(
                     icon: "building.2.fill",
                     label: String(format: String(localized: "city_time.event_time_in"), city.name),
@@ -169,7 +169,7 @@ struct CityTimeRowView: View {
                     highlighted: true
                 )
             } else {
-                // Local event: Show same time in city, converted time for user
+                // Global event: Show same local time in city, converted time for user
                 TimeInfoBlock(
                     icon: "building.2.fill",
                     label: String(format: String(localized: "city_time.event_time_in"), city.name),

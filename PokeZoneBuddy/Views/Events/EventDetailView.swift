@@ -403,9 +403,9 @@ struct EventDetailView: View {
         
         items.append(
             FeatureChipItem(
-                id: event.isGlobalTime ? "global_event" : "local_event",
-                icon: event.isGlobalTime ? "globe" : "location.circle",
-                text: event.isGlobalTime ? String(localized: "badge.global_event") : String(localized: "badge.local_event"),
+                id: event.isGlobalTime ? "local_event" : "global_event",
+                icon: event.isGlobalTime ? "location.circle" : "globe",
+                text: event.isGlobalTime ? String(localized: "badge.local_event") : String(localized: "badge.global_event"),
                 color: .orange
             )
         )
@@ -583,14 +583,14 @@ private struct CityTimeCard: View {
             if let cityTimezone = city.timeZone {
                 VStack(alignment: .leading, spacing: 12) {
                     if event.isGlobalTime {
-                        // Global event: Convert normally
+                        // Location-specific event: Convert normally from UTC
                         ImprovedTimeDisplay(
                             startDate: event.startTime,
                             endDate: event.endTime,
                             timezone: timezoneService.userTimezone
                         )
                     } else {
-                        // Local event: Convert from city timezone to user timezone
+                        // Global event: Convert from city timezone to user timezone
                         let absoluteStart = timezoneService.convertLocalEventTime(
                             event.startTime,
                             from: cityTimezone,
