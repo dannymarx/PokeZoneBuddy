@@ -614,10 +614,10 @@ private struct CityTimeCard: View {
                         Image(systemName: "info.circle.fill")
                             .font(.system(size: 12))
                             .foregroundStyle(.tertiary)
-                        
+
                         Text(timezoneService.timeDifferenceDescription(
-                            from: cityTimezone,
-                            to: timezoneService.userTimezone,
+                            from: timezoneService.userTimezone,
+                            to: cityTimezone,
                             at: event.startTime
                         ))
                         .font(.system(size: 12))
