@@ -366,18 +366,18 @@ private struct SpotDetailRow: View {
                         Text(spot.category.localizedName)
                             .font(.system(size: 12, weight: .semibold))
                     }
-                    .foregroundStyle(categoryColor)
+                    .foregroundStyle(spot.category.color)
                     .padding(.horizontal, 8)
                     .padding(.vertical, 4)
                     .background(
                         Capsule()
-                            .fill(categoryColor.opacity(0.15))
+                            .fill(spot.category.color.opacity(0.15))
                     )
                     .overlay(
                         Capsule()
-                            .strokeBorder(categoryColor.opacity(0.4), lineWidth: 1)
+                            .strokeBorder(spot.category.color.opacity(0.4), lineWidth: 1)
                     )
-                    .shadow(color: categoryColor.opacity(0.2), radius: 2, x: 0, y: 1)
+                    .shadow(color: spot.category.color.opacity(0.2), radius: 2, x: 0, y: 1)
                 }
 
                 // Notes
@@ -408,15 +408,6 @@ private struct SpotDetailRow: View {
         case .gym: return "dumbbell.fill"
         case .meetingPoint: return "person.2.fill"
         case .other: return "mappin.and.ellipse"
-        }
-    }
-
-    private var categoryColor: Color {
-        switch spot.category {
-        case .pokestop: return .blue
-        case .gym: return .red
-        case .meetingPoint: return .purple
-        case .other: return .gray
         }
     }
 }
