@@ -203,8 +203,8 @@ struct SettingsView: View {
         VStack(spacing: 32) {
             appearanceSection
             notificationsNavigationSection
-            dataManagementSection
             statisticsSection
+            dataManagementSection
             actionsSection
         }
     }
