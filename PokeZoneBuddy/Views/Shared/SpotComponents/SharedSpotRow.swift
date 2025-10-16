@@ -1,20 +1,24 @@
 //
-//  SpotRowView.swift
+//  SharedSpotRow.swift
 //  PokeZoneBuddy
 //
-//  Created by Danny Hollek on 06.10.2025.
+//  Unified spot row component used across different views
+//  Consolidates SpotRowView functionality with additional flexibility
 //
 
 import SwiftUI
 
-/// Einzelne Row-Ansicht für einen CitySpot in einer Liste
-struct SpotRowView: View {
-
+/// Shared spot row content component displaying spot information
+/// Used in AllSpotsView, SpotListView, and other spot listing views
+struct SharedSpotRow: View {
     // MARK: - Properties
 
     let spot: CitySpot
-    let onEdit: () -> Void
-    let onDelete: () -> Void
+    var showFavorite: Bool = true
+    var compact: Bool = false
+    var onEdit: (() -> Void)? = nil
+    var onDelete: (() -> Void)? = nil
+    var showContextMenu: Bool = true
 
     // MARK: - State
 
@@ -28,16 +32,16 @@ struct SpotRowView: View {
             HStack(spacing: 12) {
                 // Name - Left aligned
                 Text(spot.name)
-                    .font(.system(size: 15, weight: .semibold))
+                    .font(.system(size: compact ? 14 : 15, weight: .semibold))
                     .foregroundStyle(.primary)
                     .lineLimit(1)
 
                 Spacer(minLength: 8)
 
-                // Favorite Star
-                if spot.isFavorite {
+                // Favorite Indicator
+                if showFavorite && spot.isFavorite {
                     Image(systemName: "star.fill")
-                        .font(.system(size: 12))
+                        .font(.system(size: compact ? 11 : 12))
                         .foregroundStyle(.yellow)
                         .symbolRenderingMode(.hierarchical)
                         .shadow(color: .yellow.opacity(0.3), radius: 2, x: 0, y: 1)
@@ -51,25 +55,25 @@ struct SpotRowView: View {
                     Text(spot.category.localizedName)
                         .font(.system(size: 12, weight: .semibold))
                 }
-                .foregroundStyle(categoryColor)
+                .foregroundStyle(spot.category.color)
                 .padding(.horizontal, 8)
                 .padding(.vertical, 4)
                 .background(
                     Capsule()
-                        .fill(categoryColor.opacity(0.15))
+                        .fill(spot.category.color.opacity(0.15))
                 )
                 .overlay(
                     Capsule()
-                        .strokeBorder(categoryColor.opacity(0.4), lineWidth: 1)
+                        .strokeBorder(spot.category.color.opacity(0.4), lineWidth: 1)
                 )
-                .shadow(color: categoryColor.opacity(0.2), radius: 2, x: 0, y: 1)
+                .shadow(color: spot.category.color.opacity(0.2), radius: 2, x: 0, y: 1)
             }
 
-            // Notes (truncated to 1 line for compactness)
+            // Notes
             if !spot.notes.isEmpty {
                 HStack {
                     Text(spot.notes)
-                        .font(.system(size: 12))
+                        .font(.system(size: compact ? 11 : 12))
                         .foregroundStyle(.secondary)
                         .lineLimit(1)
                         .truncationMode(.tail)
@@ -78,10 +82,12 @@ struct SpotRowView: View {
             }
         }
         .frame(maxWidth: .infinity, alignment: .leading)
-        .padding(.vertical, 8)
-        .padding(.horizontal, 8)
+        .padding(.vertical, compact ? 6 : 8)
+        .padding(.horizontal, compact ? 4 : 8)
         .contextMenu {
-            contextMenuItems
+            if showContextMenu {
+                contextMenuItems
+            }
         }
         .overlay(alignment: .top) {
             if showCopiedFeedback {
@@ -101,22 +107,28 @@ struct SpotRowView: View {
             Label("Copy Coordinates", systemImage: "doc.on.doc")
         }
 
-        Button {
-            onEdit()
-        } label: {
-            Label("Edit", systemImage: "pencil")
+        if let onEdit = onEdit {
+            Button {
+                onEdit()
+            } label: {
+                Label("Edit", systemImage: "pencil")
+            }
         }
 
-        Divider()
+        if onEdit != nil || onDelete != nil {
+            Divider()
+        }
 
-        Button(role: .destructive) {
-            onDelete()
-        } label: {
-            Label("Delete", systemImage: "trash")
+        if let onDelete = onDelete {
+            Button(role: .destructive) {
+                onDelete()
+            } label: {
+                Label("Delete", systemImage: "trash")
+            }
         }
     }
 
-    /// Feedback-View wenn Koordinaten kopiert wurden with Liquid Glass
+    /// Feedback view when coordinates are copied with Liquid Glass
     @ViewBuilder
     private var copiedFeedbackView: some View {
         HStack(spacing: 8) {
@@ -152,25 +164,9 @@ struct SpotRowView: View {
         .transition(.scale.combined(with: .opacity))
     }
 
-    // MARK: - Computed Properties
-
-    /// Farbe basierend auf Kategorie
-    private var categoryColor: Color {
-        switch spot.category {
-        case .gym:
-            return .blue
-        case .pokestop:
-            return .cyan
-        case .meetingPoint:
-            return .purple
-        case .other:
-            return .gray
-        }
-    }
-
     // MARK: - Methods
 
-    /// Kopiert Koordinaten in die Zwischenablage
+    /// Copies coordinates to clipboard
     private func copyToClipboard() {
         #if os(macOS)
         NSPasteboard.general.clearContents()
@@ -179,12 +175,12 @@ struct SpotRowView: View {
         UIPasteboard.general.string = spot.formattedCoordinates
         #endif
 
-        // Feedback anzeigen
+        // Show feedback
         withAnimation(.spring(response: 0.3)) {
             showCopiedFeedback = true
         }
 
-        // Feedback nach 1.5 Sekunden ausblenden
+        // Hide feedback after 1.5 seconds
         Task {
             try? await Task.sleep(for: .seconds(1.5))
             withAnimation(.spring(response: 0.3)) {
@@ -194,34 +190,43 @@ struct SpotRowView: View {
     }
 }
 
-// MARK: - Preview
-
-#Preview("Spot Row - Gym") {
-    let mockSpot = CitySpot(
-        name: "Central Park Gym",
-        notes: "Great raid location with 5 gyms nearby. Always active community.",
-        latitude: 40.785091,
-        longitude: -73.968285,
-        category: .gym,
-        isFavorite: true
-    )
-
+#Preview("Standard") {
     List {
-        SpotRowView(spot: mockSpot, onEdit: {}, onDelete: {})
+        SharedSpotRow(
+            spot: CitySpot(
+                name: "Central Park Gym",
+                notes: "Great raid location",
+                latitude: 40.785091,
+                longitude: -73.968285,
+                category: .gym,
+                isFavorite: true
+            )
+        )
+        SharedSpotRow(
+            spot: CitySpot(
+                name: "Times Square Stop",
+                notes: "High-traffic area",
+                latitude: 40.758896,
+                longitude: -73.985130,
+                category: .pokestop,
+                isFavorite: false
+            )
+        )
     }
 }
 
-#Preview("Spot Row - PokéStop") {
-    let mockSpot = CitySpot(
-        name: "Times Square Stop",
-        notes: "High-traffic area",
-        latitude: 40.758896,
-        longitude: -73.985130,
-        category: .pokestop,
-        isFavorite: false
-    )
-
+#Preview("Compact") {
     List {
-        SpotRowView(spot: mockSpot, onEdit: {}, onDelete: {})
+        SharedSpotRow(
+            spot: CitySpot(
+                name: "Shibuya Crossing",
+                notes: "Famous intersection",
+                latitude: 35.661852,
+                longitude: 139.700514,
+                category: .meetingPoint,
+                isFavorite: true
+            ),
+            compact: true
+        )
     }
 }

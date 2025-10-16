@@ -319,40 +319,7 @@ extension Event {
             return String(format: String(localized: "duration.hours_minutes_short"), hours, minutes)
         }
     }
-    
-    /// Icon basierend auf Event-Features
-    var eventIcon: String {
-        if hasSpawns && hasFieldResearchTasks {
-            return "star.fill"
-        } else if hasSpawns {
-            return "location.fill"
-        } else if hasFieldResearchTasks {
-            return "doc.text.fill"
-        } else {
-            return "calendar"
-        }
-    }
-    
-    /// Event Type Color für farbcodierte Badges
-    var eventTypeColor: String {
-        switch eventType {
-        case "community-day":
-            return "green"
-        case "raid-hour", "raid-day", "raid-battles", "raid-weekend":
-            return "red"
-        case "pokemon-spotlight-hour":
-            return "yellow"
-        case "go-battle-league":
-            return "purple"
-        case "research", "ticketed-event":
-            return "blue"
-        case "season":
-            return "orange"
-        default:
-            return "gray"
-        }
-    }
-    
+
     /// Countdown Text für kommende Events
     var countdownText: String? {
         guard isUpcoming else { return nil }

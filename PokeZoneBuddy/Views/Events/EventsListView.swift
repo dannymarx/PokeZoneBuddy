@@ -469,82 +469,11 @@ private struct CityCard: View {
     }
 }
 
-// MARK: - Event Filter
-
-enum EventFilter: String, CaseIterable {
-    case all = "filter.all"
-    case live = "filter.live"
-    case upcoming = "filter.upcoming"
-    case past = "filter.past"
-    
-    var icon: String {
-        switch self {
-        case .all: return "calendar"
-        case .live: return "circle.fill"
-        case .upcoming: return "clock.fill"
-        case .past: return "checkmark.circle.fill"
-        }
-    }
-    
-    var color: Color {
-        switch self {
-        case .all: return .blue
-        case .live: return .green
-        case .upcoming: return .orange
-        case .past: return .gray
-        }
-    }
-
-    var localizedKey: LocalizedStringKey { .init(self.rawValue) }
-}
+// MARK: - Events Layout Style
 
 enum EventsLayoutStyle {
     case split
     case compact
-}
-
-// MARK: - Filter Button
-
-private struct FilterButton: View {
-    let filter: EventFilter
-    let isSelected: Bool
-    let count: Int
-    let action: () -> Void
-    
-    var body: some View {
-        Button(action: action) {
-            HStack(spacing: 6) {
-                Image(systemName: filter.icon)
-                    .font(.system(size: 11, weight: .semibold))
-
-                Text(filter.localizedKey)
-
-                if count > 0 {
-                    Text("\(count)")
-                        .font(.system(size: 11, weight: .bold))
-                        .foregroundStyle(isSelected ? filter.color : .secondary)
-                        .padding(.horizontal, 6)
-                        .padding(.vertical, 2)
-                        .background(
-                            Capsule()
-                                .fill(isSelected ? filter.color.opacity(0.2) : Color.secondary.opacity(0.15))
-                        )
-                }
-            }
-            .padding(.horizontal, 14)
-            .padding(.vertical, 8)
-            .background(
-                RoundedRectangle(cornerRadius: 10, style: .continuous)
-                    .fill(isSelected ? filter.color.opacity(0.15) : Color.clear)
-            )
-            .overlay(
-                RoundedRectangle(cornerRadius: 10, style: .continuous)
-                    .strokeBorder(isSelected ? filter.color.opacity(0.4) : Color.secondary.opacity(0.2), lineWidth: 1.5)
-            )
-            .foregroundStyle(isSelected ? filter.color : .secondary)
-        }
-        .buttonStyle(.plain)
-    }
 }
 
 // MARK: - Events Content View
@@ -647,6 +576,7 @@ struct EventsContentView: View {
         HStack {
             // App Header
             HStack(spacing: 10) {
+                #if os(macOS)
                 Image(nsImage: NSImage(named: "AppIcon") ?? NSImage())
                     .resizable()
                     .frame(width: 28, height: 28)
@@ -655,6 +585,12 @@ struct EventsContentView: View {
                         RoundedRectangle(cornerRadius: 6, style: .continuous)
                             .strokeBorder(.white.opacity(0.2), lineWidth: 0.5)
                     )
+                #else
+                Image(systemName: "app.badge.fill")
+                    .resizable()
+                    .frame(width: 28, height: 28)
+                    .foregroundStyle(.blue)
+                #endif
 
                 Text("PokeZone Buddy")
                     .font(.system(size: 16, weight: .semibold))
@@ -939,127 +875,6 @@ struct EventsContentView: View {
         .padding(.top, 32)
         .padding(.horizontal, 20)
         .padding(.bottom, 24)
-    }
-}
-
-// MARK: - Event Row
-
-private struct EventRow: View {
-    let event: Event
-    let isSelected: Bool
-    var isPast: Bool = false
-    var isActive: Bool = false
-    
-    private static let dateFormatter: DateFormatter = {
-        let formatter = DateFormatter()
-        formatter.dateStyle = .medium
-        formatter.timeStyle = .short
-        // Show UTC time components without timezone conversion
-        formatter.timeZone = TimeZone(secondsFromGMT: 0)
-        formatter.locale = Locale.current
-        return formatter
-    }()
-
-    private func formatEventDate(_ date: Date) -> String {
-        return Self.dateFormatter.string(from: date)
-    }
-    
-    var body: some View {
-        HStack(spacing: 12) {
-            // Event Thumbnail with Liquid Glass frame
-            if let imageURL = event.imageURL, let url = URL(string: imageURL) {
-                AsyncImage(url: url) { phase in
-                    switch phase {
-                    case .success(let image):
-                        image
-                            .resizable()
-                            .aspectRatio(contentMode: .fill)
-                    case .failure, .empty:
-                        Rectangle()
-                            .fill(.quaternary)
-                            .overlay(
-                                ProgressView()
-                                    .controlSize(.small)
-                            )
-                    @unknown default:
-                        Rectangle()
-                            .fill(.quaternary)
-                    }
-                }
-                .frame(width: 60, height: 60)
-                .clipShape(RoundedRectangle(cornerRadius: 10, style: .continuous))
-                .overlay(
-                    RoundedRectangle(cornerRadius: 10, style: .continuous)
-                        .strokeBorder(.white.opacity(0.2), lineWidth: 1)
-                )
-            }
-
-            VStack(alignment: .leading, spacing: 12) {
-                // Event Name & Countdown
-                HStack(alignment: .top) {
-                    VStack(alignment: .leading, spacing: 4) {
-                        Text(event.displayName)
-                            .font(.system(size: 15, weight: .semibold))
-                            .foregroundStyle(isPast ? .secondary : .primary)
-                            .lineLimit(2)
-
-                        Text(event.displayHeading)
-                            .captionStyle()
-                    }
-
-                    Spacer()
-
-                    CompactCountdownBadge(event: event)
-
-                    FavoriteButton(eventID: event.id)
-                        .padding(.leading, 4)
-                }
-
-                // Badges with Liquid Glass effect
-                HStack(spacing: 6) {
-                    ModernBadge(event.displayHeading, icon: "tag.fill", color: eventTypeColor)
-                        .liquidGlassBadge(color: eventTypeColor)
-
-                    if event.hasSpawns {
-                        ModernBadge(String(localized: "badge.spawns"), icon: "location.fill", color: .green)
-                            .liquidGlassBadge(color: .green)
-                    }
-                }
-
-                // Date
-                Text(formatEventDate(event.startTime))
-                    .font(.system(size: 12))
-                    .foregroundStyle(.secondary)
-                    .monospacedDigit()
-            }
-        }
-        .padding(14)
-        .liquidGlassEventCard(
-            isSelected: isSelected,
-            isActive: isActive,
-            accentColor: .accentColor
-        )
-        .padding(.horizontal, 20)
-        .opacity(isPast ? 0.6 : 1.0)
-        .animation(.spring(response: 0.4, dampingFraction: 0.75), value: isSelected)
-        .animation(.spring(response: 0.4, dampingFraction: 0.75), value: isActive)
-    }
-    
-    private var eventTypeColor: Color {
-        switch event.eventType {
-        case "community-day":
-            return .green
-        case "raid-hour", "raid-day", "raid-battles", "raid-weekend":
-            return .red
-        case "pokemon-spotlight-hour":
-            return .yellow
-        case "go-battle-league":
-            return .purple
-        case "research", "ticketed-event":
-            return .blue
-        default:
-            return .gray
-        }
     }
 }
 
