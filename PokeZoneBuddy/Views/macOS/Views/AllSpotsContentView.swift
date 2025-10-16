@@ -17,7 +17,6 @@ struct AllSpotsContentView: View {
     let onSpotSelected: (FavoriteCity, CitySpot) -> Void
     let onAddSpot: () -> Void
 
-    @State private var selectedSpotID: CitySpot.ID?
     @State private var isEditMode = false
 
     // MARK: - Computed Properties
@@ -65,7 +64,7 @@ struct AllSpotsContentView: View {
     // MARK: - Spots List
 
     private var spotsList: some View {
-        List(selection: $selectedSpotID) {
+        List {
             ForEach(viewModel.favoriteCities, id: \.persistentModelID) { city in
                 let spots = viewModel.getSpots(for: city)
                 if !spots.isEmpty {
@@ -85,7 +84,6 @@ struct AllSpotsContentView: View {
 
                                 Button {
                                     if !isEditMode {
-                                        selectedSpotID = spot.persistentModelID
                                         onSpotSelected(city, spot)
                                     }
                                 } label: {
@@ -93,10 +91,10 @@ struct AllSpotsContentView: View {
                                 }
                                 .buttonStyle(.plain)
                                 .contentShape(Rectangle())
-                                .tag(spot.persistentModelID)
                                 .disabled(isEditMode)
                             }
                             .listRowBackground(Color.clear)
+                            .listRowInsets(EdgeInsets(top: 4, leading: 8, bottom: 4, trailing: 8))
                         }
                     }
                 }
