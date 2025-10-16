@@ -303,9 +303,9 @@ struct NotificationContentBuilder {
         if let city = city {
             return "\(event.displayName) starts in \(city) in \(timeRemaining)"
         } else if event.isGlobalTime {
-            return "\(event.displayName) starts globally in \(timeRemaining)"
-        } else {
             return "\(event.displayName) starts in \(timeRemaining)"
+        } else {
+            return "\(event.displayName) starts globally in \(timeRemaining)"
         }
     }
 }

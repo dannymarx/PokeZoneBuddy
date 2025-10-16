@@ -138,7 +138,7 @@ final class TimezoneService {
     ///   - startDate: Start time (stored as UTC)
     ///   - endDate: End time (stored as UTC)
     ///   - timezone: The target timezone
-    ///   - isGlobalTime: If true, convert timezone. If false, show same time everywhere
+    ///   - isGlobalTime: If true (location-specific), convert from UTC. If false (global), show same clock time everywhere
     ///   - includeDate: Whether to include the date
     /// - Returns: Formatted time range
     func formatEventTimeRange(
@@ -149,7 +149,7 @@ final class TimezoneService {
         includeDate: Bool = false
     ) -> String {
         if isGlobalTime {
-            // Global event: Convert to target timezone
+            // Location-specific event: Convert from UTC to target timezone
             return formatTimeRange(
                 startDate: startDate,
                 endDate: endDate,
@@ -157,7 +157,7 @@ final class TimezoneService {
                 includeDate: includeDate
             )
         } else {
-            // Local event: Show same time everywhere (no timezone conversion)
+            // Global event: Show same clock time everywhere (no timezone conversion)
             return formatterQueue.sync {
                 let utc = TimeZone(secondsFromGMT: 0) ?? .gmt
                 timeFormatter.timeZone = utc
