@@ -3851,6 +3851,9 @@
         }
       }
     },
+    "PokeZone Buddy" : {
+
+    },
     "PokeZoneBuddy" : {
       "comment" : "The title of the app.",
       "extractionState" : "manual",

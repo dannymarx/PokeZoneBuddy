@@ -645,6 +645,22 @@ struct EventsContentView: View {
 
     private var headerView: some View {
         HStack {
+            // App Header
+            HStack(spacing: 10) {
+                Image(nsImage: NSImage(named: "AppIcon") ?? NSImage())
+                    .resizable()
+                    .frame(width: 28, height: 28)
+                    .clipShape(RoundedRectangle(cornerRadius: 6, style: .continuous))
+                    .overlay(
+                        RoundedRectangle(cornerRadius: 6, style: .continuous)
+                            .strokeBorder(.white.opacity(0.2), lineWidth: 0.5)
+                    )
+
+                Text("PokeZone Buddy")
+                    .font(.system(size: 16, weight: .semibold))
+                    .foregroundStyle(.primary)
+            }
+
             Spacer()
 
             // Filter Button

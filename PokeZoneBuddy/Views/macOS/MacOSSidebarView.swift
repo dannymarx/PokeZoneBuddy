@@ -138,54 +138,37 @@ struct MacOSSidebarView: View {
 
         var body: some View {
             Button(action: onTap) {
-                HStack(spacing: 10) {
-                    // Icon with Liquid Glass effect
-                    ZStack {
+                HStack(spacing: 0) {
+                    // Ribbon indicator on the left edge
+                    ZStack(alignment: .leading) {
                         if isSelected {
-                            RoundedRectangle(cornerRadius: 8, style: .continuous)
-                                .fill(item.accentColor.gradient)
-                                .frame(width: 34, height: 34)
-                        } else {
-                            RoundedRectangle(cornerRadius: 8, style: .continuous)
-                                .fill(.ultraThinMaterial)
-                                .frame(width: 34, height: 34)
-                                .overlay(
-                                    RoundedRectangle(cornerRadius: 8, style: .continuous)
-                                        .strokeBorder(
-                                            isHovered ? item.accentColor.opacity(0.4) : .white.opacity(0.15),
-                                            lineWidth: isHovered ? 1.5 : 1
-                                        )
-                                )
+                            // Ribbon wrapping around the left edge
+                            RoundedRectangle(cornerRadius: 2, style: .continuous)
+                                .fill(item.accentColor)
+                                .frame(width: 4)
+                                .offset(x: -12)
                         }
-
-                        Image(systemName: item.icon)
-                            .font(.system(size: 16, weight: .semibold))
-                            .foregroundStyle(isSelected ? .white : item.accentColor)
-                            .symbolRenderingMode(.hierarchical)
                     }
-                    .shadow(
-                        color: isSelected ? item.accentColor.opacity(0.3) : .clear,
-                        radius: 6,
-                        x: 0,
-                        y: 2
+                    .frame(width: 4)
+
+                    // Label with flat design
+                    HStack {
+                        Text(item.title)
+                            .font(.system(size: 14, weight: isSelected ? .semibold : .regular))
+                            .foregroundStyle(isSelected ? item.accentColor : .primary.opacity(0.7))
+
+                        Spacer()
+                    }
+                    .padding(.leading, 16)
+                    .padding(.trailing, 12)
+                    .padding(.vertical, 10)
+                    .background(
+                        Rectangle()
+                            .fill(isSelected ? item.accentColor.opacity(0.08) : (isHovered ? Color.primary.opacity(0.04) : .clear))
                     )
-
-                    // Label
-                    Text(item.title)
-                        .font(.system(size: 13, weight: isSelected ? .semibold : .medium))
-                        .foregroundStyle(isSelected ? .primary : .secondary)
-
-                    Spacer()
                 }
-                .padding(.horizontal, 10)
-                .padding(.vertical, 6)
-                .background(
-                    RoundedRectangle(cornerRadius: 10, style: .continuous)
-                        .fill(isHovered && !isSelected ? Color.primary.opacity(0.05) : .clear)
-                )
             }
             .buttonStyle(.plain)
-            .scaleEffect(isSelected ? 1.02 : 1.0)
             .animation(.spring(response: 0.3, dampingFraction: 0.7), value: isSelected)
             .animation(.spring(response: 0.25, dampingFraction: 0.8), value: isHovered)
             .onHover { hovering in
