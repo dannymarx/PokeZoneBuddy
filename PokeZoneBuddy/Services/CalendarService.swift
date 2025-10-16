@@ -66,11 +66,11 @@ class CalendarService {
         let endDate: Date
         
         if event.isGlobalTime {
-            // Global events already represent an absolute point in time
+            // Location-specific events already represent an absolute point in time (UTC)
             startDate = event.startTime
             endDate = event.endTime
         } else if let cityTimezone = city.timeZone {
-            // Local events need to be converted from the city's wall-clock time
+            // Global events need to be converted from the city's wall-clock time
             startDate = timezoneService.convertLocalEventTime(
                 event.startTime,
                 from: cityTimezone,

@@ -96,6 +96,7 @@ struct AllSpotsContentView: View {
                                 .tag(spot.persistentModelID)
                                 .disabled(isEditMode)
                             }
+                            .listRowBackground(Color.clear)
                         }
                     }
                 }

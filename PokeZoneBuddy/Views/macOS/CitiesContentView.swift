@@ -55,6 +55,7 @@ struct CitiesContentView: View {
                 CityRowView(city: city, viewModel: viewModel)
                     .tag(city.persistentModelID)
                     .contentShape(Rectangle())
+                    .listRowBackground(Color.clear)
             }
             .onDelete { offsets in
                 viewModel.removeCities(at: offsets)
