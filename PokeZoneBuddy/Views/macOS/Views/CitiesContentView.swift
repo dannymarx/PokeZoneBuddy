@@ -17,8 +17,6 @@ struct CitiesContentView: View {
     let onCitySelected: (FavoriteCity) -> Void
     let onAddCity: () -> Void
 
-    @State private var selectedCityID: FavoriteCity.ID?
-
     // MARK: - Body
 
     var body: some View {
@@ -50,24 +48,23 @@ struct CitiesContentView: View {
     // MARK: - Cities List
 
     private var citiesList: some View {
-        List(selection: $selectedCityID) {
+        List {
             ForEach(viewModel.favoriteCities, id: \.persistentModelID) { city in
-                CityRowView(city: city, viewModel: viewModel)
-                    .tag(city.persistentModelID)
-                    .contentShape(Rectangle())
-                    .listRowBackground(Color.clear)
+                Button {
+                    onCitySelected(city)
+                } label: {
+                    CityRowView(city: city, viewModel: viewModel)
+                }
+                .buttonStyle(.plain)
+                .contentShape(Rectangle())
+                .listRowBackground(Color.clear)
+                .listRowInsets(EdgeInsets(top: 4, leading: 8, bottom: 4, trailing: 8))
             }
             .onDelete { offsets in
                 viewModel.removeCities(at: offsets)
             }
         }
         .listStyle(.inset)
-        .onChange(of: selectedCityID) { _, newID in
-            if let newID = newID,
-               let city = viewModel.favoriteCities.first(where: { $0.persistentModelID == newID }) {
-                onCitySelected(city)
-            }
-        }
     }
 
     // MARK: - Empty State
