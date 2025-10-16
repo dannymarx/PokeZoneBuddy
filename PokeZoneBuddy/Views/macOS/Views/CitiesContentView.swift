@@ -131,7 +131,7 @@ private struct CityRowView: View {
                             .font(.system(size: 20))
                             .foregroundStyle(.white)
                     )
-                    .shadow(color: .blue.opacity(0.2), radius: 3, x: 0, y: 1)
+                    .shadow(color: Color.systemBlue.opacity(0.2), radius: 3, x: 0, y: 1)
             }
 
             // Info - Compact layout
@@ -173,7 +173,7 @@ private struct CityRowView: View {
 
                     Text(city.formattedUTCOffset)
                         .font(.system(size: 11, weight: .semibold))
-                        .foregroundStyle(.blue)
+                        .foregroundStyle(Color.systemBlue)
                         .lineLimit(1)
                 }
                 .lineLimit(1)
@@ -191,7 +191,7 @@ private struct CityRowView: View {
                     Text("\(spotCount)")
                         .font(.system(size: 10, weight: .semibold))
                 }
-                .foregroundStyle(.blue)
+                .foregroundStyle(Color.systemBlue)
                 .padding(.horizontal, 7)
                 .padding(.vertical, 4)
                 .background(
@@ -200,9 +200,9 @@ private struct CityRowView: View {
                 )
                 .overlay(
                     Capsule()
-                        .strokeBorder(.blue.opacity(0.3), lineWidth: 0.5)
+                        .strokeBorder(Color.systemBlue.opacity(0.3), lineWidth: 0.5)
                 )
-                .shadow(color: .blue.opacity(0.12), radius: 2, x: 0, y: 1)
+                .shadow(color: Color.systemBlue.opacity(0.12), radius: 2, x: 0, y: 1)
             }
         }
         .padding(.vertical, 6)

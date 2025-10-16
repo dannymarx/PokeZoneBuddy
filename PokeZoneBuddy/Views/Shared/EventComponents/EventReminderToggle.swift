@@ -87,7 +87,7 @@ struct EventReminderDetailView: View {
                     LinearGradient(
                         colors: [
                             .white.opacity(0.25),
-                            .blue.opacity(0.15)
+                            .systemBlue.opacity(0.15)
                         ],
                         startPoint: .topLeading,
                         endPoint: .bottomTrailing
@@ -103,11 +103,11 @@ struct EventReminderDetailView: View {
             HStack(spacing: 12) {
                 Image(systemName: "bell.fill")
                     .font(.system(size: 20))
-                    .foregroundStyle(.blue)
+                    .foregroundStyle(Color.systemBlue)
                     .frame(width: 36, height: 36)
                     .background(
                         Circle()
-                            .fill(.blue.opacity(0.1))
+                            .fill(Color.systemBlue.opacity(0.1))
                     )
 
                 VStack(alignment: .leading, spacing: 2) {
@@ -141,7 +141,7 @@ struct EventReminderDetailView: View {
 
                 Text(selectedOffset.shortDisplayName)
                     .font(.system(size: 14))
-                    .foregroundStyle(.blue)
+                    .foregroundStyle(Color.systemBlue)
 
                 Image(systemName: "chevron.right")
                     .font(.system(size: 12))
@@ -186,12 +186,12 @@ struct EventReminderDetailView: View {
                 if offset == selectedOffset {
                     Image(systemName: "checkmark")
                         .font(.system(size: 14, weight: .semibold))
-                        .foregroundStyle(.blue)
+                        .foregroundStyle(Color.systemBlue)
                 }
             }
             .padding(.horizontal, 16)
             .padding(.vertical, 12)
-            .background(offset == selectedOffset ? Color.blue.opacity(0.1) : Color.clear)
+            .background(offset == selectedOffset ? Color.systemBlue.opacity(0.1) : Color.clear)
             .contentShape(Rectangle())
         }
         .buttonStyle(.plain)
@@ -200,7 +200,7 @@ struct EventReminderDetailView: View {
     private var permissionWarning: some View {
         HStack(spacing: 8) {
             Image(systemName: "exclamationmark.triangle.fill")
-                .foregroundStyle(.orange)
+                .foregroundStyle(Color.systemOrange)
 
             Text("Enable notifications in Settings")
                 .font(.system(size: 12))
@@ -212,7 +212,7 @@ struct EventReminderDetailView: View {
                 openSettings()
             }
             .font(.system(size: 12, weight: .medium))
-            .foregroundStyle(.blue)
+            .foregroundStyle(Color.systemBlue)
         }
         .padding(16)
     }

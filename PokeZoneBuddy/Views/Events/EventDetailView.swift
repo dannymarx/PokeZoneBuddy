@@ -128,12 +128,12 @@ struct EventDetailView: View {
         VStack(alignment: .leading, spacing: 20) {
             // Event Type Badge with Liquid Glass
             HStack {
-                ModernBadge(event.eventType, icon: "tag.fill", color: .blue)
-                    .liquidGlassBadge(color: .blue)
+                ModernBadge(event.eventType, icon: "tag.fill", color: Color.systemBlue)
+                    .liquidGlassBadge(color: Color.systemBlue)
 
                 if event.isCurrentlyActive {
-                    ModernBadge(String(localized: "badge.live_now"), icon: "circle.fill", color: .green)
-                        .liquidGlassBadge(color: .green)
+                    ModernBadge(String(localized: "badge.live_now"), icon: "circle.fill", color: Color.systemGreen)
+                        .liquidGlassBadge(color: Color.systemGreen)
                         .liquidGlassAnimated()
                 }
 
@@ -185,7 +185,7 @@ struct EventDetailView: View {
                         Text(String(localized: "link.view_on_leekduck"))
                     }
                     .font(.system(size: 13, weight: .medium))
-                    .foregroundStyle(.blue)
+                    .foregroundStyle(Color.systemBlue)
                 }
                 .buttonStyle(.plain)
             }
@@ -222,7 +222,7 @@ struct EventDetailView: View {
                     icon: "timer",
                     title: String(localized: "info.duration"),
                     value: event.formattedDuration,
-                    color: .blue
+                    color: Color.systemBlue
                 )
                 
                 InfoCard(
@@ -238,14 +238,14 @@ struct EventDetailView: View {
                     icon: "play.circle.fill",
                     title: String(localized: "info.start"),
                     value: formatEventTime(event.startTime),
-                    color: .green
+                    color: Color.systemGreen
                 )
                 
                 InfoCard(
                     icon: "stop.circle.fill",
                     title: String(localized: "info.end"),
                     value: formatEventTime(event.endTime),
-                    color: .red
+                    color: Color.systemRed
                 )
             }
             
@@ -385,7 +385,7 @@ struct EventDetailView: View {
                     id: "spawns",
                     icon: "location.fill",
                     text: String(localized: "badge.spawns"),
-                    color: .green
+                    color: Color.systemGreen
                 )
             )
         }
@@ -396,7 +396,7 @@ struct EventDetailView: View {
                     id: "research",
                     icon: "doc.text.fill",
                     text: String(localized: "badge.research_tasks"),
-                    color: .purple
+                    color: Color.systemPurple
                 )
             )
         }
@@ -406,7 +406,7 @@ struct EventDetailView: View {
                 id: event.isGlobalTime ? "local_event" : "global_event",
                 icon: event.isGlobalTime ? "location.circle" : "globe",
                 text: event.isGlobalTime ? String(localized: "badge.local_event") : String(localized: "badge.global_event"),
-                color: .orange
+                color: Color.systemOrange
             )
         )
         
@@ -435,9 +435,9 @@ struct EventDetailView: View {
     
     private var statusColor: Color {
         if event.isCurrentlyActive {
-            return .green
+            return .systemGreen
         } else if event.isUpcoming {
-            return .orange
+            return .systemOrange
         } else {
             return .secondary
         }
@@ -572,7 +572,7 @@ private struct CityTimeCard: View {
                     LinearGradient(
                         colors: [
                             .white.opacity(0.3),
-                            .blue.opacity(0.2),
+                            .systemBlue.opacity(0.2),
                             .clear
                         ],
                         startPoint: .topLeading,
@@ -581,7 +581,7 @@ private struct CityTimeCard: View {
                     lineWidth: 1.5
                 )
         )
-        .shadow(color: .blue.opacity(0.12), radius: 12, x: 0, y: 4)
+        .shadow(color: Color.systemBlue.opacity(0.12), radius: 12, x: 0, y: 4)
     }
 }
 
@@ -597,7 +597,7 @@ private struct TimeInfoRow: View {
         HStack(spacing: 12) {
             Image(systemName: icon)
                 .font(.system(size: 16))
-                .foregroundStyle(highlighted ? .blue : .secondary)
+                .foregroundStyle(highlighted ? Color.systemBlue : .secondary)
                 .frame(width: 24)
             
             VStack(alignment: .leading, spacing: 4) {
@@ -607,7 +607,7 @@ private struct TimeInfoRow: View {
                 
                 Text(time)
                     .font(.system(size: 15, weight: highlighted ? .semibold : .medium))
-                    .foregroundStyle(highlighted ? .blue : .primary)
+                    .foregroundStyle(highlighted ? Color.systemBlue : .primary)
                     .monospacedDigit()
             }
         }
@@ -615,7 +615,7 @@ private struct TimeInfoRow: View {
         .frame(maxWidth: .infinity, alignment: .leading)
         .background(
             RoundedRectangle(cornerRadius: 10, style: .continuous)
-                .fill(highlighted ? Color.blue.opacity(0.08) : Color.clear)
+                .fill(highlighted ? Color.systemBlue.opacity(0.08) : Color.clear)
         )
     }
 }
@@ -664,7 +664,7 @@ private struct ImprovedTimeDisplay: View {
             // Header
             HStack {
                 Image(systemName: "person.fill")
-                    .foregroundStyle(.blue)
+                    .foregroundStyle(Color.systemBlue)
                     .imageScale(.small)
                 Text(String(localized: "city_time.your_local_time"))
                     .font(.subheadline)
@@ -674,7 +674,7 @@ private struct ImprovedTimeDisplay: View {
             // TIME - Most prominent
             Text(timeString)
                 .font(.system(size: 34, weight: .bold, design: .rounded))
-                .foregroundStyle(.blue)
+                .foregroundStyle(Color.systemBlue)
                 .monospacedDigit()
             
             // DATE - Secondary
@@ -693,7 +693,7 @@ private struct ImprovedTimeDisplay: View {
         }
         .padding()
         .frame(maxWidth: .infinity, alignment: .leading)
-        .background(Color.blue.opacity(0.1))
+        .background(Color.systemBlue.opacity(0.1))
         .clipShape(RoundedRectangle(cornerRadius: 12))
     }
 }

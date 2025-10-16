@@ -58,7 +58,7 @@ struct CityTimeRowView: View {
                             .font(.system(size: 20))
                             .foregroundStyle(.white)
                     )
-                    .shadow(color: .blue.opacity(0.2), radius: 3, x: 0, y: 1)
+                    .shadow(color: Color.systemBlue.opacity(0.2), radius: 3, x: 0, y: 1)
             }
 
             VStack(alignment: .leading, spacing: 3) {
@@ -99,7 +99,7 @@ struct CityTimeRowView: View {
 
                     Text(city.formattedUTCOffset)
                         .font(.system(size: 11, weight: .semibold))
-                        .foregroundStyle(.blue)
+                        .foregroundStyle(Color.systemBlue)
                         .lineLimit(1)
                 }
                 .lineLimit(1)
@@ -143,7 +143,7 @@ struct CityTimeRowView: View {
                         timezone: cityTimezone,
                         includeDate: true
                     ),
-                    color: .blue
+                    color: Color.systemBlue
                 )
                 
                 // Arrow
@@ -165,7 +165,7 @@ struct CityTimeRowView: View {
                         timezone: timezoneService.userTimezone,
                         includeDate: true
                     ),
-                    color: .green,
+                    color: Color.systemGreen,
                     highlighted: true
                 )
             } else {
@@ -180,7 +180,7 @@ struct CityTimeRowView: View {
                         isGlobalTime: false,
                         includeDate: true
                     ),
-                    color: .blue
+                    color: Color.systemBlue
                 )
                 
                 // Arrow
@@ -203,7 +203,7 @@ struct CityTimeRowView: View {
                         userTimezone: timezoneService.userTimezone,
                         includeDate: true
                     ),
-                    color: .green,
+                    color: Color.systemGreen,
                     highlighted: true
                 )
             }
@@ -237,7 +237,7 @@ struct CityTimeRowView: View {
     private var timezoneErrorView: some View {
         HStack(spacing: 12) {
             Image(systemName: "exclamationmark.triangle.fill")
-                .foregroundStyle(.orange)
+                .foregroundStyle(Color.systemOrange)
             
             Text(String(localized: "timezone.load_failed"))
                 .secondaryStyle()
@@ -245,7 +245,7 @@ struct CityTimeRowView: View {
         .padding(16)
         .background(
             RoundedRectangle(cornerRadius: 10, style: .continuous)
-                .fill(Color.orange.opacity(0.1))
+                .fill(Color.systemOrange.opacity(0.1))
         )
     }
 }
@@ -281,7 +281,7 @@ private struct TimeInfoBlock: View {
         .frame(maxWidth: .infinity, alignment: .leading)
         .background(
             RoundedRectangle(cornerRadius: 10, style: .continuous)
-                .fill(highlighted ? color.opacity(0.08) : Color.gray.opacity(0.15))
+                .fill(highlighted ? color.opacity(0.08) : Color.systemGray.opacity(0.15))
         )
     }
 }

@@ -288,13 +288,13 @@ enum SidebarItem: String, CaseIterable, Identifiable {
     var accentColor: Color {
         switch self {
         case .events:
-            return .blue
+            return .systemBlue
         case .cities:
-            return .purple
+            return .systemPurple
         case .allSpots:
-            return .green
+            return .systemGreen
         case .settings:
-            return .gray
+            return .systemGray
         }
     }
 }

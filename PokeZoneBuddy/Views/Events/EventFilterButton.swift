@@ -25,10 +25,10 @@ enum EventFilter: String, CaseIterable {
 
     var color: Color {
         switch self {
-        case .all: return .blue
-        case .live: return .green
-        case .upcoming: return .orange
-        case .past: return .gray
+        case .all: return .systemBlue
+        case .live: return .systemGreen
+        case .upcoming: return .systemOrange
+        case .past: return .systemGray
         }
     }
 

@@ -262,7 +262,7 @@ struct SettingsView: View {
                         LinearGradient(
                             colors: [
                                 .white.opacity(0.25),
-                                .blue.opacity(0.15)
+                                .systemBlue.opacity(0.15)
                             ],
                             startPoint: .topLeading,
                             endPoint: .bottomTrailing
@@ -289,11 +289,11 @@ struct SettingsView: View {
                 HStack(spacing: 12) {
                     Image(systemName: "bell.fill")
                         .font(.system(size: 20))
-                        .foregroundStyle(.blue)
+                        .foregroundStyle(Color.systemBlue)
                         .frame(width: 40, height: 40)
                         .background(
                             Circle()
-                                .fill(.blue.opacity(0.1))
+                                .fill(Color.systemBlue.opacity(0.1))
                         )
 
                     VStack(alignment: .leading, spacing: 4) {
@@ -323,7 +323,7 @@ struct SettingsView: View {
                             LinearGradient(
                                 colors: [
                                     .white.opacity(0.25),
-                                    .blue.opacity(0.15)
+                                    .systemBlue.opacity(0.15)
                                 ],
                                 startPoint: .topLeading,
                                 endPoint: .bottomTrailing
@@ -420,7 +420,7 @@ struct SettingsView: View {
                         LinearGradient(
                             colors: [
                                 .white.opacity(0.25),
-                                .blue.opacity(0.15)
+                                .systemBlue.opacity(0.15)
                             ],
                             startPoint: .topLeading,
                             endPoint: .bottomTrailing
@@ -449,7 +449,7 @@ struct SettingsView: View {
                     title: String(localized: "cache.actions.clear_images.title"),
                     subtitle: String(localized: "cache.actions.clear_images.subtitle"),
                     buttonText: String(localized: "common.clear"),
-                    buttonColor: .blue
+                    buttonColor: .systemBlue
                 ) {
                     showClearConfirmation = true
                 }
@@ -461,7 +461,7 @@ struct SettingsView: View {
                     title: String(localized: "cache.actions.delete_old.title"),
                     subtitle: String(localized: "cache.actions.delete_old.subtitle"),
                     buttonText: String(localized: "common.delete"),
-                    buttonColor: .orange
+                    buttonColor: .systemOrange
                 ) {
                     showDeleteOldConfirmation = true
                 }
@@ -473,7 +473,7 @@ struct SettingsView: View {
                     title: "Delete All User Data",
                     subtitle: "Permanently delete all cities, spots, and favorite events",
                     buttonText: "Delete All",
-                    buttonColor: .red
+                    buttonColor: .systemRed
                 ) {
                     showDeleteAllDataConfirmation = true
                 }
@@ -798,7 +798,7 @@ private struct StatRow: View {
                 .font(.system(size: 20, weight: .semibold, design: .rounded))
                 .foregroundStyle(
                     LinearGradient(
-                        colors: [.blue, .blue.opacity(0.8)],
+                        colors: [.systemBlue, .systemBlue.opacity(0.8)],
                         startPoint: .topLeading,
                         endPoint: .bottomTrailing
                     )
@@ -880,7 +880,7 @@ private struct CreditRow: View {
                 if let url = URL(string: link) {
                     Link(description, destination: url)
                         .font(.system(size: 12))
-                        .foregroundStyle(.blue)
+                        .foregroundStyle(Color.systemBlue)
                         .accessibilityLabel(Text(description))
                 } else {
                     Text(description)
@@ -954,10 +954,10 @@ private struct LinkButton: View {
                 )
                 .overlay(
                     RoundedRectangle(cornerRadius: 10, style: .continuous)
-                        .strokeBorder(.blue.opacity(0.3), lineWidth: 1.5)
+                        .strokeBorder(Color.systemBlue.opacity(0.3), lineWidth: 1.5)
                 )
-                .shadow(color: .blue.opacity(0.15), radius: 4, x: 0, y: 2)
-                .foregroundStyle(.blue)
+                .shadow(color: Color.systemBlue.opacity(0.15), radius: 4, x: 0, y: 2)
+                .foregroundStyle(Color.systemBlue)
                 .accessibilityElement(children: .combine)
                 .accessibilityLabel(Text(title))
             }

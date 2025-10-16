@@ -120,7 +120,7 @@ struct CityDetailView: View {
 
                         Text(city.formattedUTCOffset)
                             .font(.system(size: 14, weight: .semibold))
-                            .foregroundStyle(.blue)
+                            .foregroundStyle(Color.systemBlue)
                     }
                 }
 
@@ -197,9 +197,9 @@ struct CityDetailView: View {
                     )
                     .overlay(
                         Capsule()
-                            .strokeBorder(.blue.opacity(0.3), lineWidth: 1)
+                            .strokeBorder(Color.systemBlue.opacity(0.3), lineWidth: 1)
                     )
-                    .shadow(color: .blue.opacity(0.15), radius: 3, x: 0, y: 1)
+                    .shadow(color: Color.systemBlue.opacity(0.15), radius: 3, x: 0, y: 1)
             }
 
             if spots.isEmpty {
@@ -242,7 +242,7 @@ struct CityDetailView: View {
         VStack(alignment: .leading, spacing: 12) {
             Text(String(localized: "common.danger_zone"))
                 .font(.system(size: 18, weight: .semibold))
-                .foregroundStyle(.red)
+                .foregroundStyle(Color.systemRed)
 
             Button(role: .destructive) {
                 showDeleteConfirmation = true
@@ -259,7 +259,7 @@ struct CityDetailView: View {
         HStack(spacing: 12) {
             Image(systemName: icon)
                 .font(.system(size: 16))
-                .foregroundStyle(.blue)
+                .foregroundStyle(Color.systemBlue)
                 .frame(width: 24)
 
             VStack(alignment: .leading, spacing: 2) {
@@ -354,9 +354,9 @@ private struct SpotDetailRow: View {
                     if spot.isFavorite {
                         Image(systemName: "star.fill")
                             .font(.system(size: 11))
-                            .foregroundStyle(.yellow)
+                            .foregroundStyle(Color.systemYellow)
                             .symbolRenderingMode(.hierarchical)
-                            .shadow(color: .yellow.opacity(0.3), radius: 2, x: 0, y: 1)
+                            .shadow(color: Color.systemYellow.opacity(0.3), radius: 2, x: 0, y: 1)
                     }
 
                     // Category badge - Right aligned

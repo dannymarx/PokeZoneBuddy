@@ -32,9 +32,9 @@ struct FeatureChip: View {
 
 #Preview {
     VStack(spacing: 12) {
-        FeatureChip(icon: "star.fill", text: "Featured", color: .yellow)
-        FeatureChip(icon: "location.fill", text: "Spawns", color: .green)
-        FeatureChip(icon: "gift.fill", text: "Bonus", color: .blue)
+        FeatureChip(icon: "star.fill", text: "Featured", color: Color.systemYellow)
+        FeatureChip(icon: "location.fill", text: "Spawns", color: Color.systemGreen)
+        FeatureChip(icon: "gift.fill", text: "Bonus", color: Color.systemBlue)
     }
     .padding()
 }

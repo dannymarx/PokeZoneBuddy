@@ -34,7 +34,7 @@ struct FavoriteButton: View {
         } label: {
             Label("Favorite", systemImage: isFavorite ? "star.fill" : "star")
                 .labelStyle(.iconOnly)
-                .foregroundStyle(isFavorite ? .yellow : .secondary)
+                .foregroundStyle(isFavorite ? Color.systemYellow : .secondary)
         }
         .buttonStyle(.borderless) // Critical for buttons in List rows!
         .symbolEffect(.bounce, value: isFavorite)

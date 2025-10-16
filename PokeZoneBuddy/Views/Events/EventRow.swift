@@ -85,8 +85,8 @@ struct EventRow: View {
                         .liquidGlassBadge(color: eventTypeColor)
 
                     if event.hasSpawns {
-                        ModernBadge(String(localized: "badge.spawns"), icon: "location.fill", color: .green)
-                            .liquidGlassBadge(color: .green)
+                        ModernBadge(String(localized: "badge.spawns"), icon: "location.fill", color: Color.systemGreen)
+                            .liquidGlassBadge(color: Color.systemGreen)
                     }
                 }
 
@@ -109,20 +109,22 @@ struct EventRow: View {
         .animation(.spring(response: 0.4, dampingFraction: 0.75), value: isActive)
     }
 
+    /// Returns the semantic system color for the event type
+    /// Automatically adapts to light/dark mode
     private var eventTypeColor: Color {
         switch event.eventType {
         case "community-day":
-            return .green
+            return .systemGreen
         case "raid-hour", "raid-day", "raid-battles", "raid-weekend":
-            return .red
+            return .systemRed
         case "pokemon-spotlight-hour":
-            return .yellow
+            return .systemYellow
         case "go-battle-league":
-            return .purple
+            return .systemPurple
         case "research", "ticketed-event":
-            return .blue
+            return .systemBlue
         default:
-            return .gray
+            return .systemGray
         }
     }
 }

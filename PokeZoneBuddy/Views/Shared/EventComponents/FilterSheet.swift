@@ -84,14 +84,14 @@ struct FilterSheet: View {
     
     private func colorForType(_ type: EventType) -> Color {
         switch type.color {
-        case "green": return .green
-        case "red": return .red
-        case "yellow": return .yellow
-        case "purple": return .purple
-        case "blue": return .blue
-        case "orange": return .orange
-        case "gray": return .gray
-        default: return .gray
+        case "green": return .systemGreen
+        case "red": return .systemRed
+        case "yellow": return .systemYellow
+        case "purple": return .systemPurple
+        case "blue": return .systemBlue
+        case "orange": return .systemOrange
+        case "gray": return .systemGray
+        default: return .systemGray
         }
     }
 }

@@ -128,7 +128,7 @@ struct AllSpotsView: View {
                         HStack {
                             Image(systemName: "mappin.circle.fill")
                                 .font(.system(size: 12))
-                                .foregroundStyle(.blue)
+                                .foregroundStyle(Color.systemBlue)
                             Text(city.name)
                         }
                     }
@@ -191,9 +191,9 @@ private struct SpotRowContent: View {
                 if spot.isFavorite {
                     Image(systemName: "star.fill")
                         .font(.system(size: 12))
-                        .foregroundStyle(.yellow)
+                        .foregroundStyle(Color.systemYellow)
                         .symbolRenderingMode(.hierarchical)
-                        .shadow(color: .yellow.opacity(0.3), radius: 2, x: 0, y: 1)
+                        .shadow(color: Color.systemYellow.opacity(0.3), radius: 2, x: 0, y: 1)
                 }
 
                 // Category badge - Right aligned

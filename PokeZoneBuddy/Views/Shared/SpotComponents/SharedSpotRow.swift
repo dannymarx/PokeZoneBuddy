@@ -42,9 +42,9 @@ struct SharedSpotRow: View {
                 if showFavorite && spot.isFavorite {
                     Image(systemName: "star.fill")
                         .font(.system(size: compact ? 11 : 12))
-                        .foregroundStyle(.yellow)
+                        .foregroundStyle(Color.systemYellow)
                         .symbolRenderingMode(.hierarchical)
-                        .shadow(color: .yellow.opacity(0.3), radius: 2, x: 0, y: 1)
+                        .shadow(color: Color.systemYellow.opacity(0.3), radius: 2, x: 0, y: 1)
                         .accessibilityLabel("Favorite spot")
                 }
 
@@ -133,7 +133,7 @@ struct SharedSpotRow: View {
     private var copiedFeedbackView: some View {
         HStack(spacing: 8) {
             Image(systemName: "checkmark.circle.fill")
-                .foregroundStyle(.green)
+                .foregroundStyle(Color.systemGreen)
                 .symbolRenderingMode(.hierarchical)
             Text("Copied!")
                 .font(.caption)
@@ -152,7 +152,7 @@ struct SharedSpotRow: View {
                     LinearGradient(
                         colors: [
                             .white.opacity(0.3),
-                            .green.opacity(0.2)
+                            .systemGreen.opacity(0.2)
                         ],
                         startPoint: .topLeading,
                         endPoint: .bottomTrailing
@@ -160,7 +160,7 @@ struct SharedSpotRow: View {
                     lineWidth: 1.5
                 )
         )
-        .shadow(color: .green.opacity(0.2), radius: 8, x: 0, y: 2)
+        .shadow(color: Color.systemGreen.opacity(0.2), radius: 8, x: 0, y: 2)
         .transition(.scale.combined(with: .opacity))
     }
 
