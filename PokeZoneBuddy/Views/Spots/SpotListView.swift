@@ -229,7 +229,7 @@ struct SpotListView: View {
         List {
             ForEach(spots, id: \.persistentModelID) { spot in
                 NavigationLink(value: spot.persistentModelID) {
-                    SpotRowView(
+                    SharedSpotRow(
                         spot: spot,
                         onEdit: { editingSpot = spot },
                         onDelete: { deleteSpot(spot) }

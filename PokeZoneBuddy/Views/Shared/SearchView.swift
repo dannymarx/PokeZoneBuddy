@@ -239,7 +239,7 @@ private struct SpotSearchRow: View {
         HStack(spacing: 12) {
             // Spot Icon
             Circle()
-                .fill(categoryColor.gradient)
+                .fill(spot.category.color.gradient)
                 .frame(width: 50, height: 50)
                 .overlay(
                     Image(systemName: categoryIcon)
@@ -280,15 +280,6 @@ private struct SpotSearchRow: View {
         case .gym: return "dumbbell.fill"
         case .meetingPoint: return "person.2.fill"
         case .other: return "mappin.and.ellipse"
-        }
-    }
-
-    private var categoryColor: Color {
-        switch spot.category {
-        case .pokestop: return .blue
-        case .gym: return .red
-        case .meetingPoint: return .purple
-        case .other: return .gray
         }
     }
 

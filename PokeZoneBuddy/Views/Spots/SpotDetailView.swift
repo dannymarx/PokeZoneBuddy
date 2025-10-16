@@ -143,18 +143,18 @@ struct SpotDetailView: View {
                         Text(spot.category.localizedName)
                             .font(.system(size: 13, weight: .semibold))
                     }
-                    .foregroundStyle(categoryColor)
+                    .foregroundStyle(spot.category.color)
                     .padding(.horizontal, 12)
                     .padding(.vertical, 6)
                     .background(
                         Capsule()
-                            .fill(categoryColor.opacity(0.15))
+                            .fill(spot.category.color.opacity(0.15))
                     )
                     .overlay(
                         Capsule()
-                            .strokeBorder(categoryColor.opacity(0.4), lineWidth: 1)
+                            .strokeBorder(spot.category.color.opacity(0.4), lineWidth: 1)
                     )
-                    .shadow(color: categoryColor.opacity(0.2), radius: 3, x: 0, y: 2)
+                    .shadow(color: spot.category.color.opacity(0.2), radius: 3, x: 0, y: 2)
                 }
             }
         }
@@ -209,7 +209,7 @@ struct SpotDetailView: View {
 
             Map(position: $cameraPosition) {
                 Marker(spot.name, coordinate: spotCoordinate)
-                    .tint(categoryColor)
+                    .tint(spot.category.color)
             }
             .mapStyle(.standard(elevation: .realistic))
             .frame(height: 300)
@@ -369,15 +369,6 @@ struct SpotDetailView: View {
         case .gym: return "dumbbell.fill"
         case .meetingPoint: return "person.2.fill"
         case .other: return "mappin.and.ellipse"
-        }
-    }
-
-    private var categoryColor: Color {
-        switch spot.category {
-        case .pokestop: return .blue
-        case .gym: return .red
-        case .meetingPoint: return .purple
-        case .other: return .gray
         }
     }
 
