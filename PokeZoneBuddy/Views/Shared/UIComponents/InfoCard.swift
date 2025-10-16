@@ -65,13 +65,13 @@ struct InfoCard: View {
             icon: "clock.fill",
             title: "Duration",
             value: "3 hours",
-            color: .blue
+            color: Color.systemBlue
         )
         InfoCard(
             icon: "calendar",
             title: "Date",
             value: "Oct 16, 2025",
-            color: .green
+            color: Color.systemGreen
         )
     }
     .padding()

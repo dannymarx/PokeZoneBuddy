@@ -20,7 +20,7 @@ struct SpotlightHourDetailView: View {
             HStack {
                 Image(systemName: "star.fill")
                     .font(.system(size: 18))
-                    .foregroundStyle(.yellow)
+                    .foregroundStyle(Color.systemYellow)
                 Text(String(localized: "spotlight_hour"))
                     .font(.system(size: 18, weight: .semibold))
                 Spacer()
@@ -68,7 +68,7 @@ struct SpotlightHourDetailView: View {
                     HStack(spacing: 6) {
                         Image(systemName: "gift.fill")
                             .font(.system(size: 12))
-                            .foregroundStyle(.blue)
+                            .foregroundStyle(Color.systemBlue)
                         Text(details.bonus)
                             .font(.system(size: 14, weight: .medium))
                             .foregroundStyle(.primary)
@@ -77,7 +77,7 @@ struct SpotlightHourDetailView: View {
                     .padding(.vertical, 6)
                     .background(
                         Capsule()
-                            .fill(.blue.opacity(0.1))
+                            .fill(Color.systemBlue.opacity(0.1))
                     )
                 }
                 
@@ -113,8 +113,8 @@ struct SpotlightHourDetailView: View {
                 .strokeBorder(
                     LinearGradient(
                         colors: [
-                            .yellow.opacity(0.3),
-                            .orange.opacity(0.2),
+                            .systemYellow.opacity(0.3),
+                            .systemOrange.opacity(0.2),
                             .clear
                         ],
                         startPoint: .topLeading,
@@ -123,7 +123,7 @@ struct SpotlightHourDetailView: View {
                     lineWidth: 1.5
                 )
         )
-        .shadow(color: .yellow.opacity(0.15), radius: 12, x: 0, y: 4)
+        .shadow(color: Color.systemYellow.opacity(0.15), radius: 12, x: 0, y: 4)
     }
 }
 
@@ -139,7 +139,7 @@ struct RaidBattleDetailView: View {
             HStack {
                 Image(systemName: "flame.fill")
                     .font(.system(size: 18))
-                    .foregroundStyle(.red)
+                    .foregroundStyle(Color.systemRed)
                 Text(String(localized: "raid_bosses"))
                     .font(.system(size: 18, weight: .semibold))
                 Spacer()
@@ -185,8 +185,8 @@ struct RaidBattleDetailView: View {
                 .strokeBorder(
                     LinearGradient(
                         colors: [
-                            .red.opacity(0.3),
-                            .orange.opacity(0.2),
+                            .systemRed.opacity(0.3),
+                            .systemOrange.opacity(0.2),
                             .clear
                         ],
                         startPoint: .topLeading,
@@ -195,7 +195,7 @@ struct RaidBattleDetailView: View {
                     lineWidth: 1.5
                 )
         )
-        .shadow(color: .red.opacity(0.15), radius: 12, x: 0, y: 4)
+        .shadow(color: Color.systemRed.opacity(0.15), radius: 12, x: 0, y: 4)
     }
 }
 
@@ -211,7 +211,7 @@ struct CommunityDayDetailView: View {
             HStack {
                 Image(systemName: "star.circle.fill")
                     .font(.system(size: 18))
-                    .foregroundStyle(.green)
+                    .foregroundStyle(Color.systemGreen)
                 Text(String(localized: "community_day"))
                     .font(.system(size: 18, weight: .semibold))
                 Spacer()
@@ -278,7 +278,7 @@ struct CommunityDayDetailView: View {
                 HStack(spacing: 8) {
                     Image(systemName: "doc.text.fill")
                         .font(.system(size: 14))
-                        .foregroundStyle(.purple)
+                        .foregroundStyle(Color.systemPurple)
                     Text(String(localized: "special_research_available"))
                         .font(.system(size: 13, weight: .medium))
                         .foregroundStyle(.primary)
@@ -288,7 +288,7 @@ struct CommunityDayDetailView: View {
                 .frame(maxWidth: .infinity, alignment: .leading)
                 .background(
                     RoundedRectangle(cornerRadius: 10)
-                        .fill(.purple.opacity(0.1))
+                        .fill(Color.systemPurple.opacity(0.1))
                 )
             }
         }
@@ -302,8 +302,8 @@ struct CommunityDayDetailView: View {
                 .strokeBorder(
                     LinearGradient(
                         colors: [
-                            .green.opacity(0.3),
-                            .blue.opacity(0.2),
+                            .systemGreen.opacity(0.3),
+                            .systemBlue.opacity(0.2),
                             .clear
                         ],
                         startPoint: .topLeading,
@@ -312,7 +312,7 @@ struct CommunityDayDetailView: View {
                     lineWidth: 1.5
                 )
         )
-        .shadow(color: .green.opacity(0.15), radius: 12, x: 0, y: 4)
+        .shadow(color: Color.systemGreen.opacity(0.15), radius: 12, x: 0, y: 4)
     }
 }
 
@@ -390,7 +390,7 @@ struct RaidBossCard: View {
             .frame(width: 100, height: 100)
             .background(
                 RoundedRectangle(cornerRadius: 12)
-                    .fill(.red.opacity(0.1))
+                    .fill(Color.systemRed.opacity(0.1))
             )
             
             VStack(spacing: 4) {
@@ -431,7 +431,7 @@ struct ShinyBadge: View {
             Capsule()
                 .fill(
                     LinearGradient(
-                        colors: [.yellow, .orange, .pink],
+                        colors: [.systemYellow, .systemOrange, .systemPink],
                         startPoint: .leading,
                         endPoint: .trailing
                     )
@@ -467,7 +467,7 @@ struct BonusRowView: View {
             } else {
                 Image(systemName: "gift.fill")
                     .font(.system(size: 16))
-                    .foregroundStyle(.blue)
+                    .foregroundStyle(Color.systemBlue)
                     .frame(width: 28, height: 28)
             }
             

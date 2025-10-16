@@ -69,7 +69,7 @@ struct MainTabView: View {
                 SettingsView()
             }
         }
-        .tint(.blue)
+        .tint(.accentColor)
     }
 
     // MARK: - Loading View

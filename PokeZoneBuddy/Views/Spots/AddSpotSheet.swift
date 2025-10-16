@@ -142,11 +142,11 @@ struct AddSpotSheet: View {
                     if parsedCoords != nil {
                         HStack(spacing: 8) {
                             Image(systemName: "checkmark.circle.fill")
-                                .foregroundStyle(.green)
+                                .foregroundStyle(Color.systemGreen)
                             VStack(alignment: .leading, spacing: 4) {
                                 Text(String(localized: "spots.add.coordinates.success"))
                                     .font(.caption)
-                                    .foregroundStyle(.green)
+                                    .foregroundStyle(Color.systemGreen)
                                 Text(formattedParsedCoordinates)
                                     .font(.caption)
                                     .foregroundStyle(.secondary)
@@ -157,10 +157,10 @@ struct AddSpotSheet: View {
                     } else {
                         HStack(spacing: 8) {
                             Image(systemName: "exclamationmark.triangle.fill")
-                                .foregroundStyle(.orange)
+                                .foregroundStyle(Color.systemOrange)
                             Text(String(localized: "spots.add.coordinates.error"))
                                 .font(.caption)
-                                .foregroundStyle(.orange)
+                                .foregroundStyle(Color.systemOrange)
                         }
                         .accessibilityElement(children: .combine)
                         .accessibilityLabel("Invalid coordinates")

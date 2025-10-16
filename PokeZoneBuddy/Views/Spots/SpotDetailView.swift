@@ -115,7 +115,7 @@ struct SpotDetailView: View {
                     HStack(spacing: 8) {
                         Image(systemName: "building.2.fill")
                             .font(.system(size: 14))
-                            .foregroundStyle(.blue)
+                            .foregroundStyle(Color.systemBlue)
                         Text(city.name)
                             .font(.system(size: 16, weight: .medium))
                     }
@@ -280,7 +280,7 @@ struct SpotDetailView: View {
         HStack(spacing: 12) {
             Image(systemName: icon)
                 .font(.system(size: 16))
-                .foregroundStyle(.blue)
+                .foregroundStyle(Color.systemBlue)
                 .frame(width: 24)
 
             Text(title)

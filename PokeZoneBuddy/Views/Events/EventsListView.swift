@@ -430,7 +430,7 @@ private struct CityCard: View {
                         .foregroundStyle(.tertiary)
                     Text(city.formattedUTCOffset)
                         .font(.system(size: 11, weight: .medium))
-                        .foregroundStyle(.blue)
+                        .foregroundStyle(Color.systemBlue)
                 }
             }
             .padding(12)
@@ -445,7 +445,7 @@ private struct CityCard: View {
                         LinearGradient(
                             colors: [
                                 .white.opacity(isHovered ? 0.4 : 0.2),
-                                .blue.opacity(isHovered ? 0.3 : 0.1)
+                                .systemBlue.opacity(isHovered ? 0.3 : 0.1)
                             ],
                             startPoint: .topLeading,
                             endPoint: .bottomTrailing
@@ -454,7 +454,7 @@ private struct CityCard: View {
                     )
             )
             .shadow(
-                color: .blue.opacity(isHovered ? 0.2 : 0.1),
+                color: Color.systemBlue.opacity(isHovered ? 0.2 : 0.1),
                 radius: isHovered ? 10 : 6,
                 x: 0,
                 y: isHovered ? 4 : 2
@@ -567,7 +567,7 @@ struct EventsContentView: View {
         .padding(.vertical, 8)
         .padding(.horizontal)
         .frame(maxWidth: .infinity)
-        .background(Color.orange)
+        .background(Color.systemOrange)
     }
 
     // MARK: - Header View (macOS only)
@@ -589,7 +589,7 @@ struct EventsContentView: View {
                 Image(systemName: "app.badge.fill")
                     .resizable()
                     .frame(width: 28, height: 28)
-                    .foregroundStyle(.blue)
+                    .foregroundStyle(Color.systemBlue)
                 #endif
 
                 Text("PokeZone Buddy")
@@ -605,7 +605,7 @@ struct EventsContentView: View {
             } label: {
                 Image(systemName: "line.3.horizontal.decrease.circle")
                     .font(.system(size: 14, weight: .semibold))
-                    .foregroundStyle(filterConfig.isActive ? .blue : .secondary)
+                    .foregroundStyle(filterConfig.isActive ? Color.systemBlue : .secondary)
             }
             .buttonStyle(.plain)
             .badge(filterConfig.activeFilterCount > 0 ? filterConfig.activeFilterCount : 0)
@@ -718,7 +718,7 @@ struct EventsContentView: View {
                         }
                 }
             } header: {
-                sectionHeader(title: String(localized: "section.live_events"), icon: "circle.fill", color: .green)
+                sectionHeader(title: String(localized: "section.live_events"), icon: "circle.fill", color: Color.systemGreen)
             }
         }
         
@@ -736,7 +736,7 @@ struct EventsContentView: View {
                 sectionHeader(
                     title: String(localized: "section.upcoming_events"),
                     icon: "clock.fill",
-                    color: .orange,
+                    color: Color.systemOrange,
                     topPadding: filteredActiveEvents.isEmpty ? 8 : 20
                 )
             }
@@ -753,7 +753,7 @@ struct EventsContentView: View {
                         }
                 }
             } header: {
-                sectionHeader(title: String(localized: "section.past_events"), icon: "checkmark.circle.fill", color: .gray, topPadding: 20)
+                sectionHeader(title: String(localized: "section.past_events"), icon: "checkmark.circle.fill", color: Color.systemGray, topPadding: 20)
             }
         }
     }
@@ -761,7 +761,7 @@ struct EventsContentView: View {
     @ViewBuilder
     private var liveEventsView: some View {
         if filteredActiveEvents.isEmpty {
-            emptyFilterState(icon: "circle.fill", message: String(localized: "filter.none.live"), color: .green)
+            emptyFilterState(icon: "circle.fill", message: String(localized: "filter.none.live"), color: Color.systemGreen)
         } else {
             ForEach(filteredActiveEvents) { event in
                 EventRow(event: event, isSelected: layout == .split && selectedEvent?.id == event.id, isActive: true)
@@ -776,7 +776,7 @@ struct EventsContentView: View {
     @ViewBuilder
     private var upcomingEventsView: some View {
         if filteredUpcomingEvents.isEmpty {
-            emptyFilterState(icon: "clock.fill", message: String(localized: "filter.none.upcoming"), color: .orange)
+            emptyFilterState(icon: "clock.fill", message: String(localized: "filter.none.upcoming"), color: Color.systemOrange)
         } else {
             ForEach(filteredUpcomingEvents) { event in
                 EventRow(event: event, isSelected: layout == .split && selectedEvent?.id == event.id)
@@ -791,7 +791,7 @@ struct EventsContentView: View {
     @ViewBuilder
     private var pastEventsView: some View {
         if filteredPastEvents.isEmpty {
-            emptyFilterState(icon: "checkmark.circle.fill", message: String(localized: "filter.none.past"), color: .gray)
+            emptyFilterState(icon: "checkmark.circle.fill", message: String(localized: "filter.none.past"), color: Color.systemGray)
         } else {
             ForEach(filteredPastEvents) { event in
                 EventRow(event: event, isSelected: layout == .split && selectedEvent?.id == event.id, isPast: true)

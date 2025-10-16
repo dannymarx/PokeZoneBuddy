@@ -105,7 +105,7 @@ struct NotificationSettingsView: View {
                         .padding(.vertical, 12)
                         .background(
                             RoundedRectangle(cornerRadius: 10, style: .continuous)
-                                .fill(.blue)
+                                .fill(Color.systemBlue)
                         )
                 }
                 .buttonStyle(.plain)
@@ -120,12 +120,12 @@ struct NotificationSettingsView: View {
                         Image(systemName: "arrow.up.right")
                             .font(.system(size: 12))
                     }
-                    .foregroundStyle(.blue)
+                    .foregroundStyle(Color.systemBlue)
                     .padding(.vertical, 12)
                     .padding(.horizontal, 16)
                     .background(
                         RoundedRectangle(cornerRadius: 10, style: .continuous)
-                            .fill(.blue.opacity(0.1))
+                            .fill(Color.systemBlue.opacity(0.1))
                     )
                 }
                 .buttonStyle(.plain)
@@ -158,14 +158,14 @@ struct NotificationSettingsView: View {
 
                     Text("\(pendingCount)")
                         .font(.system(size: 28, weight: .bold, design: .rounded))
-                        .foregroundStyle(.blue)
+                        .foregroundStyle(Color.systemBlue)
                 }
 
                 Spacer()
 
                 Image(systemName: "bell.badge.fill")
                     .font(.system(size: 24))
-                    .foregroundStyle(.blue.opacity(0.3))
+                    .foregroundStyle(Color.systemBlue.opacity(0.3))
             }
 
             Divider()
@@ -183,7 +183,7 @@ struct NotificationSettingsView: View {
         .overlay(
             RoundedRectangle(cornerRadius: 16, style: .continuous)
                 .strokeBorder(
-                    Color.blue.opacity(0.2),
+                    Color.systemBlue.opacity(0.2),
                     lineWidth: 1
                 )
         )
@@ -253,15 +253,15 @@ struct NotificationSettingsView: View {
     private var permissionColor: Color {
         switch authorizationStatus {
         case .authorized, .provisional:
-            return .green
+            return .systemGreen
         case .denied:
-            return .red
+            return .systemRed
         case .notDetermined:
-            return .blue
+            return .systemBlue
         case .ephemeral:
-            return .blue
+            return .systemBlue
         @unknown default:
-            return .gray
+            return .systemGray
         }
     }
 

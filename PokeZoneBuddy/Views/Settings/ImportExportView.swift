@@ -41,7 +41,7 @@ struct ImportExportView: View {
                 title: "Export Data",
                 subtitle: "Save all cities and spots to a JSON file",
                 buttonText: "Export",
-                buttonColor: .blue
+                buttonColor: .systemBlue
             ) {
                 handleExport()
             }
@@ -54,7 +54,7 @@ struct ImportExportView: View {
                 title: "Import Data",
                 subtitle: "Load cities and spots from a JSON file",
                 buttonText: "Import",
-                buttonColor: .green
+                buttonColor: .systemGreen
             ) {
                 showImportPicker = true
             }

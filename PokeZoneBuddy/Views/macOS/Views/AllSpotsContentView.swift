@@ -77,7 +77,7 @@ struct AllSpotsContentView: View {
                                         deleteSpot(spot, from: city)
                                     } label: {
                                         Image(systemName: "minus.circle.fill")
-                                            .foregroundStyle(.red)
+                                            .foregroundStyle(Color.systemRed)
                                             .font(.system(size: 20))
                                     }
                                     .buttonStyle(.plain)
@@ -158,9 +158,9 @@ private struct SpotRowCompactView: View {
                 if spot.isFavorite {
                     Image(systemName: "star.fill")
                         .font(.system(size: 11))
-                        .foregroundStyle(.yellow)
+                        .foregroundStyle(Color.systemYellow)
                         .symbolRenderingMode(.hierarchical)
-                        .shadow(color: .yellow.opacity(0.3), radius: 2, x: 0, y: 1)
+                        .shadow(color: Color.systemYellow.opacity(0.3), radius: 2, x: 0, y: 1)
                 }
 
                 // Category badge - Right aligned

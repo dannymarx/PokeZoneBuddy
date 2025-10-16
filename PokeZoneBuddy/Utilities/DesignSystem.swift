@@ -12,32 +12,51 @@ enum DesignSystem {
 
     // MARK: - Colors
 
+    /// System-based semantic colors that automatically adapt to light/dark mode
     enum Colors {
-        /// Event type colors
-        static let eventCommunityDay = Color.green
-        static let eventRaid = Color.red
-        static let eventSpotlight = Color.yellow
-        static let eventBattleLeague = Color.purple
-        static let eventResearch = Color.blue
-        static let eventSeason = Color.orange
-        static let eventDefault = Color.gray
+        // MARK: - Event Type Colors
+        /// Uses system semantic colors for automatic light/dark mode adaptation
+        static let eventCommunityDay = Color.systemGreen
+        static let eventRaid = Color.systemRed
+        static let eventSpotlight = Color.systemYellow
+        static let eventBattleLeague = Color.systemPurple
+        static let eventResearch = Color.systemBlue
+        static let eventSeason = Color.systemOrange
+        static let eventDefault = Color.systemGray
 
-        /// Spot category colors (now using SpotCategory.color, kept for reference)
-        static let categoryGym = Color.blue
-        static let categoryPokestop = Color.cyan
-        static let categoryMeetingPoint = Color.purple
-        static let categoryOther = Color.gray
+        // MARK: - Spot Category Colors
+        /// Spot category colors using system colors for consistency
+        static let categoryGym = Color.systemBlue
+        static let categoryPokestop = Color.systemCyan
+        static let categoryMeetingPoint = Color.systemPurple
+        static let categoryOther = Color.systemGray
 
-        /// Status colors
-        static let statusLive = Color.green
-        static let statusUpcoming = Color.orange
-        static let statusPast = Color.gray
+        // MARK: - Status Colors
+        /// Status indicators with semantic meaning
+        static let statusLive = Color.systemGreen
+        static let statusUpcoming = Color.systemOrange
+        static let statusPast = Color.systemGray
 
-        /// UI accent colors
-        static let accentBlue = Color.blue
-        static let accentGreen = Color.green
-        static let accentYellow = Color.yellow
-        static let accentRed = Color.red
+        // MARK: - UI Accent Colors
+        /// General UI accent colors
+        static let accentBlue = Color.systemBlue
+        static let accentGreen = Color.systemGreen
+        static let accentYellow = Color.systemYellow
+        static let accentRed = Color.systemRed
+
+        // MARK: - Background Colors
+        /// Primary background - automatically adapts to light/dark mode
+        static let primaryBackground = Color.systemBackground
+        /// Secondary background - for grouped content
+        static let secondaryBackground = Color.secondarySystemBackground
+        /// Tertiary background - for further depth
+        static let tertiaryBackground = Color.tertiarySystemBackground
+
+        // MARK: - Text Colors
+        /// Primary text color - highest contrast (use .primary directly in views)
+        /// Secondary text color - medium contrast (use .secondary directly in views)
+        /// Tertiary text color - lower contrast (use .tertiary directly in views)
+        /// Quaternary text color - lowest contrast (use .quaternary directly in views)
     }
 
     // MARK: - Spacing
@@ -234,9 +253,9 @@ extension View {
     func favoriteStarStyle(compact: Bool = false) -> some View {
         self
             .font(.system(size: compact ? 11 : 12))
-            .foregroundStyle(.yellow)
+            .foregroundStyle(Color.systemYellow)
             .symbolRenderingMode(.hierarchical)
-            .shadow(color: .yellow.opacity(0.3), radius: 2, x: 0, y: 1)
+            .shadow(color: Color.systemYellow.opacity(0.3), radius: 2, x: 0, y: 1)
     }
 
     // MARK: - Layout Modifiers

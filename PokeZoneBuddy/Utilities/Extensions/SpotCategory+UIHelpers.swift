@@ -10,16 +10,17 @@ import SwiftUI
 // Centralized UI helpers for SpotCategory presentation.
 extension SpotCategory {
     /// Color associated with the category for consistent UI styling.
+    /// Uses system colors for automatic light/dark mode adaptation.
     var color: Color {
         switch self {
         case .gym:
-            return .blue
+            return .systemBlue
         case .pokestop:
-            return .cyan
+            return .systemCyan
         case .meetingPoint:
-            return .purple
+            return .systemPurple
         case .other:
-            return .gray
+            return .systemGray
         }
     }
 

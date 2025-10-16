@@ -77,7 +77,7 @@ struct FavoriteEventCard: View {
                         if hasReminders {
                             Image(systemName: "bell.fill")
                                 .font(.system(size: 10))
-                                .foregroundStyle(.blue)
+                                .foregroundStyle(Color.systemBlue)
                         }
                     }
                 }

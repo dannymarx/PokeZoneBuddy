@@ -103,7 +103,7 @@ struct SearchView: View {
                     HStack {
                         Image(systemName: "calendar")
                             .font(.system(size: 12))
-                            .foregroundStyle(.blue)
+                            .foregroundStyle(Color.systemBlue)
                         Text(String(localized: "events.title"))
                     }
                 }
@@ -129,7 +129,7 @@ struct SearchView: View {
                     HStack {
                         Image(systemName: "mappin.and.ellipse")
                             .font(.system(size: 12))
-                            .foregroundStyle(.green)
+                            .foregroundStyle(Color.systemGreen)
                         Text(String(localized: "spots.section.title"))
                     }
                 }
@@ -264,7 +264,7 @@ private struct SpotSearchRow: View {
             if spot.isFavorite {
                 Image(systemName: "star.fill")
                     .font(.system(size: 12))
-                    .foregroundStyle(.yellow)
+                    .foregroundStyle(Color.systemYellow)
             }
 
             Image(systemName: "chevron.right")

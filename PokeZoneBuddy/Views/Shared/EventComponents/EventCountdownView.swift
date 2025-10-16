@@ -38,13 +38,13 @@ struct EventCountdownView: View {
             // Status Badge
             HStack(spacing: 8) {
                 Circle()
-                    .fill(.green)
+                    .fill(Color.systemGreen)
                     .frame(width: 8, height: 8)
                     .shimmer()
-                
+
                 Text(String(localized: "countdown.live_now"))
                     .font(.system(size: 12, weight: .bold))
-                    .foregroundStyle(.green)
+                    .foregroundStyle(Color.systemGreen)
             }
             
             // Progress Bar
@@ -70,7 +70,7 @@ struct EventCountdownView: View {
                         RoundedRectangle(cornerRadius: 4)
                             .fill(
                                 LinearGradient(
-                                    colors: [.green, .green.opacity(0.7)],
+                                    colors: [Color.systemGreen, Color.systemGreen.opacity(0.7)],
                                     startPoint: .leading,
                                     endPoint: .trailing
                                 )
@@ -85,7 +85,7 @@ struct EventCountdownView: View {
         .padding(16)
         .background(
             RoundedRectangle(cornerRadius: 12, style: .continuous)
-                .fill(.green.opacity(0.1))
+                .fill(Color.systemGreen.opacity(0.1))
         )
     }
     
@@ -97,11 +97,11 @@ struct EventCountdownView: View {
             HStack(spacing: 8) {
                 Image(systemName: "clock.fill")
                     .font(.system(size: 12))
-                    .foregroundStyle(.orange)
-                
+                    .foregroundStyle(Color.systemOrange)
+
                 Text(String(localized: "countdown.starting_soon"))
                     .font(.system(size: 12, weight: .bold))
-                    .foregroundStyle(.orange)
+                    .foregroundStyle(Color.systemOrange)
             }
             
             // Countdown
@@ -112,14 +112,14 @@ struct EventCountdownView: View {
                 Spacer()
                 Text(countdownText)
                     .font(.system(size: 15, weight: .bold))
-                    .foregroundStyle(.orange)
+                    .foregroundStyle(Color.systemOrange)
                     .monospacedDigit()
             }
         }
         .padding(16)
         .background(
             RoundedRectangle(cornerRadius: 12, style: .continuous)
-                .fill(.orange.opacity(0.1))
+                .fill(Color.systemOrange.opacity(0.1))
         )
     }
     
@@ -199,7 +199,7 @@ struct CompactCountdownBadge: View {
             if event.isCurrentlyActive {
                 HStack(spacing: 4) {
                     Circle()
-                        .fill(.green)
+                        .fill(Color.systemGreen)
                         .frame(width: 6, height: 6)
                     Text(String(localized: "badge.live"))
                         .font(.system(size: 11, weight: .bold))
@@ -208,9 +208,9 @@ struct CompactCountdownBadge: View {
                 .padding(.vertical, 4)
                 .background(
                     Capsule()
-                        .fill(.green.opacity(0.15))
+                        .fill(Color.systemGreen.opacity(0.15))
                 )
-                .foregroundStyle(.green)
+                .foregroundStyle(Color.systemGreen)
             } else if event.isUpcoming, let countdown = event.countdownText {
                 HStack(spacing: 4) {
                     Image(systemName: "clock.fill")
@@ -222,9 +222,9 @@ struct CompactCountdownBadge: View {
                 .padding(.vertical, 4)
                 .background(
                     Capsule()
-                        .fill(.orange.opacity(0.15))
+                        .fill(Color.systemOrange.opacity(0.15))
                 )
-                .foregroundStyle(.orange)
+                .foregroundStyle(Color.systemOrange)
                 .monospacedDigit()
             }
         }
