@@ -191,9 +191,6 @@ struct SettingsView: View {
                 Text(String(localized: "data.delete_all.warning"))
             }
         }
-#if os(macOS)
-        .frame(minWidth: 600, minHeight: 500)
-#endif
     }
 
     // MARK: - Section Grouping

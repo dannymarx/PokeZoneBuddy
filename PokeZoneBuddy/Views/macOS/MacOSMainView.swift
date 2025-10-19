@@ -35,6 +35,7 @@ struct MacOSMainView: View {
                 loadingView
             }
         }
+        .frame(minWidth: 0, maxWidth: .infinity, minHeight: 0, maxHeight: .infinity)
         .onAppear {
             if eventsViewModel == nil {
                 initializeViewModels()
@@ -100,18 +101,23 @@ private struct MacOSContentView: View {
                     selectedSpot = spot
                 }
             )
-            .navigationSplitViewColumnWidth(min: 220, ideal: 260, max: 320)
+            .navigationSplitViewColumnWidth(ideal: 240)
+            .frame(minWidth: 0, maxWidth: .infinity, minHeight: 0, maxHeight: .infinity)
 
         } content: {
             // Content (middle column)
             contentColumn
-                .navigationSplitViewColumnWidth(min: 420, ideal: 480, max: 600)
+                .navigationSplitViewColumnWidth(ideal: 450)
+                .frame(minWidth: 0, maxWidth: .infinity, minHeight: 0, maxHeight: .infinity)
 
         } detail: {
             // Detail (right column)
             detailColumn
+                .navigationSplitViewColumnWidth(ideal: 400)
+                .frame(minWidth: 0, maxWidth: .infinity, minHeight: 0, maxHeight: .infinity)
         }
         .navigationSplitViewStyle(.balanced)
+        .frame(minWidth: 0, maxWidth: .infinity, minHeight: 0, maxHeight: .infinity)
         .sheet(isPresented: $showAddCity) {
             AddCitySheet(viewModel: citiesViewModel)
                 .presentationSizing(.fitted)

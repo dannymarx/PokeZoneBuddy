@@ -39,7 +39,6 @@ struct FilterSheet: View {
                 }
             }
         }
-        .frame(minWidth: 400, idealWidth: 480, minHeight: 500, idealHeight: 600)
     }
     
     // MARK: - Event Types Section
