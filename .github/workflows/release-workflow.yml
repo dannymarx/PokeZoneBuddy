@@ -61,13 +61,16 @@ jobs:
       - name: Validate deployment target
         run: |
           set -euo pipefail
-          target=$(xcodebuild -project PokeZoneBuddy.xcodeproj -scheme "PokeZoneBuddy" -configuration Release -destination 'generic/platform=macOS' -showBuildSettings | awk -F' = ' '/MACOSX_DEPLOYMENT_TARGET/ {print $2; exit}')
+          settings=$(xcodebuild -project PokeZoneBuddy.xcodeproj -scheme "PokeZoneBuddy" -configuration Release -destination 'generic/platform=macOS' -showBuildSettings)
+          target=$(echo "$settings" | awk -F' = ' '/MACOSX_DEPLOYMENT_TARGET/ {print $2; exit}')
           if [[ -z "$target" ]]; then
             echo "Unable to resolve MACOSX_DEPLOYMENT_TARGET from build settings" >&2
             exit 1
           fi
           if [[ "$target" != "26.0" ]]; then
             echo "Deployment target mismatch: MACOSX_DEPLOYMENT_TARGET=$target, expected 26.0" >&2
+            echo "Full settings:"
+            echo "$settings"
             exit 1
           fi
 
