@@ -22,6 +22,16 @@
         }
       }
     },
+    "%@. %@. %@. %@." : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "new",
+            "value" : "%1$@. %2$@. %3$@. %4$@."
+          }
+        }
+      }
+    },
     "%lld" : {
       "comment" : "A badge displaying the number of items in a filter. The argument is the count of items in the filter.",
       "extractionState" : "manual",
@@ -5139,6 +5149,204 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Same as your time"
+          }
+        }
+      }
+    },
+    "timeline.accessibility.city" : {
+      "comment" : "Accessibility description for a single city row in the multi-city timeline. Parameters: city, date, local start, local end, offset description.",
+      "extractionState" : "manual",
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "%1$@ am %2$@ von %3$@ bis %4$@, %5$@"
+          }
+        },
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "%1$@ on %2$@ from %3$@ to %4$@, %5$@"
+          }
+        }
+      }
+    },
+    "timeline.accessibility.summary" : {
+      "comment" : "Accessibility summary for the timeline diagram. Parameters: joined city names, formatted start time, formatted end time.",
+      "extractionState" : "manual",
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Zeitleiste für %1$@ von %2$@ bis %3$@"
+          }
+        },
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Timeline covering %1$@ from %2$@ to %3$@"
+          }
+        }
+      }
+    },
+    "timeline.city.local_range" : {
+      "comment" : "Describes the city's local day and time range for the event slot. Parameters: local date, start time, end time.",
+      "extractionState" : "manual",
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Stadtzeit: %1$@ · %2$@ – %3$@"
+          }
+        },
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "City time: %1$@ · %2$@ – %3$@"
+          }
+        }
+      }
+    },
+    "timeline.city.user_range" : {
+      "comment" : "Describes the user's local day and time range for a city's event slot. Parameters: user-facing date, start time, end time.",
+      "extractionState" : "manual",
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Deine Zeit: %1$@ · %2$@ – %3$@"
+          }
+        },
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Your time: %1$@ · %2$@ – %3$@"
+          }
+        }
+      }
+    },
+    "timeline.duration.hours_minutes" : {
+      "comment" : "Short description of the total coverage window showing hours and minutes. Parameters: hours, minutes.",
+      "extractionState" : "manual",
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Gesamtfenster: %1$d Std %2$d Min"
+          }
+        },
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Total window: %1$d h %2$d m"
+          }
+        }
+      }
+    },
+    "timeline.duration.minutes" : {
+      "comment" : "Short description of the total coverage window when only minutes are relevant. Parameter: minutes.",
+      "extractionState" : "manual",
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Gesamtfenster: %d Min"
+          }
+        },
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Total window: %d min"
+          }
+        }
+      }
+    },
+    "timeline.local_window.summary" : {
+      "comment" : "Summary chip describing the local time window covered by the timeline. Parameters: localized start date/time, localized end date/time, timezone summary.",
+      "extractionState" : "manual",
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Lokales Zeitfenster: %1$@ – %2$@ (%3$@)"
+          }
+        },
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Local window: %1$@ – %2$@ (%3$@)"
+          }
+        }
+      }
+    },
+    "timeline.subtitle" : {
+      "comment" : "Subtitle explaining the purpose of the multi-city event timeline.",
+      "extractionState" : "manual",
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Sieh, wann dieses Event in deinen Lieblingsstädten stattfindet."
+          }
+        },
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "See when this event lands across your favorite cities."
+          }
+        }
+      }
+    },
+    "timeline.title" : {
+      "comment" : "Title for the multi-city event timeline section.",
+      "extractionState" : "manual",
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Multi-Städte-Zeitleiste"
+          }
+        },
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Multi-city timeline"
+          }
+        }
+      }
+    },
+    "timeline.unavailable.subtitle" : {
+      "comment" : "Explains why the timeline is unavailable when prerequisites are not met.",
+      "extractionState" : "manual",
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Für diese Ansicht benötigst du mindestens zwei Favoriten mit gültigen Zeitzonen."
+          }
+        },
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "This view requires at least two favorite cities with valid time zones."
+          }
+        }
+      }
+    },
+    "timeline.unavailable.title" : {
+      "comment" : "Headline shown when the timeline view cannot be displayed.",
+      "extractionState" : "manual",
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Zeitleiste nicht verfügbar"
+          }
+        },
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Timeline unavailable"
           }
         }
       }

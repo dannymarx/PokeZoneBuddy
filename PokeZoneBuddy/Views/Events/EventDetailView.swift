@@ -48,6 +48,15 @@ struct EventDetailView: View {
                     // Pokemon Details (Spotlight/Raid/CD)
                     pokemonDetailsSection
 
+                    // Multi-city Timeline (single-day events)
+                    if shouldShowTimeline {
+                        EventTimelineView(
+                            event: event,
+                            favoriteCities: favoriteCities
+                        )
+                        .transition(.opacity.combined(with: .scale))
+                    }
+
                     // Event Reminder Settings
                     if event.isUpcoming {
                         EventReminderDetailView(event: event)
@@ -364,13 +373,7 @@ struct EventDetailView: View {
         usesCompactLayout ? .leading : .center
     }
     
-    private var maxContentWidth: CGFloat? {
-#if os(macOS)
-        return usesCompactLayout ? nil : 800
-#else
-        return nil
-#endif
-    }
+    private var maxContentWidth: CGFloat? { nil }
     
     private var chipMinimumWidth: CGFloat {
         usesCompactLayout ? 120 : 160
@@ -473,6 +476,26 @@ struct EventDetailView: View {
     private func formatEventDateTime(_ date: Date) -> String {
         let tz = TimeZone(secondsFromGMT: 0) ?? .gmt
         return TimezoneService.shared.format(date, style: .dateTime, in: tz)
+    }
+    
+    private var shouldShowTimeline: Bool {
+        guard isSingleDayEvent else { return false }
+        return favoriteCities.filter { $0.timeZone != nil }.count >= 2
+    }
+    
+    private var isSingleDayEvent: Bool {
+        guard event.endTime > event.startTime else { return false }
+        
+        let utc = TimeZone(secondsFromGMT: 0) ?? .gmt
+        var calendar = Calendar(identifier: .gregorian)
+        calendar.timeZone = utc
+        
+        guard calendar.isDate(event.startTime, inSameDayAs: event.endTime) else {
+            return false
+        }
+        
+        let duration = event.endTime.timeIntervalSince(event.startTime)
+        return duration <= 86_400
     }
 }
 
