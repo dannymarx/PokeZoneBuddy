@@ -152,7 +152,7 @@ struct NotificationSettingsView: View {
         VStack(spacing: 12) {
             HStack {
                 VStack(alignment: .leading, spacing: 4) {
-                    Text("Active Reminders")
+                    Text("reminders.active_title")
                         .font(.system(size: 13))
                         .foregroundStyle(.secondary)
 
@@ -195,7 +195,7 @@ struct NotificationSettingsView: View {
     private var testingSection: some View {
         VStack(spacing: 12) {
             HStack {
-                Text("Testing")
+                Text("settings.testing.title")
                     .font(.system(size: 14, weight: .semibold))
                     .foregroundStyle(.secondary)
                     .textCase(.uppercase)

@@ -217,7 +217,7 @@ struct AddSpotSheet: View {
             Button(String(localized: "spots.add.cancel")) {
                 dismiss()
             }
-            .accessibilityLabel("Cancel adding spot")
+            .accessibilityLabel("spots.add.cancel_action")
         }
 
         ToolbarItem(placement: .confirmationAction) {

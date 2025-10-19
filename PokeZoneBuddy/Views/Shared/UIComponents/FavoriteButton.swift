@@ -38,7 +38,7 @@ struct FavoriteButton: View {
         }
         .buttonStyle(.borderless) // Critical for buttons in List rows!
         .symbolEffect(.bounce, value: isFavorite)
-        .help(isFavorite ? "Remove from favorites" : "Add to favorites")
+        .help(isFavorite ? "Remove from favorites" : "favorites.action.add")
     }
 
     // MARK: - Private Methods
