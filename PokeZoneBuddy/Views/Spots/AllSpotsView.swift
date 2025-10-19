@@ -163,8 +163,8 @@ struct AllSpotsView: View {
     // MARK: - Computed Properties
 
     private var allSpots: [CitySpot] {
-        // Force recomputation when favoriteCities changes
-        _ = citiesViewModel.favoriteCities.count
+        // Force recomputation when dataVersion changes
+        _ = citiesViewModel.dataVersion
         return citiesViewModel.favoriteCities.flatMap { city in
             citiesViewModel.getSpots(for: city)
         }

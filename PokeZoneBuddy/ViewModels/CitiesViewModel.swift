@@ -21,6 +21,9 @@ final class CitiesViewModel {
     /// Liste aller Lieblingsstädte
     private(set) var favoriteCities: [FavoriteCity] = []
 
+    /// Trigger to force view updates when data changes
+    private(set) var dataVersion: Int = 0
+
     /// Suchergebnisse bei der Städtesuche
     private(set) var searchResults: [MKLocalSearchCompletion] = []
 
@@ -117,6 +120,7 @@ final class CitiesViewModel {
             let descriptor = FetchDescriptor<FavoriteCity>()
             favoriteCities = try modelContext.fetch(descriptor)
             sortCities()
+            dataVersion += 1  // Increment to trigger view updates
         } catch {
             AppLogger.viewModel.error("Fehler beim Laden der Städte: \(String(describing: error))")
             errorMessage = "Failed to load saved cities"

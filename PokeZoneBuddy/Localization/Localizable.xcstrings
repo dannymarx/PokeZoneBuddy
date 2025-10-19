@@ -22,23 +22,6 @@
         }
       }
     },
-    "%@ icon" : {
-      "extractionState" : "stale",
-      "localizations" : {
-        "de" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "%@ Icon"
-          }
-        },
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "%@ Icon"
-          }
-        }
-      }
-    },
     "%lld" : {
       "comment" : "A badge displaying the number of items in a filter. The argument is the count of items in the filter.",
       "extractionState" : "manual",
@@ -976,40 +959,6 @@
         }
       }
     },
-    "cities.timezone" : {
-      "extractionState" : "stale",
-      "localizations" : {
-        "de" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Zeitzone"
-          }
-        },
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Time Zone"
-          }
-        }
-      }
-    },
-    "cities.utc_offset" : {
-      "extractionState" : "stale",
-      "localizations" : {
-        "de" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "UTC Offset"
-          }
-        },
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "UTC Offset"
-          }
-        }
-      }
-    },
     "city_time.event_time_in" : {
       "comment" : "The title of a block that shows the time of an event in a specific city. The argument is the name of the city.",
       "extractionState" : "manual",
@@ -1044,23 +993,6 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Your Local Play Time"
-          }
-        }
-      }
-    },
-    "common.and_more" : {
-      "extractionState" : "stale",
-      "localizations" : {
-        "de" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Und %lld mehr..."
-          }
-        },
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "And %lld more..."
           }
         }
       }
@@ -1151,23 +1083,6 @@
         }
       }
     },
-    "common.details" : {
-      "extractionState" : "stale",
-      "localizations" : {
-        "de" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Details"
-          }
-        },
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Details"
-          }
-        }
-      }
-    },
     "common.done" : {
       "comment" : "The text for a button that dismisses a view.",
       "extractionState" : "manual",
@@ -1203,23 +1118,6 @@
         }
       }
     },
-    "common.no" : {
-      "extractionState" : "stale",
-      "localizations" : {
-        "de" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "No"
-          }
-        },
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "No"
-          }
-        }
-      }
-    },
     "common.ok" : {
       "comment" : "The text for a button with the label \"OK\".",
       "extractionState" : "manual",
@@ -1239,19 +1137,19 @@
         }
       }
     },
-    "common.yes" : {
-      "extractionState" : "stale",
+    "common.retry" : {
+      "extractionState" : "manual",
       "localizations" : {
         "de" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Yes"
+            "value" : "Wiederholen"
           }
         },
         "en" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Yes"
+            "value" : "Retry"
           }
         }
       }
@@ -2374,6 +2272,17 @@
         }
       }
     },
+    "events.refresh.error" : {
+      "extractionState" : "extracted_with_value",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "new",
+            "value" : "Update failed"
+          }
+        }
+      }
+    },
     "events.refresh.help" : {
       "comment" : "Help text for the \"Refresh\" button in the events list view.",
       "extractionState" : "manual",
@@ -2389,6 +2298,64 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Refresh events"
+          }
+        }
+      }
+    },
+    "events.refresh.success" : {
+      "extractionState" : "extracted_with_value",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "new",
+            "value" : "Updated successfully"
+          }
+        }
+      }
+    },
+    "events.refreshing" : {
+      "extractionState" : "extracted_with_value",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "new",
+            "value" : "Refreshing..."
+          }
+        }
+      }
+    },
+    "events.show_less" : {
+      "comment" : "Button label to show fewer past events in the events list.",
+      "extractionState" : "manual",
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Weniger anzeigen"
+          }
+        },
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Show Less"
+          }
+        }
+      }
+    },
+    "events.show_more" : {
+      "comment" : "Button label to show more past events in the events list.",
+      "extractionState" : "manual",
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Mehr anzeigen"
+          }
+        },
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Show More"
           }
         }
       }
@@ -2510,23 +2477,6 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Remove from favorites"
-          }
-        }
-      }
-    },
-    "favorites.title" : {
-      "extractionState" : "stale",
-      "localizations" : {
-        "de" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Titel"
-          }
-        },
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Title"
           }
         }
       }
@@ -4249,23 +4199,6 @@
         }
       }
     },
-    "sidebar.navigation" : {
-      "extractionState" : "stale",
-      "localizations" : {
-        "de" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Navigation"
-          }
-        },
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Navigation"
-          }
-        }
-      }
-    },
     "sidebar.your_cities" : {
       "extractionState" : "manual",
       "localizations" : {
@@ -4583,23 +4516,6 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Edit"
-          }
-        }
-      }
-    },
-    "spots.action.share" : {
-      "extractionState" : "stale",
-      "localizations" : {
-        "de" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Teilen"
-          }
-        },
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Share"
           }
         }
       }
@@ -5280,6 +5196,143 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Event times by city"
+          }
+        }
+      }
+    },
+    "toast.no_connection.subtitle" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Verwende Cache-Daten"
+          }
+        },
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Using cached data"
+          }
+        }
+      }
+    },
+    "toast.no_connection.title" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Keine Internetverbindung"
+          }
+        },
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "No internet connection"
+          }
+        }
+      }
+    },
+    "toast.offline.subtitle" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Keine Internetverbindung verfügbar"
+          }
+        },
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "No internet connection available"
+          }
+        }
+      }
+    },
+    "toast.offline.title" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Verwende Cache-Daten"
+          }
+        },
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Using cached data"
+          }
+        }
+      }
+    },
+    "toast.refreshing.title" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Aktualisiere Events..."
+          }
+        },
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Refreshing events..."
+          }
+        }
+      }
+    },
+    "toast.update_failed.title" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Aktualisierung fehlgeschlagen"
+          }
+        },
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Update failed"
+          }
+        }
+      }
+    },
+    "toast.updated.subtitle" : {
+      "comment" : "Subtitle showing number of events loaded, e.g. '38 events'",
+      "extractionState" : "manual",
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "%d Events"
+          }
+        },
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "%d events"
+          }
+        }
+      }
+    },
+    "toast.updated.title" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Aktualisiert"
+          }
+        },
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Updated"
           }
         }
       }

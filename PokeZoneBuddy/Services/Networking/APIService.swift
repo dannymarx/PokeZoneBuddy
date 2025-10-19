@@ -8,19 +8,50 @@
 
 import Foundation
 
+/// Actor to manage concurrent request deduplication
+private actor RequestCoordinator {
+    private var ongoingTask: Task<[Event], Error>?
+
+    func getOrCreateTask(forceRefresh: Bool, performFetch: @escaping (Bool) async throws -> [Event]) async throws -> [Event] {
+        // If there's an existing task, reuse it
+        if let existingTask = ongoingTask {
+            return try await existingTask.value
+        }
+
+        // Create new task
+        let task = Task<[Event], Error> {
+            try await performFetch(forceRefresh)
+        }
+        ongoingTask = task
+
+        // Wait for completion and clean up
+        do {
+            let result = try await task.value
+            ongoingTask = nil
+            return result
+        } catch {
+            ongoingTask = nil
+            throw error
+        }
+    }
+}
+
 /// Service für den Abruf von Pokemon GO Events von der ScrapedDuck API
 /// API URL: https://raw.githubusercontent.com/bigfoott/ScrapedDuck/data/events.json
 /// Credits: Daten von LeekDuck.com via ScrapedDuck by bigfoott
 final class APIService {
-    
+
     // MARK: - Singleton
     static let shared = APIService()
     private init() {}
-    
+
     // MARK: - Properties
-    
+
     /// Base URL für die ScrapedDuck API
     private let baseURL = "https://raw.githubusercontent.com/bigfoott/ScrapedDuck/data/events.json"
+
+    /// Request coordinator for concurrent request management
+    private let requestCoordinator = RequestCoordinator()
     
     /// URLSession für Netzwerk-Requests mit optimiertem Caching
     private let session: URLSession = {
@@ -55,43 +86,59 @@ final class APIService {
     /// - Returns: Array von Event-Objekten
     /// - Throws: APIError bei Fehlern
     func fetchEvents(forceRefresh: Bool = false) async throws -> [Event] {
+        return try await requestCoordinator.getOrCreateTask(forceRefresh: forceRefresh) { [weak self] forceRefresh in
+            guard let self = self else {
+                throw APIError.invalidResponse
+            }
+            return try await self.performFetch(forceRefresh: forceRefresh)
+        }
+    }
+
+    /// Internal method to perform the actual network fetch
+    private func performFetch(forceRefresh: Bool) async throws -> [Event] {
         guard let url = URL(string: baseURL) else {
             throw APIError.invalidURL
         }
-        
+
         var request = URLRequest(url: url)
-        
+
         // OFFLINE: Cache policy
         if forceRefresh {
             request.cachePolicy = .reloadIgnoringLocalCacheData
         } else {
             request.cachePolicy = .returnCacheDataElseLoad
         }
-        
+
         do {
             let (data, response) = try await session.data(for: request)
-            
+
             guard let httpResponse = response as? HTTPURLResponse else {
                 throw APIError.invalidResponse
             }
-            
+
             // OFFLINE: Accept cached data even if stale
             if httpResponse.statusCode == 200 || request.cachePolicy == .returnCacheDataElseLoad {
                 let events = try decodeEvents(from: data)
                 AppLogger.network.info("Loaded \(events.count) events (from \(httpResponse.statusCode == 200 ? "network" : "cache"))")
                 return events
             }
-            
+
             throw APIError.httpError(statusCode: httpResponse.statusCode)
-            
+
         } catch {
+            // Check if this is a cancellation error - don't treat as fatal
+            let nsError = error as NSError
+            if nsError.domain == NSURLErrorDomain && nsError.code == NSURLErrorCancelled {
+                AppLogger.network.debug("Request was cancelled, attempting cache fallback")
+            }
+
             // OFFLINE: Try to return cached data on error
             if let cachedResponse = URLCache.shared.cachedResponse(for: request) {
                 let events = try decodeEvents(from: cachedResponse.data)
                 AppLogger.network.warn("Using cached events due to error: \(error)")
                 return events
             }
-            
+
             throw APIError.networkError(error)
         }
     }
