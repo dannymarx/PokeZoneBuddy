@@ -22,23 +22,6 @@
         }
       }
     },
-    "%@ icon" : {
-      "extractionState" : "stale",
-      "localizations" : {
-        "de" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "%@ Icon"
-          }
-        },
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "%@ Icon"
-          }
-        }
-      }
-    },
     "%lld" : {
       "comment" : "A badge displaying the number of items in a filter. The argument is the count of items in the filter.",
       "extractionState" : "manual",
@@ -976,40 +959,6 @@
         }
       }
     },
-    "cities.timezone" : {
-      "extractionState" : "stale",
-      "localizations" : {
-        "de" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Zeitzone"
-          }
-        },
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Time Zone"
-          }
-        }
-      }
-    },
-    "cities.utc_offset" : {
-      "extractionState" : "stale",
-      "localizations" : {
-        "de" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "UTC Offset"
-          }
-        },
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "UTC Offset"
-          }
-        }
-      }
-    },
     "city_time.event_time_in" : {
       "comment" : "The title of a block that shows the time of an event in a specific city. The argument is the name of the city.",
       "extractionState" : "manual",
@@ -1044,23 +993,6 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Your Local Play Time"
-          }
-        }
-      }
-    },
-    "common.and_more" : {
-      "extractionState" : "stale",
-      "localizations" : {
-        "de" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Und %lld mehr..."
-          }
-        },
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "And %lld more..."
           }
         }
       }
@@ -1151,23 +1083,6 @@
         }
       }
     },
-    "common.details" : {
-      "extractionState" : "stale",
-      "localizations" : {
-        "de" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Details"
-          }
-        },
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Details"
-          }
-        }
-      }
-    },
     "common.done" : {
       "comment" : "The text for a button that dismisses a view.",
       "extractionState" : "manual",
@@ -1203,23 +1118,6 @@
         }
       }
     },
-    "common.no" : {
-      "extractionState" : "stale",
-      "localizations" : {
-        "de" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "No"
-          }
-        },
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "No"
-          }
-        }
-      }
-    },
     "common.ok" : {
       "comment" : "The text for a button with the label \"OK\".",
       "extractionState" : "manual",
@@ -1235,23 +1133,6 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "OK"
-          }
-        }
-      }
-    },
-    "common.yes" : {
-      "extractionState" : "stale",
-      "localizations" : {
-        "de" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Yes"
-          }
-        },
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Yes"
           }
         }
       }
@@ -2393,19 +2274,20 @@
         }
       }
     },
-    "events.title" : {
+    "events.show_less" : {
+      "comment" : "Button label to show fewer past events in the events list.",
       "extractionState" : "manual",
       "localizations" : {
         "de" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Events"
+            "value" : "Weniger anzeigen"
           }
         },
         "en" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Events"
+            "value" : "Show Less"
           }
         }
       }
@@ -2428,20 +2310,19 @@
         }
       }
     },
-    "events.show_less" : {
-      "comment" : "Button label to show fewer past events in the events list.",
+    "events.title" : {
       "extractionState" : "manual",
       "localizations" : {
         "de" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Weniger anzeigen"
+            "value" : "Events"
           }
         },
         "en" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Show Less"
+            "value" : "Events"
           }
         }
       }
@@ -2546,23 +2427,6 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Remove from favorites"
-          }
-        }
-      }
-    },
-    "favorites.title" : {
-      "extractionState" : "stale",
-      "localizations" : {
-        "de" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Titel"
-          }
-        },
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Title"
           }
         }
       }
@@ -4285,23 +4149,6 @@
         }
       }
     },
-    "sidebar.navigation" : {
-      "extractionState" : "stale",
-      "localizations" : {
-        "de" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Navigation"
-          }
-        },
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Navigation"
-          }
-        }
-      }
-    },
     "sidebar.your_cities" : {
       "extractionState" : "manual",
       "localizations" : {
@@ -4619,23 +4466,6 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Edit"
-          }
-        }
-      }
-    },
-    "spots.action.share" : {
-      "extractionState" : "stale",
-      "localizations" : {
-        "de" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Teilen"
-          }
-        },
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Share"
           }
         }
       }
