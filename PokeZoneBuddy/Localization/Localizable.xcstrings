@@ -5606,6 +5606,40 @@
         }
       }
     },
+    "timeline.gap.cooldown_warning.title": {
+      "comment": "Title for cooldown warning shown between events.",
+      "localizations": {
+        "de": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Cooldown-Warnung"
+          }
+        },
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Cooldown Warning"
+          }
+        }
+      }
+    },
+    "timeline.gap.cooldown_warning.detail": {
+      "comment": "Explains that short gaps may violate the cooldown rule.",
+      "localizations": {
+        "de": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Weniger als zwei Stunden zwischen den Städten – schnelles Reisen kann die Cooldown-Regel verletzen."
+          }
+        },
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Less than two hours between cities — traveling too quickly may violate the cooldown rule."
+          }
+        }
+      }
+    },
     "timeline.local_window.summary": {
       "comment": "Summary chip describing the local time window covered by the timeline. Parameters: localized start date/time, localized end date/time, timezone summary.",
       "extractionState": "manual",

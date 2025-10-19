@@ -297,8 +297,12 @@ private struct EventSegmentView: View {
 private struct GapSegmentView: View {
     let gap: TimeGap
 
+    private var gapInterval: TimeInterval {
+        gap.endTime.timeIntervalSince(gap.startTime)
+    }
+
     private var duration: String {
-        let interval = gap.endTime.timeIntervalSince(gap.startTime)
+        let interval = gapInterval
         let hours = Int(interval) / 3600
         let minutes = (Int(interval) % 3600) / 60
 
@@ -317,40 +321,98 @@ private struct GapSegmentView: View {
         gap.endTime <= gap.startTime
     }
 
+    private var isCooldownRisk: Bool {
+        guard !isNegative else { return false }
+        return gapInterval > 0 && gapInterval < 7_200
+    }
+
+    private var capsuleFillColor: Color {
+        if isNegative {
+            return Color.systemRed.opacity(0.1)
+        } else if isCooldownRisk {
+            return Color.systemOrange.opacity(0.12)
+        }
+        return Color.primary.opacity(0.04)
+    }
+
+    private var capsuleStrokeColor: Color {
+        if isNegative {
+            return Color.systemRed.opacity(0.2)
+        } else if isCooldownRisk {
+            return Color.systemOrange.opacity(0.25)
+        }
+        return Color.primary.opacity(0.08)
+    }
+
+    private var indicatorColor: Color {
+        if isNegative {
+            return Color.systemRed
+        } else if isCooldownRisk {
+            return Color.systemOrange
+        }
+        return Color.secondary
+    }
+
+    private var cooldownWarningView: some View {
+        HStack(alignment: .top, spacing: 8) {
+            Image(systemName: "exclamationmark.triangle.fill")
+                .font(.system(size: 12, weight: .semibold))
+                .foregroundStyle(Color.systemOrange)
+
+            VStack(alignment: .leading, spacing: 2) {
+                Text(String(localized: "timeline.gap.cooldown_warning.title"))
+                    .font(.system(size: 12, weight: .semibold))
+                    .foregroundStyle(Color.systemOrange)
+
+                Text(String(localized: "timeline.gap.cooldown_warning.detail"))
+                    .font(.system(size: 11, weight: .medium))
+                    .foregroundStyle(Color.systemOrange.opacity(0.9))
+            }
+        }
+        .frame(maxWidth: .infinity, alignment: .leading)
+        .accessibilityElement(children: .combine)
+    }
+
     var body: some View {
         VStack(spacing: 0) {
             // Dashed connection line
             DashedLine()
                 .stroke(style: StrokeStyle(lineWidth: 2, dash: [6, 4]))
-                .fill(isNegative ? Color.systemRed.opacity(0.3) : Color.primary.opacity(0.2))
+                .fill(indicatorColor.opacity(isNegative ? 0.3 : 0.2))
                 .frame(width: 3, height: 24)
 
             // Gap indicator
-            HStack(spacing: 10) {
-                Image(systemName: isNegative ? "exclamationmark.triangle.fill" : "arrow.down")
-                    .font(.system(size: 12, weight: .semibold))
-                    .foregroundStyle(isNegative ? Color.systemRed : Color.secondary)
+            VStack(spacing: isCooldownRisk ? 8 : 0) {
+                HStack(spacing: 10) {
+                    Image(systemName: isNegative ? "exclamationmark.triangle.fill" : "arrow.down")
+                        .font(.system(size: 12, weight: .semibold))
+                        .foregroundStyle(indicatorColor)
 
-                Text(isNegative ? String(localized: "timeline.gap.overlap") : duration)
-                    .font(.system(size: 13, weight: .medium))
-                    .foregroundStyle(isNegative ? Color.systemRed : Color.secondary)
+                    Text(isNegative ? String(localized: "timeline.gap.overlap") : duration)
+                        .font(.system(size: 13, weight: .medium))
+                        .foregroundStyle(indicatorColor)
+                }
+
+                if isCooldownRisk {
+                    cooldownWarningView
+                }
             }
             .padding(.horizontal, 14)
-            .padding(.vertical, 8)
+            .padding(.vertical, isCooldownRisk ? 12 : 8)
             .background(
                 Capsule()
-                    .fill(isNegative ? Color.systemRed.opacity(0.1) : Color.primary.opacity(0.04))
+                    .fill(capsuleFillColor)
             )
             .overlay(
                 Capsule()
-                    .strokeBorder(isNegative ? Color.systemRed.opacity(0.2) : Color.primary.opacity(0.08), lineWidth: 1)
+                    .strokeBorder(capsuleStrokeColor, lineWidth: 1)
             )
             .padding(.horizontal, 16)
 
             // Continuation line
             DashedLine()
                 .stroke(style: StrokeStyle(lineWidth: 2, dash: [6, 4]))
-                .fill(isNegative ? Color.systemRed.opacity(0.3) : Color.primary.opacity(0.2))
+                .fill(indicatorColor.opacity(isNegative ? 0.3 : 0.2))
                 .frame(width: 3, height: 24)
         }
     }
