@@ -14,7 +14,9 @@ permissions:
 jobs:
   build:
     name: Build & Package
-    runs-on: macos-26
+    runs-on:
+      - macos-26
+      - public-preview
     env:
       MACOSX_DEPLOYMENT_TARGET: "26.0"
     outputs:
