@@ -22,15 +22,15 @@
     },
     "%@, %@": {
       "localizations": {
-        "en": {
-          "stringUnit": {
-            "state": "new",
-            "value": "%1$@, %2$@"
-          }
-        },
         "de": {
           "stringUnit": {
             "state": "translated",
+            "value": "%1$@, %2$@"
+          }
+        },
+        "en": {
+          "stringUnit": {
+            "state": "new",
             "value": "%1$@, %2$@"
           }
         }
@@ -284,14 +284,14 @@
       "localizations": {
         "de": {
           "stringUnit": {
-            "state": "translated",
+            "state": "needs_review",
             "value": "Hinzufügen To Calendar"
           }
         },
         "en": {
           "stringUnit": {
             "state": "translated",
-            "value": "Add To  Calendar"
+            "value": "Add To Calendar"
           }
         }
       }
@@ -2445,16 +2445,16 @@
     "events.refresh.error": {
       "extractionState": "extracted_with_value",
       "localizations": {
-        "en": {
-          "stringUnit": {
-            "state": "new",
-            "value": "Update failed"
-          }
-        },
         "de": {
           "stringUnit": {
             "state": "translated",
             "value": "Aktualisierung fehlgeschlagen"
+          }
+        },
+        "en": {
+          "stringUnit": {
+            "state": "new",
+            "value": "Update failed"
           }
         }
       }
@@ -2481,16 +2481,16 @@
     "events.refresh.success": {
       "extractionState": "extracted_with_value",
       "localizations": {
-        "en": {
-          "stringUnit": {
-            "state": "new",
-            "value": "Updated successfully"
-          }
-        },
         "de": {
           "stringUnit": {
             "state": "translated",
             "value": "Erfolgreich aktualisiert"
+          }
+        },
+        "en": {
+          "stringUnit": {
+            "state": "new",
+            "value": "Updated successfully"
           }
         }
       }
@@ -2498,16 +2498,16 @@
     "events.refreshing": {
       "extractionState": "extracted_with_value",
       "localizations": {
-        "en": {
-          "stringUnit": {
-            "state": "new",
-            "value": "Refreshing..."
-          }
-        },
         "de": {
           "stringUnit": {
             "state": "translated",
             "value": "Aktualisiere..."
+          }
+        },
+        "en": {
+          "stringUnit": {
+            "state": "new",
+            "value": "Refreshing..."
           }
         }
       }
@@ -2924,32 +2924,32 @@
     },
     "Found %lld %@ with %lld %@.\n\nMerge: Add new cities, skip duplicates.\nReplace: Delete all existing data first.": {
       "localizations": {
-        "en": {
-          "stringUnit": {
-            "state": "new",
-            "value": "Found %1$lld %2$@ with %3$lld %4$@.\n\nMerge: Add new cities, skip duplicates.\nReplace: Delete all existing data first."
-          }
-        },
         "de": {
           "stringUnit": {
             "state": "translated",
             "value": "Gefunden: %1$lld %2$@ mit %3$lld %4$@.\n\nZusammenführen: Neue Städte hinzufügen, Duplikate überspringen.\nErsetzen: Zuerst alle vorhandenen Daten löschen."
+          }
+        },
+        "en": {
+          "stringUnit": {
+            "state": "new",
+            "value": "Found %1$lld %2$@ with %3$lld %4$@.\n\nMerge: Add new cities, skip duplicates.\nReplace: Delete all existing data first."
           }
         }
       }
     },
     "Get notified before your favorite events": {
       "localizations": {
-        "en": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Get notified before your favorite events"
-          }
-        },
         "de": {
           "stringUnit": {
             "state": "translated",
             "value": "Erhalten Sie Benachrichtigungen vor Ihren Lieblingsevents"
+          }
+        },
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Get notified before your favorite events"
           }
         }
       }
@@ -3032,48 +3032,48 @@
     },
     "Import Complete": {
       "localizations": {
-        "en": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Import Complete"
-          }
-        },
         "de": {
           "stringUnit": {
             "state": "translated",
             "value": "Import abgeschlossen"
+          }
+        },
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Import Complete"
           }
         }
       }
     },
     "Import failed: %@": {
       "localizations": {
-        "en": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Import failed: %@"
-          }
-        },
         "de": {
           "stringUnit": {
             "state": "translated",
             "value": "Import fehlgeschlagen: %@"
+          }
+        },
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Import failed: %@"
           }
         }
       }
     },
     "Import Preview": {
       "localizations": {
-        "en": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Import Preview"
-          }
-        },
         "de": {
           "stringUnit": {
             "state": "translated",
             "value": "Import-Vorschau"
+          }
+        },
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Import Preview"
           }
         }
       }
@@ -3175,16 +3175,16 @@
     },
     "Information": {
       "localizations": {
-        "en": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Information"
-          }
-        },
         "de": {
           "stringUnit": {
             "state": "translated",
             "value": "Informationen"
+          }
+        },
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Information"
           }
         }
       }
@@ -3457,16 +3457,16 @@
     },
     "Light": {
       "localizations": {
-        "en": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Light"
-          }
-        },
         "de": {
           "stringUnit": {
             "state": "translated",
             "value": "Hell"
+          }
+        },
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Light"
           }
         }
       }
@@ -3559,16 +3559,16 @@
     },
     "Loading...": {
       "localizations": {
-        "en": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Loading..."
-          }
-        },
         "de": {
           "stringUnit": {
             "state": "translated",
             "value": "Lädt..."
+          }
+        },
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Loading..."
           }
         }
       }
@@ -3664,16 +3664,16 @@
     },
     "Merge with Existing": {
       "localizations": {
-        "en": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Merge with Existing"
-          }
-        },
         "de": {
           "stringUnit": {
             "state": "translated",
             "value": "Mit vorhandenen zusammenführen"
+          }
+        },
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Merge with Existing"
           }
         }
       }
@@ -3714,48 +3714,48 @@
     },
     "Notification time": {
       "localizations": {
-        "en": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Notification time"
-          }
-        },
         "de": {
           "stringUnit": {
             "state": "translated",
             "value": "Benachrichtigungszeit"
+          }
+        },
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Notification time"
           }
         }
       }
     },
     "Notifications": {
       "localizations": {
-        "en": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Notifications"
-          }
-        },
         "de": {
           "stringUnit": {
             "state": "translated",
             "value": "Benachrichtigungen"
+          }
+        },
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Notifications"
           }
         }
       }
     },
     "Notify me before this event": {
       "localizations": {
-        "en": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Notify me before this event"
-          }
-        },
         "de": {
           "stringUnit": {
             "state": "translated",
             "value": "Erinnere mich vor diesem Event"
+          }
+        },
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Notify me before this event"
           }
         }
       }
@@ -4153,13 +4153,13 @@
     },
     "PokeZone Buddy": {
       "localizations": {
-        "en": {
+        "de": {
           "stringUnit": {
             "state": "translated",
             "value": "PokeZone Buddy"
           }
         },
-        "de": {
+        "en": {
           "stringUnit": {
             "state": "translated",
             "value": "PokeZone Buddy"
@@ -4207,16 +4207,16 @@
     },
     "Reminders": {
       "localizations": {
-        "en": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Reminders"
-          }
-        },
         "de": {
           "stringUnit": {
             "state": "translated",
             "value": "Erinnerungen"
+          }
+        },
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Reminders"
           }
         }
       }
@@ -4241,16 +4241,16 @@
     },
     "Replace All Data": {
       "localizations": {
-        "en": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Replace All Data"
-          }
-        },
         "de": {
           "stringUnit": {
             "state": "translated",
             "value": "Alle Daten ersetzen"
+          }
+        },
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Replace All Data"
           }
         }
       }
@@ -5241,16 +5241,16 @@
     },
     "spots.detail.copyCoordinates": {
       "localizations": {
-        "en": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Copy Coordinates"
-          }
-        },
         "de": {
           "stringUnit": {
             "state": "translated",
             "value": "Koordinaten kopieren"
+          }
+        },
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Copy Coordinates"
           }
         }
       }
@@ -5289,32 +5289,32 @@
     },
     "spots.detail.section": {
       "localizations": {
-        "en": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Spot Details"
-          }
-        },
         "de": {
           "stringUnit": {
             "state": "translated",
             "value": "Spot-Details"
+          }
+        },
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Spot Details"
           }
         }
       }
     },
     "spots.edit.title": {
       "localizations": {
-        "en": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Edit Title"
-          }
-        },
         "de": {
           "stringUnit": {
             "state": "translated",
             "value": "Titel bearbeiten"
+          }
+        },
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Edit Title"
           }
         }
       }
@@ -5492,13 +5492,13 @@
     },
     "System": {
       "localizations": {
-        "en": {
+        "de": {
           "stringUnit": {
             "state": "translated",
             "value": "System"
           }
         },
-        "de": {
+        "en": {
           "stringUnit": {
             "state": "translated",
             "value": "System"
@@ -5634,13 +5634,13 @@
         "de": {
           "stringUnit": {
             "state": "translated",
-            "value": "%1$@ am %2$@ von %3$@ bis %4$@, %5$@"
+            "value": "%1$@ beginnt am %2$@ um %3$@ und endet um %4$@, %5$@"
           }
         },
         "en": {
           "stringUnit": {
             "state": "translated",
-            "value": "%1$@ on %2$@ from %3$@ to %4$@, %5$@"
+            "value": "%1$@ starts at %2$@ on %3$@ and ends at %4$@, %5$@"
           }
         }
       }
@@ -5652,13 +5652,13 @@
         "de": {
           "stringUnit": {
             "state": "translated",
-            "value": "Zeitleiste für %1$@ von %2$@ bis %3$@"
+            "value": "Zeitleiste zeigt %1$@ von %2$@ bis %3$@"
           }
         },
         "en": {
           "stringUnit": {
             "state": "translated",
-            "value": "Timeline covering %1$@ from %2$@ to %3$@"
+            "value": "Timeline shows %1$@ from %2$@ to %3$@"
           }
         }
       }
@@ -5670,13 +5670,13 @@
         "de": {
           "stringUnit": {
             "state": "translated",
-            "value": "Stadtzeit: %1$@ · %2$@ – %3$@"
+            "value": "Ortszeit: %1$@ · %2$@ – %3$@"
           }
         },
         "en": {
           "stringUnit": {
             "state": "translated",
-            "value": "City time: %1$@ · %2$@ – %3$@"
+            "value": "Local time: %1$@ · %2$@ – %3$@"
           }
         }
       }
@@ -5706,13 +5706,13 @@
         "de": {
           "stringUnit": {
             "state": "translated",
-            "value": "Gesamtfenster: %1$d Std %2$d Min"
+            "value": "Dauer: %1$d Std %2$d Min"
           }
         },
         "en": {
           "stringUnit": {
             "state": "translated",
-            "value": "Total window: %1$d h %2$d m"
+            "value": "Duration: %1$dh %2$dm"
           }
         }
       }
@@ -5724,13 +5724,13 @@
         "de": {
           "stringUnit": {
             "state": "translated",
-            "value": "Gesamtfenster: %d Min"
+            "value": "Dauer: %d Min"
           }
         },
         "en": {
           "stringUnit": {
             "state": "translated",
-            "value": "Total window: %d min"
+            "value": "Duration: %d min"
           }
         }
       }
@@ -5742,13 +5742,13 @@
         "de": {
           "stringUnit": {
             "state": "translated",
-            "value": "Lokales Zeitfenster: %1$@ – %2$@ (%3$@)"
+            "value": "Zeitfenster: %1$@ – %2$@ (%3$@)"
           }
         },
         "en": {
           "stringUnit": {
             "state": "translated",
-            "value": "Local window: %1$@ – %2$@ (%3$@)"
+            "value": "Window: %1$@ – %2$@ (%3$@)"
           }
         }
       }
@@ -5759,13 +5759,13 @@
         "de": {
           "stringUnit": {
             "state": "translated",
-            "value": "Füge deine erste Stadt hinzu, um die Zeitleiste zu sehen."
+            "value": "Wähle Städte für die Zeitleiste"
           }
         },
         "en": {
           "stringUnit": {
             "state": "translated",
-            "value": "Add your first city to see the timeline."
+            "value": "Select cities to view timeline"
           }
         }
       }
@@ -5775,13 +5775,13 @@
         "de": {
           "stringUnit": {
             "state": "translated",
-            "value": "Wähle unten eine Stadt aus, um sie der Zeitleiste hinzuzufügen."
+            "value": "Nutze die Checkboxen unten, um Städte zur Zeitleiste hinzuzufügen"
           }
         },
         "en": {
           "stringUnit": {
-            "state": "new",
-            "value": "Select a city below to add it to the timeline."
+            "state": "translated",
+            "value": "Use the checkboxes below to add cities to the timeline view"
           }
         }
       }
@@ -5791,13 +5791,13 @@
         "de": {
           "stringUnit": {
             "state": "translated",
-            "value": "In der Zeitleiste"
+            "value": "Ausgewählt"
           }
         },
         "en": {
           "stringUnit": {
-            "state": "new",
-            "value": "In timeline"
+            "state": "translated",
+            "value": "Selected"
           }
         }
       }
@@ -5807,13 +5807,13 @@
         "de": {
           "stringUnit": {
             "state": "translated",
-            "value": "Zur Zeitleiste hinzufügen"
+            "value": "Auswählen"
           }
         },
         "en": {
           "stringUnit": {
-            "state": "new",
-            "value": "Add to timeline"
+            "state": "translated",
+            "value": "Select"
           }
         }
       }
@@ -5825,13 +5825,13 @@
         "de": {
           "stringUnit": {
             "state": "translated",
-            "value": "Sieh, wann dieses Event in deinen Lieblingsstädten stattfindet."
+            "value": "Zeige Event-Zeiten in allen deinen Städten an"
           }
         },
         "en": {
           "stringUnit": {
             "state": "translated",
-            "value": "See when this event lands across your favorite cities."
+            "value": "View event times across all your cities"
           }
         }
       }
@@ -5843,13 +5843,13 @@
         "de": {
           "stringUnit": {
             "state": "translated",
-            "value": "Multi-Städte-Zeitleiste"
+            "value": "Event-Zeitleiste"
           }
         },
         "en": {
           "stringUnit": {
             "state": "translated",
-            "value": "Multi-city timeline"
+            "value": "Event Timeline"
           }
         }
       }
@@ -5861,13 +5861,13 @@
         "de": {
           "stringUnit": {
             "state": "translated",
-            "value": "Für diese Ansicht benötigst du mindestens zwei Favoriten mit gültigen Zeitzonen."
+            "value": "Füge mindestens eine Stadt mit gültiger Zeitzone hinzu"
           }
         },
         "en": {
           "stringUnit": {
             "state": "translated",
-            "value": "This view requires at least two favorite cities with valid time zones."
+            "value": "Add at least one city with a valid timezone to see the timeline"
           }
         }
       }
