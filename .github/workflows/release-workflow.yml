@@ -42,7 +42,7 @@ jobs:
         run: |
           set -euo pipefail
           version="${{ steps.read_version.outputs.version }}"
-          marketing_version=$(xcodebuild -project PokeZoneBuddy.xcodeproj -scheme "PokeZoneBuddy" -configuration Release -showBuildSettings | awk -F' = ' '/MARKETING_VERSION/ {print $2; exit}')
+          marketing_version=$(xcodebuild -project PokeZoneBuddy.xcodeproj -scheme "PokeZoneBuddy" -configuration Release -destination 'generic/platform=macOS' -showBuildSettings | awk -F' = ' '/MARKETING_VERSION/ {print $2; exit}')
           if [[ -z "$marketing_version" ]]; then
             echo "Unable to resolve MARKETING_VERSION from build settings" >&2
             exit 1
@@ -61,7 +61,7 @@ jobs:
       - name: Validate deployment target
         run: |
           set -euo pipefail
-          target=$(xcodebuild -project PokeZoneBuddy.xcodeproj -scheme "PokeZoneBuddy" -configuration Release -showBuildSettings | awk -F' = ' '/MACOSX_DEPLOYMENT_TARGET/ {print $2; exit}')
+          target=$(xcodebuild -project PokeZoneBuddy.xcodeproj -scheme "PokeZoneBuddy" -configuration Release -destination 'generic/platform=macOS' -showBuildSettings | awk -F' = ' '/MACOSX_DEPLOYMENT_TARGET/ {print $2; exit}')
           if [[ -z "$target" ]]; then
             echo "Unable to resolve MACOSX_DEPLOYMENT_TARGET from build settings" >&2
             exit 1
@@ -78,6 +78,7 @@ jobs:
             -project PokeZoneBuddy.xcodeproj \
             -scheme "PokeZoneBuddy" \
             -configuration Release \
+            -destination 'generic/platform=macOS' \
             -derivedDataPath build \
             clean build
 
