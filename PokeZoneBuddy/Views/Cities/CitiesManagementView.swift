@@ -158,8 +158,8 @@ private struct FavoriteCityRowContent: View {
     let viewModel: CitiesViewModel
 
     private var spotCount: Int {
-        // Force recomputation when favoriteCities changes
-        _ = viewModel.favoriteCities.count
+        // Force recomputation when dataVersion changes
+        _ = viewModel.dataVersion
         return viewModel.getSpots(for: city).count
     }
 

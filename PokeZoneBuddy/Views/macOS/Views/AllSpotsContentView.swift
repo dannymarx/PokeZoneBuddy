@@ -22,7 +22,9 @@ struct AllSpotsContentView: View {
     // MARK: - Computed Properties
 
     private var allSpots: [CitySpot] {
-        viewModel.favoriteCities.flatMap { city in
+        // Force recomputation when dataVersion changes
+        _ = viewModel.dataVersion
+        return viewModel.favoriteCities.flatMap { city in
             viewModel.getSpots(for: city)
         }
     }

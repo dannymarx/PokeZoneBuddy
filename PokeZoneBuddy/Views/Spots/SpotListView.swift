@@ -334,7 +334,9 @@ struct SpotListView: View {
 
     /// Aktuelle Liste der Spots für die Stadt
     private var spots: [CitySpot] {
-        viewModel.getSpots(for: city)
+        // Force recomputation when dataVersion changes
+        _ = viewModel.dataVersion
+        return viewModel.getSpots(for: city)
     }
 
     /// Layout-Style basierend auf Plattform und Size Class
