@@ -73,17 +73,50 @@ final class CacheManagementService {
     
     /// Get disk cache size
     private func getDiskCacheSize() -> Int {
-        guard let cacheURL = FileManager.default.urls(
+        guard let cachesURL = FileManager.default.urls(
             for: .cachesDirectory,
             in: .userDomainMask
         ).first else {
             return 0
         }
-        
+
+        let fileManager = FileManager.default
+        var targetURL: URL?
+
+        if let bundleIdentifier = Bundle.main.bundleIdentifier {
+            let identifierURL = cachesURL.appendingPathComponent(bundleIdentifier, isDirectory: true)
+            var isDirectory: ObjCBool = false
+            if fileManager.fileExists(atPath: identifierURL.path, isDirectory: &isDirectory),
+               isDirectory.boolValue {
+                targetURL = identifierURL
+            }
+        }
+
+        if targetURL == nil,
+           let executableName = Bundle.main.object(forInfoDictionaryKey: "CFBundleExecutable") as? String {
+            let executableURL = cachesURL.appendingPathComponent(executableName, isDirectory: true)
+            var isDirectory: ObjCBool = false
+            if fileManager.fileExists(atPath: executableURL.path, isDirectory: &isDirectory),
+               isDirectory.boolValue {
+                targetURL = executableURL
+            }
+        }
+
+        if targetURL == nil,
+           cachesURL.path.contains("/Containers/") {
+            // Sandboxed apps already live inside an isolated Caches directory
+            targetURL = cachesURL
+        }
+
+        guard let directoryURL = targetURL else {
+            AppLogger.cache.debug("No scoped cache directory found; skipping disk usage scan")
+            return 0
+        }
+
         do {
             let resourceKeys: [URLResourceKey] = [.fileSizeKey, .isDirectoryKey]
             guard let enumerator = FileManager.default.enumerator(
-                at: cacheURL,
+                at: directoryURL,
                 includingPropertiesForKeys: resourceKeys,
                 options: []
             ) else {
@@ -108,4 +141,3 @@ final class CacheManagementService {
         }
     }
 }
-
