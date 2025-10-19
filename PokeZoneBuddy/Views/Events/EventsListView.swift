@@ -524,12 +524,11 @@ struct EventsContentView: View {
         .navigationBarTitleDisplayMode(.large)
         .toolbar {
             ToolbarItem(placement: .topBarTrailing) {
-                Button {
-                    Task { await viewModel.refreshEvents() }
-                } label: {
-                    Label(String(localized: "events.refresh.help"), systemImage: "arrow.clockwise")
-                }
-                .disabled(viewModel.isLoading)
+                StatefulRefreshToolbarButton(
+                    onRefresh: { await viewModel.refreshEvents() },
+                    refreshState: viewModel.refreshState,
+                    isDisabled: viewModel.isLoading
+                )
             }
 
             ToolbarItem(placement: .topBarTrailing) {
@@ -613,16 +612,11 @@ struct EventsContentView: View {
             .help(String(localized: "events.filter.help"))
 
             // Refresh Button
-            Button {
-                Task { await viewModel.refreshEvents() }
-            } label: {
-                Image(systemName: "arrow.clockwise")
-                    .font(.system(size: 14, weight: .semibold))
-                    .foregroundStyle(viewModel.isLoading ? .tertiary : .secondary)
-            }
-            .buttonStyle(.plain)
-            .disabled(viewModel.isLoading)
-            .help(String(localized: "events.refresh.help"))
+            StatefulRefreshButton(
+                onRefresh: { await viewModel.refreshEvents() },
+                refreshState: viewModel.refreshState,
+                isDisabled: viewModel.isLoading
+            )
         }
         .padding(.horizontal, 20)
         .padding(.vertical, 16)

@@ -35,7 +35,13 @@ final class EventsViewModel {
     
     /// OFFLINE: Indicates if app is in offline mode
     private(set) var isOffline = false
-    
+
+    /// Refresh button state for UI feedback
+    private(set) var refreshState: RefreshState = .idle
+
+    /// Count of events from last successful refresh
+    private(set) var lastRefreshEventCount: Int = 0
+
     // MARK: - Dependencies
     
     private let modelContext: ModelContext
@@ -122,36 +128,65 @@ final class EventsViewModel {
     func forceRefresh() async {
         guard networkMonitor.isConnected else {
             AppLogger.viewModel.warn("Cannot refresh: no network connection")
-            errorMessage = "No internet connection"
-            showError = true
+            refreshState = .error
+            self.errorMessage = String(localized: "toast.no_connection.title", defaultValue: "No internet connection")
             return
         }
 
         isLoading = true
-        defer { isLoading = false }
+        refreshState = .loading
+        defer {
+            isLoading = false
+        }
 
         do {
             let apiEvents = try await apiService.fetchEvents(forceRefresh: true)
+            let eventCount = apiEvents.count  // Capture count before async boundary
             await saveEventsToLocalStorage(apiEvents)
             lastSyncDate = Date()
             isOffline = false
+            lastRefreshEventCount = eventCount
+
+            // Success state
+            refreshState = .success
+            AppLogger.viewModel.info("Successfully refreshed \(eventCount) events")
+
+            // Auto-reset to idle after 2.5 seconds
+            Task {
+                try? await Task.sleep(nanoseconds: 2_500_000_000)
+                if refreshState == .success {
+                    refreshState = .idle
+                }
+            }
+
         } catch {
             // Don't show cancellation errors to the user
             let nsError = error as NSError
             if nsError.domain == NSURLErrorDomain && nsError.code == NSURLErrorCancelled {
                 AppLogger.viewModel.debug("Force refresh was cancelled (likely due to concurrent request)")
+                refreshState = .idle
                 return
             }
 
+            // Error state
             self.errorMessage = error.localizedDescription
-            self.showError = true
+            refreshState = .error
             AppLogger.viewModel.error("Force refresh error: \(error)")
+
+            // Auto-reset to idle after 3 seconds
+            Task {
+                try? await Task.sleep(nanoseconds: 3_000_000_000)
+                if refreshState == .error {
+                    refreshState = .idle
+                }
+            }
         }
     }
     
     /// Aktualisiert die Event-Liste (convenience method)
+    /// This is called by toolbar buttons and Cmd+R, should use forceRefresh for user feedback
     func refreshEvents() async {
-        await syncEvents()
+        await forceRefresh()
     }
     
     // MARK: - Private Methods
