@@ -238,26 +238,16 @@ struct EventDetailView: View {
                 ForEach(eventMetaItems) { item in
                     EventMetaCell(item: item)
                 }
+
+                if event.isUpcoming {
+                    reminderTile
+                        .gridCellColumns(metaColumnCount)
+                        .padding(.top, usesCompactLayout ? 6 : 8)
+                }
             }
             .padding(.horizontal, 16)
             .padding(.top, 18)
-            .padding(.bottom, event.isUpcoming ? 12 : 18)
-
-            if event.isUpcoming {
-                Divider()
-
-                VStack(alignment: .leading, spacing: 12) {
-                    Text(String(localized: "settings.reminders.title"))
-                        .font(.system(size: 14, weight: .semibold))
-                        .foregroundStyle(.primary)
-
-                    EventReminderDetailView(event: event, layout: .embedded)
-                        .frame(maxWidth: .infinity, alignment: .leading)
-                }
-                .padding(.horizontal, 16)
-                .padding(.bottom, 16)
-                .padding(.top, 14)
-            }
+            .padding(.bottom, 18)
         }
         .background(
             RoundedRectangle(cornerRadius: 16, style: .continuous)
@@ -268,6 +258,22 @@ struct EventDetailView: View {
                 .strokeBorder(Color.primary.opacity(0.08), lineWidth: 1)
         )
         .shadow(color: .black.opacity(0.05), radius: 12, x: 0, y: 4)
+    }
+
+    private var reminderTile: some View {
+        EventReminderDetailView(event: event, layout: .embedded)
+            .padding(.vertical, 10)
+            .padding(.horizontal, 12)
+            .background(
+                RoundedRectangle(cornerRadius: 14, style: .continuous)
+                    .fill(Color.primary.opacity(0.035))
+            )
+            .overlay(
+                RoundedRectangle(cornerRadius: 14, style: .continuous)
+                    .strokeBorder(Color.primary.opacity(0.08), lineWidth: 1)
+            )
+            .clipShape(RoundedRectangle(cornerRadius: 14, style: .continuous))
+            .padding(.horizontal, usesCompactLayout ? 0 : 4)
     }
 
     private var eventMetaItems: [EventMetaItem] {
@@ -309,6 +315,10 @@ struct EventDetailView: View {
                 GridItem(.flexible(), spacing: 24)
             ]
         }
+    }
+
+    private var metaColumnCount: Int {
+        usesCompactLayout ? 1 : 2
     }
     
     // MARK: - Time Zones Section
