@@ -54,7 +54,7 @@ struct EditSpotSheet: View {
     private var spotDetailsSection: some View {
         Section {
             TextField(String(localized: "spots.add.name"), text: $name, prompt: Text(String(localized: "spots.add.name.placeholder")))
-                .accessibilityLabel("Spot name")
+                .accessibilityLabel("spots.add.name.label")
                 .textFieldStyle(.plain)
 
             VStack(alignment: .leading, spacing: 8) {
@@ -66,7 +66,7 @@ struct EditSpotSheet: View {
                     .scrollContentBackground(.hidden)
                     .background(editorBackgroundColor)
                     .cornerRadius(6)
-                    .accessibilityLabel("Spot notes")
+                    .accessibilityLabel("spots.add.notes.label")
             }
 
             Picker(String(localized: "spots.add.category"), selection: $category) {
@@ -79,7 +79,7 @@ struct EditSpotSheet: View {
                 }
             }
             .pickerStyle(.menu)
-            .accessibilityLabel("Spot category")
+            .accessibilityLabel("spots.add.category.label")
         } header: {
             Text(String(localized: "spots.detail.section"))
         }
@@ -97,12 +97,12 @@ struct EditSpotSheet: View {
             Button {
                 copyCoordinates()
             } label: {
-                Label(String(localized: "spots.detail.copyCoordinates"), systemImage: "doc.on.doc")
+                Label(String(localized: "spots.detail.copy_coordinates"), systemImage: "doc.on.doc")
                     .frame(maxWidth: .infinity)
             }
             .buttonStyle(.bordered)
         } header: {
-            Text("Location")
+            Text("label.location")
         }
     }
 

@@ -51,7 +51,7 @@ struct EventReminderDetailView: View {
 
     private var headerView: some View {
         HStack {
-            Text("Reminders")
+            Text("settings.reminders.title")
                 .font(.system(size: 18, weight: .semibold, design: .rounded))
                 .foregroundStyle(.primary)
             Spacer()
@@ -111,7 +111,7 @@ struct EventReminderDetailView: View {
                     )
 
                 VStack(alignment: .leading, spacing: 2) {
-                    Text("Notify me before this event")
+                    Text("notifications.notify_before_event")
                         .font(.system(size: 14, weight: .medium))
 
                     Text(isEnabled ? selectedOffset.displayName : "No reminders set")
@@ -133,7 +133,7 @@ struct EventReminderDetailView: View {
             showTimeOptions.toggle()
         } label: {
             HStack {
-                Text("Notification time")
+                Text("notifications.time.label")
                     .font(.system(size: 14, weight: .medium))
                     .foregroundStyle(.primary)
 
@@ -202,13 +202,13 @@ struct EventReminderDetailView: View {
             Image(systemName: "exclamationmark.triangle.fill")
                 .foregroundStyle(Color.systemOrange)
 
-            Text("Enable notifications in Settings")
+            Text("notifications.enable.instruction")
                 .font(.system(size: 12))
                 .foregroundStyle(.secondary)
 
             Spacer()
 
-            Button("Open Settings") {
+            Button("action.open_settings") {
                 openSettings()
             }
             .font(.system(size: 12, weight: .medium))

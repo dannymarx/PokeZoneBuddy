@@ -188,7 +188,7 @@ struct SpotDetailView: View {
             Button {
                 copyCoordinates()
             } label: {
-                Label(String(localized: "spots.action.copyCoordinates"), systemImage: "doc.on.doc")
+                Label(String(localized: "spots.action.copy_coordinates"), systemImage: "doc.on.doc")
                     .frame(maxWidth: .infinity)
                     .padding(.vertical, 12)
             }
@@ -203,7 +203,7 @@ struct SpotDetailView: View {
     @ViewBuilder
     private var mapSection: some View {
         VStack(alignment: .leading, spacing: 12) {
-            Text("Location")
+            Text("label.location")
                 .font(.system(size: 18, weight: .semibold))
                 .padding(.horizontal, 20)
 
@@ -252,13 +252,13 @@ struct SpotDetailView: View {
     @ViewBuilder
     private var metadataSection: some View {
         VStack(alignment: .leading, spacing: 12) {
-            Text("Information")
+            Text("section.information")
                 .font(.system(size: 18, weight: .semibold))
 
             VStack(spacing: 0) {
                 metadataRow(
                     icon: "calendar",
-                    title: String(localized: "spots.detail.createdAt"),
+                    title: String(localized: "spots.detail.created_at"),
                     value: spot.createdAt.formatted(date: .long, time: .omitted)
                 )
             }

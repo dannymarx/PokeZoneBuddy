@@ -63,7 +63,7 @@ struct CitiesManagementView: View {
                 }
 #endif
                 .alert(String(localized: "alert.error.title"), isPresented: $viewModel.showError) {
-                    Button("OK") {
+                    Button(String(localized: "common.ok")) {
                         viewModel.showError = false
                     }
                 } message: {

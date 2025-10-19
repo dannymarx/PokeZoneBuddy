@@ -19,6 +19,7 @@ struct EventDetailView: View {
     @Environment(\.dynamicTypeSize) private var dynamicTypeSize
     
     private let timezoneService = TimezoneService.shared
+    @State private var selectedCityIDs: Set<String> = []
     
     // MARK: - Body
     
@@ -48,6 +49,19 @@ struct EventDetailView: View {
                     // Pokemon Details (Spotlight/Raid/CD)
                     pokemonDetailsSection
 
+                    // Multi-city Timeline (single-day events)
+                    if !selectableCities.isEmpty {
+                        if shouldShowTimeline(for: selectedTimelineCities) {
+                            EventTimelineView(
+                                event: event,
+                                favoriteCities: selectedTimelineCities
+                            )
+                            .transition(.opacity.combined(with: .scale))
+                        } else {
+                            timelineSelectionPlaceholder
+                        }
+                    }
+
                     // Event Reminder Settings
                     if event.isUpcoming {
                         EventReminderDetailView(event: event)
@@ -74,6 +88,10 @@ struct EventDetailView: View {
             }
             .scrollIndicators(.hidden, axes: .vertical)
             .hideScrollIndicatorsCompat()
+            .onAppear(perform: syncSelectedCities)
+            .onChange(of: selectableCityIdentifiers) { _ in
+                syncSelectedCities()
+            }
             .onChange(of: event.id) { _, _ in
                 // Scroll to top when event changes
                 withAnimation(.easeOut(duration: 0.3)) {
@@ -286,22 +304,65 @@ struct EventDetailView: View {
     }
     
     // MARK: - Time Zones Section
-    
+
     private var timeZonesSection: some View {
         VStack(alignment: .leading, spacing: 16) {
-            Text(String(localized: "timezones.title"))
-                .font(.system(size: 20, weight: .semibold, design: .rounded))
-                .foregroundStyle(.primary)
-            
+            HStack(alignment: .firstTextBaseline, spacing: 12) {
+                Text(String(localized: "timezones.title"))
+                    .font(.system(size: 20, weight: .semibold, design: .rounded))
+                    .foregroundStyle(.primary)
+
+                Spacer()
+
+                if !selectedCityIDs.isEmpty {
+                    Button {
+                        withAnimation(.easeInOut(duration: 0.2)) {
+                            selectedCityIDs.removeAll()
+                        }
+                    } label: {
+                        Label(
+                            String(localized: "timeline.selection.deselect_all"),
+                            systemImage: "xmark.circle.fill"
+                        )
+                        .font(.system(size: 13, weight: .semibold))
+                        .labelStyle(.titleAndIcon)
+                    }
+                    .buttonStyle(.plain)
+                    .accessibilityLabel(String(localized: "timeline.selection.deselect_all"))
+                }
+            }
+
             Text(String(localized: "timezones.subtitle"))
                 .secondaryStyle()
-            
-            VStack(spacing: 12) {
+
+            // Adaptive grid layout
+            LazyVGrid(
+                columns: gridColumns,
+                alignment: .leading,
+                spacing: 16
+            ) {
                 ForEach(favoriteCities) { city in
-                    CityTimeCard(event: event, city: city)
+                    CityTimeCard(
+                        event: event,
+                        city: city,
+                        selectionBinding: timelineSelectionBinding(for: city)
+                    )
                 }
             }
         }
+    }
+
+    // Grid column configuration - responsive to window size
+    private var gridColumns: [GridItem] {
+        [GridItem(.adaptive(minimum: cardMinimumWidth, maximum: cardMaximumWidth), spacing: 16)]
+    }
+
+    private var cardMinimumWidth: CGFloat {
+        usesCompactLayout ? 280 : 320
+    }
+
+    private var cardMaximumWidth: CGFloat {
+        usesCompactLayout ? 400 : 480
     }
     
     // MARK: - No Cities Placeholder
@@ -363,13 +424,70 @@ struct EventDetailView: View {
     private var contentAlignment: HorizontalAlignment {
         usesCompactLayout ? .leading : .center
     }
+
+    private var timelineSelectionPlaceholder: some View {
+        VStack(alignment: .leading, spacing: 12) {
+            Label {
+                Text(String(localized: "timeline.selection.empty"))
+                    .font(.system(size: 13, weight: .semibold))
+                    .foregroundStyle(.primary)
+                    .fixedSize(horizontal: false, vertical: true)
+            } icon: {
+                Image(systemName: "calendar.badge.plus")
+                    .font(.system(size: 20, weight: .medium))
+                    .foregroundStyle(Color.systemBlue)
+            }
+            
+            Text(String(localized: "timeline.selection.empty.helper"))
+                .font(.system(size: 12))
+                .foregroundStyle(.secondary)
+                .fixedSize(horizontal: false, vertical: true)
+        }
+        .padding(18)
+        .frame(maxWidth: .infinity, alignment: .leading)
+        .background(
+            RoundedRectangle(cornerRadius: 14, style: .continuous)
+                .fill(Color.primary.opacity(0.04))
+        )
+    }
+
+    private func timelineSelectionBinding(for city: FavoriteCity) -> Binding<Bool>? {
+        guard city.timeZone != nil else { return nil }
+        let identifier = city.timeZoneIdentifier
+        return Binding(
+            get: { selectedCityIDs.contains(identifier) },
+            set: { isSelected in
+                setCitySelection(city, isSelected: isSelected)
+            }
+        )
+    }
+
+    private func setCitySelection(_ city: FavoriteCity, isSelected: Bool) {
+        guard city.timeZone != nil else { return }
+        let identifier = city.timeZoneIdentifier
+        if isSelected {
+            selectedCityIDs.insert(identifier)
+        } else {
+            guard selectedCityIDs.contains(identifier) else { return }
+            var newSelection = selectedCityIDs
+            newSelection.remove(identifier)
+            selectedCityIDs = newSelection
+        }
+    }
+
+    private var maxContentWidth: CGFloat? { nil }
+
+    private var selectableCities: [FavoriteCity] {
+        favoriteCities.filter { $0.timeZone != nil }
+    }
     
-    private var maxContentWidth: CGFloat? {
-#if os(macOS)
-        return usesCompactLayout ? nil : 800
-#else
-        return nil
-#endif
+    private var selectableCityIdentifiers: [String] {
+        selectableCities.map { $0.timeZoneIdentifier }.sorted()
+    }
+    
+    private var selectedTimelineCities: [FavoriteCity] {
+        let ids = selectedCityIDs
+        return selectableCities.filter { ids.contains($0.timeZoneIdentifier) }
     }
     
     private var chipMinimumWidth: CGFloat {
@@ -474,6 +592,35 @@ struct EventDetailView: View {
         let tz = TimeZone(secondsFromGMT: 0) ?? .gmt
         return TimezoneService.shared.format(date, style: .dateTime, in: tz)
     }
+    
+    private func shouldShowTimeline(for cities: [FavoriteCity]) -> Bool {
+        guard isSingleDayEvent else { return false }
+        return !cities.isEmpty
+    }
+    
+    private var isSingleDayEvent: Bool {
+        guard event.endTime > event.startTime else { return false }
+        
+        let utc = TimeZone(secondsFromGMT: 0) ?? .gmt
+        var calendar = Calendar(identifier: .gregorian)
+        calendar.timeZone = utc
+        
+        guard calendar.isDate(event.startTime, inSameDayAs: event.endTime) else {
+            return false
+        }
+        
+        let duration = event.endTime.timeIntervalSince(event.startTime)
+        return duration <= 86_400
+    }
+
+    private func syncSelectedCities() {
+        let validIDs = Set(selectableCities.map { $0.timeZoneIdentifier })
+        if validIDs.isEmpty {
+            selectedCityIDs = []
+        } else {
+            selectedCityIDs = selectedCityIDs.intersection(validIDs)
+        }
+    }
 }
 
 // MARK: - Feature Chip
@@ -485,37 +632,88 @@ private struct FeatureChipItem: Identifiable {
     let color: Color
 }
 
-// MARK: - City Time Card
+// MARK: - City Time Card (Compact Grid Version)
 
 private struct CityTimeCard: View {
     let event: Event
     let city: FavoriteCity
-    
+    let selectionBinding: Binding<Bool>?
+
     private let timezoneService = TimezoneService.shared
-    
+
+    init(event: Event, city: FavoriteCity, selectionBinding: Binding<Bool>? = nil) {
+        self.event = event
+        self.city = city
+        self.selectionBinding = selectionBinding
+    }
+
+    private var isSelected: Bool {
+        selectionBinding?.wrappedValue ?? false
+    }
+
+    private var selectionStrokeStyle: AnyShapeStyle {
+        if isSelected {
+            return AnyShapeStyle(Color.systemBlue.opacity(0.45))
+        }
+        return AnyShapeStyle(Color.primary.opacity(0.1))
+    }
+
+    private var selectionShadow: Color {
+        isSelected ? Color.systemBlue.opacity(0.15) : Color.black.opacity(0.05)
+    }
+
     var body: some View {
-        VStack(alignment: .leading, spacing: 16) {
-            // City Header
-            HStack(spacing: 12) {
+        VStack(alignment: .leading, spacing: 12) {
+            // Compact Header
+            HStack(spacing: 8) {
+                Image(systemName: "mappin.circle.fill")
+                    .font(.system(size: 14))
+                    .foregroundStyle(isSelected ? Color.systemBlue : .secondary)
+
                 Text(city.name)
-                    .font(.system(size: 16, weight: .semibold))
-                Spacer()
+                    .font(.system(size: 15, weight: .semibold))
+                    .lineLimit(1)
+                    .foregroundStyle(.primary)
+
+                Spacer(minLength: 4)
+
+                if let selectionBinding {
+                    Button {
+                        withAnimation(.easeInOut(duration: 0.2)) {
+                            selectionBinding.wrappedValue.toggle()
+                        }
+                    } label: {
+                        Image(systemName: isSelected ? "checkmark.circle.fill" : "circle")
+                            .font(.system(size: 16, weight: .semibold))
+                            .foregroundStyle(isSelected ? Color.systemBlue : Color.secondary.opacity(0.5))
+                    }
+                    .buttonStyle(.plain)
+                    .accessibilityLabel(
+                        String(
+                            format: String(
+                                localized: isSelected
+                                ? "timeline.selection.accessibility.selected"
+                                : "timeline.selection.accessibility.unselected"
+                            ),
+                            city.displayName
+                        )
+                    )
+                }
             }
-            
+
             Divider()
-            
-            // Time Information - Only show "Your Local Time"
+                .padding(.vertical, 2)
+
+            // Compact Time Display
             if let cityTimezone = city.timeZone {
-                VStack(alignment: .leading, spacing: 12) {
+                VStack(alignment: .leading, spacing: 10) {
                     if event.isGlobalTime {
-                        // Location-specific event: Convert normally from UTC
-                        ImprovedTimeDisplay(
+                        CompactTimeDisplay(
                             startDate: event.startTime,
                             endDate: event.endTime,
                             timezone: timezoneService.userTimezone
                         )
                     } else {
-                        // Global event: Convert from city timezone to user timezone
                         let absoluteStart = timezoneService.convertLocalEventTime(
                             event.startTime,
                             from: cityTimezone,
@@ -526,18 +724,18 @@ private struct CityTimeCard: View {
                             from: cityTimezone,
                             to: timezoneService.userTimezone
                         )
-                        
-                        ImprovedTimeDisplay(
+
+                        CompactTimeDisplay(
                             startDate: absoluteStart,
                             endDate: absoluteEnd,
                             timezone: timezoneService.userTimezone
                         )
                     }
-                    
-                    // Time Difference
-                    HStack(spacing: 8) {
+
+                    // Compact Time Difference
+                    HStack(spacing: 6) {
                         Image(systemName: "info.circle.fill")
-                            .font(.system(size: 12))
+                            .font(.system(size: 11))
                             .foregroundStyle(.tertiary)
 
                         Text(timezoneService.timeDifferenceDescription(
@@ -545,43 +743,106 @@ private struct CityTimeCard: View {
                             to: cityTimezone,
                             at: event.startTime
                         ))
-                        .font(.system(size: 12))
+                        .font(.system(size: 11))
                         .foregroundStyle(.secondary)
+                        .lineLimit(1)
                     }
-                    .padding(.top, 4)
-                    
+
                     // Add to Calendar Button (macOS only)
                     #if os(macOS)
                     Divider()
-                        .padding(.vertical, 8)
-                    
+                        .padding(.vertical, 4)
+
                     AddToCalendarButton(event: event, city: city)
+                        .font(.system(size: 12))
                         .frame(maxWidth: .infinity)
                     #endif
                 }
             }
         }
-        .padding(20)
+        .padding(14)
+        .frame(maxWidth: .infinity, alignment: .leading)
         .background(
-            RoundedRectangle(cornerRadius: 16, style: .continuous)
-                .fill(.ultraThinMaterial)
+            ZStack {
+                RoundedRectangle(cornerRadius: 14, style: .continuous)
+                    .fill(.ultraThinMaterial)
+
+                if isSelected {
+                    RoundedRectangle(cornerRadius: 14, style: .continuous)
+                        .fill(Color.systemBlue.opacity(0.08))
+                }
+            }
         )
         .overlay(
-            RoundedRectangle(cornerRadius: 16, style: .continuous)
-                .strokeBorder(
-                    LinearGradient(
-                        colors: [
-                            .white.opacity(0.3),
-                            .systemBlue.opacity(0.2),
-                            .clear
-                        ],
-                        startPoint: .topLeading,
-                        endPoint: .bottomTrailing
-                    ),
-                    lineWidth: 1.5
-                )
+            RoundedRectangle(cornerRadius: 14, style: .continuous)
+                .strokeBorder(selectionStrokeStyle, lineWidth: 1.5)
         )
-        .shadow(color: Color.systemBlue.opacity(0.12), radius: 12, x: 0, y: 4)
+        .shadow(color: selectionShadow, radius: 8, x: 0, y: 3)
+    }
+}
+
+// MARK: - Compact Time Display
+
+private struct CompactTimeDisplay: View {
+    let startDate: Date
+    let endDate: Date
+    let timezone: TimeZone
+
+    private var timeFormatter: DateFormatter {
+        let formatter = DateFormatter()
+        formatter.dateStyle = .none
+        formatter.timeStyle = .short
+        formatter.timeZone = timezone
+        formatter.locale = Locale.autoupdatingCurrent
+        return formatter
+    }
+
+    private var dateFormatter: DateFormatter {
+        let formatter = DateFormatter()
+        formatter.dateStyle = .medium
+        formatter.timeStyle = .none
+        formatter.timeZone = timezone
+        formatter.locale = Locale.autoupdatingCurrent
+        return formatter
+    }
+
+    private var timeString: String {
+        let start = timeFormatter.string(from: startDate)
+        let end = timeFormatter.string(from: endDate)
+        return "\(start) - \(end)"
+    }
+
+    private var dateString: String {
+        dateFormatter.string(from: startDate)
+    }
+
+    private var timezoneString: String {
+        timezone.abbreviation() ?? timezone.identifier
+    }
+
+    var body: some View {
+        VStack(alignment: .leading, spacing: 6) {
+            // TIME - Most prominent
+            Text(timeString)
+                .font(.system(size: 18, weight: .bold, design: .rounded))
+                .foregroundStyle(Color.systemBlue)
+                .monospacedDigit()
+
+            // DATE - Secondary
+            HStack(spacing: 4) {
+                Text(dateString)
+                    .font(.system(size: 12))
+                    .foregroundStyle(.secondary)
+
+                Text("•")
+                    .foregroundStyle(.tertiary)
+                    .font(.system(size: 10))
+
+                Text(timezoneString)
+                    .font(.system(size: 12))
+                    .foregroundStyle(.tertiary)
+            }
+        }
     }
 }
 
@@ -620,83 +881,6 @@ private struct TimeInfoRow: View {
     }
 }
 
-// MARK: - Improved Time Display
-
-private struct ImprovedTimeDisplay: View {
-    let startDate: Date
-    let endDate: Date
-    let timezone: TimeZone
-    
-    private var timeFormatter: DateFormatter {
-        let formatter = DateFormatter()
-        formatter.dateStyle = .none
-        formatter.timeStyle = .short
-        formatter.timeZone = timezone
-        formatter.locale = Locale.autoupdatingCurrent
-        return formatter
-    }
-    
-    private var dateFormatter: DateFormatter {
-        let formatter = DateFormatter()
-        formatter.dateStyle = .long
-        formatter.timeStyle = .none
-        formatter.timeZone = timezone
-        formatter.locale = Locale.autoupdatingCurrent
-        return formatter
-    }
-    
-    private var timeString: String {
-        let start = timeFormatter.string(from: startDate)
-        let end = timeFormatter.string(from: endDate)
-        return "\(start) - \(end)"
-    }
-    
-    private var dateString: String {
-        dateFormatter.string(from: startDate)
-    }
-    
-    private var timezoneString: String {
-        timezone.abbreviation() ?? timezone.identifier
-    }
-    
-    var body: some View {
-        VStack(alignment: .leading, spacing: 8) {
-            // Header
-            HStack {
-                Image(systemName: "person.fill")
-                    .foregroundStyle(Color.systemBlue)
-                    .imageScale(.small)
-                Text(String(localized: "city_time.your_local_time"))
-                    .font(.subheadline)
-                    .foregroundStyle(.secondary)
-            }
-            
-            // TIME - Most prominent
-            Text(timeString)
-                .font(.system(size: 34, weight: .bold, design: .rounded))
-                .foregroundStyle(Color.systemBlue)
-                .monospacedDigit()
-            
-            // DATE - Secondary
-            HStack(spacing: 4) {
-                Text(dateString)
-                    .font(.body)
-                    .foregroundStyle(.secondary)
-                
-                Text("•")
-                    .foregroundStyle(.tertiary)
-                
-                Text(timezoneString)
-                    .font(.subheadline)
-                    .foregroundStyle(.tertiary)
-            }
-        }
-        .padding()
-        .frame(maxWidth: .infinity, alignment: .leading)
-        .background(Color.systemBlue.opacity(0.1))
-        .clipShape(RoundedRectangle(cornerRadius: 12))
-    }
-}
 
 // MARK: - Preview
 
