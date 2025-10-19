@@ -1137,6 +1137,23 @@
         }
       }
     },
+    "common.retry" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Wiederholen"
+          }
+        },
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Retry"
+          }
+        }
+      }
+    },
     "community_day" : {
       "comment" : "The title of a section in the Community Day Details view that lists featured Pokémon.",
       "extractionState" : "manual",
@@ -2255,6 +2272,17 @@
         }
       }
     },
+    "events.refresh.error" : {
+      "extractionState" : "extracted_with_value",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "new",
+            "value" : "Update failed"
+          }
+        }
+      }
+    },
     "events.refresh.help" : {
       "comment" : "Help text for the \"Refresh\" button in the events list view.",
       "extractionState" : "manual",
@@ -2270,6 +2298,28 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Refresh events"
+          }
+        }
+      }
+    },
+    "events.refresh.success" : {
+      "extractionState" : "extracted_with_value",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "new",
+            "value" : "Updated successfully"
+          }
+        }
+      }
+    },
+    "events.refreshing" : {
+      "extractionState" : "extracted_with_value",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "new",
+            "value" : "Refreshing..."
           }
         }
       }
@@ -5146,6 +5196,143 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Event times by city"
+          }
+        }
+      }
+    },
+    "toast.no_connection.subtitle" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Verwende Cache-Daten"
+          }
+        },
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Using cached data"
+          }
+        }
+      }
+    },
+    "toast.no_connection.title" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Keine Internetverbindung"
+          }
+        },
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "No internet connection"
+          }
+        }
+      }
+    },
+    "toast.offline.subtitle" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Keine Internetverbindung verfügbar"
+          }
+        },
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "No internet connection available"
+          }
+        }
+      }
+    },
+    "toast.offline.title" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Verwende Cache-Daten"
+          }
+        },
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Using cached data"
+          }
+        }
+      }
+    },
+    "toast.refreshing.title" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Aktualisiere Events..."
+          }
+        },
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Refreshing events..."
+          }
+        }
+      }
+    },
+    "toast.update_failed.title" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Aktualisierung fehlgeschlagen"
+          }
+        },
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Update failed"
+          }
+        }
+      }
+    },
+    "toast.updated.subtitle" : {
+      "comment" : "Subtitle showing number of events loaded, e.g. '38 events'",
+      "extractionState" : "manual",
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "%d Events"
+          }
+        },
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "%d events"
+          }
+        }
+      }
+    },
+    "toast.updated.title" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Aktualisiert"
+          }
+        },
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Updated"
           }
         }
       }
