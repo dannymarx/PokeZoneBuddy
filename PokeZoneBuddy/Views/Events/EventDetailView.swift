@@ -387,12 +387,24 @@ struct EventDetailView: View {
     }
 
     private var timelineSelectionPlaceholder: some View {
-        VStack(alignment: .leading, spacing: 8) {
-            Text(String(localized: "timeline.selection.empty"))
-                .font(.system(size: 13))
+        VStack(alignment: .leading, spacing: 12) {
+            Label {
+                Text(String(localized: "timeline.selection.empty"))
+                    .font(.system(size: 13, weight: .semibold))
+                    .foregroundStyle(.primary)
+                    .fixedSize(horizontal: false, vertical: true)
+            } icon: {
+                Image(systemName: "calendar.badge.plus")
+                    .font(.system(size: 20, weight: .medium))
+                    .foregroundStyle(Color.systemBlue)
+            }
+            
+            Text(String(localized: "timeline.selection.empty.helper"))
+                .font(.system(size: 12))
                 .foregroundStyle(.secondary)
+                .fixedSize(horizontal: false, vertical: true)
         }
-        .padding(16)
+        .padding(18)
         .frame(maxWidth: .infinity, alignment: .leading)
         .background(
             RoundedRectangle(cornerRadius: 14, style: .continuous)
@@ -566,13 +578,8 @@ struct EventDetailView: View {
         let validIDs = Set(selectableCities.map { $0.timeZoneIdentifier })
         if validIDs.isEmpty {
             selectedCityIDs = []
-            return
-        }
-        if selectedCityIDs.isEmpty {
-            selectedCityIDs = validIDs
         } else {
-            let intersection = selectedCityIDs.intersection(validIDs)
-            selectedCityIDs = intersection.isEmpty ? validIDs : intersection
+            selectedCityIDs = selectedCityIDs.intersection(validIDs)
         }
     }
 }

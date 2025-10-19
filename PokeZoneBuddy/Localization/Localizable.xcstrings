@@ -5280,7 +5280,21 @@
       }
     },
     "timeline.selection.empty" : {
-
+      "comment" : "Shown when the timeline has no selected cities.",
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Füge deine erste Stadt hinzu, um die Zeitleiste zu sehen."
+          }
+        },
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Add your first city to see the timeline."
+          }
+        }
+      }
     },
     "timeline.selection.toggle.selected" : {
       "localizations" : {
@@ -5310,6 +5324,22 @@
           "stringUnit" : {
             "state" : "new",
             "value" : "Add to timeline"
+          }
+        }
+      }
+    },
+    "timeline.selection.empty.helper" : {
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Wähle unten eine Stadt aus, um sie der Zeitleiste hinzuzufügen."
+          }
+        },
+        "en" : {
+          "stringUnit" : {
+            "state" : "new",
+            "value" : "Select a city below to add it to the timeline."
           }
         }
       }
