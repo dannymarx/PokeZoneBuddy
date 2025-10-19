@@ -108,7 +108,7 @@ enum SpotCategory: String, CaseIterable, Codable {
         case .pokestop:
             return String(localized: "spots.category.pokestop")
         case .meetingPoint:
-            return String(localized: "spots.category.meetingPoint")
+            return String(localized: "spots.category.meeting_point")
         case .other:
             return String(localized: "spots.category.other")
         }

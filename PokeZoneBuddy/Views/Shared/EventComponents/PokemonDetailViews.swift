@@ -21,7 +21,7 @@ struct SpotlightHourDetailView: View {
                 Image(systemName: "star.fill")
                     .font(.system(size: 18))
                     .foregroundStyle(Color.systemYellow)
-                Text(String(localized: "spotlight_hour"))
+                Text(String(localized: "event_type.spotlight_hour"))
                     .font(.system(size: 18, weight: .semibold))
                 Spacer()
             }
@@ -212,7 +212,7 @@ struct CommunityDayDetailView: View {
                 Image(systemName: "star.circle.fill")
                     .font(.system(size: 18))
                     .foregroundStyle(Color.systemGreen)
-                Text(String(localized: "community_day"))
+                Text(String(localized: "event_type.community_day"))
                     .font(.system(size: 18, weight: .semibold))
                 Spacer()
             }

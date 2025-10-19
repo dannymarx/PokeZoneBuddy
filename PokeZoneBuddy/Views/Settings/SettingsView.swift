@@ -351,7 +351,7 @@ struct SettingsView: View {
             if let viewModel = citiesViewModel {
                 ImportExportView(viewModel: viewModel)
             } else {
-                Text("Loading...")
+                Text("loading.generic")
                     .font(.system(size: 13))
                     .foregroundStyle(.secondary)
             }
@@ -528,7 +528,7 @@ struct SettingsView: View {
 
     private var creditsSection: some View {
         VStack(alignment: .leading, spacing: 16) {
-            Text(L("about.credits.title", "Credits"))
+            Text(L("about.credits.title", "about.credits.title"))
                 .font(.system(size: 18, weight: .semibold))
 
             VStack(alignment: .leading, spacing: 12) {
@@ -622,7 +622,7 @@ struct SettingsView: View {
 
     private var linksSection: some View {
         VStack(alignment: .leading, spacing: 16) {
-            Text(L("about.links.title", "Links"))
+            Text(L("about.links.title", "about.links.title"))
                 .font(.system(size: 18, weight: .semibold))
 
             VStack(spacing: 8) {
@@ -756,7 +756,7 @@ struct SettingsView: View {
         let dict = Bundle.main.infoDictionary
         return (dict?["CFBundleDisplayName"] as? String)
             ?? (dict?["CFBundleName"] as? String)
-            ?? "PokeZoneBuddy"
+            ?? "app.name"
     }
 
     private func appVersionString() -> String {

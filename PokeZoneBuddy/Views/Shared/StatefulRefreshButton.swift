@@ -235,7 +235,7 @@ struct StatefulRefreshToolbarButton: View {
     .padding()
 }
 
-#Preview("Success") {
+#Preview("alert.success.title") {
     StatefulRefreshButton(
         onRefresh: { },
         refreshState: .success,
@@ -244,7 +244,7 @@ struct StatefulRefreshToolbarButton: View {
     .padding()
 }
 
-#Preview("Error") {
+#Preview("alert.error.title") {
     StatefulRefreshButton(
         onRefresh: { },
         refreshState: .error,

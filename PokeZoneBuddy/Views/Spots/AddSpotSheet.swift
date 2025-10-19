@@ -89,7 +89,7 @@ struct AddSpotSheet: View {
     private var spotDetailsSection: some View {
         Section {
             TextField(String(localized: "spots.add.name"), text: $name)
-                .accessibilityLabel("Spot name")
+                .accessibilityLabel("spots.add.name.label")
                 .textFieldStyle(.plain)
 
             VStack(alignment: .leading, spacing: 8) {
@@ -102,7 +102,7 @@ struct AddSpotSheet: View {
                     .scrollContentBackground(.hidden)
                     .background(editorBackgroundColor)
                     .cornerRadius(6)
-                    .accessibilityLabel("Spot notes")
+                    .accessibilityLabel("spots.add.notes.label")
             }
 
             Picker(String(localized: "spots.add.category"), selection: $category) {
@@ -115,7 +115,7 @@ struct AddSpotSheet: View {
                 }
             }
             .pickerStyle(.menu)
-            .accessibilityLabel("Spot category")
+            .accessibilityLabel("spots.add.category.label")
         } header: {
             Text(String(localized: "spots.add.title"))
         }
@@ -132,7 +132,7 @@ struct AddSpotSheet: View {
                     prompt: Text(String(localized: "spots.add.coordinates.placeholder"))
                 )
                 .textFieldStyle(.plain)
-                .accessibilityLabel("Coordinate input")
+                .accessibilityLabel("spots.add.coordinates.label")
                 .onChange(of: coordinateInput) { _, newValue in
                     parseCoordinates(from: newValue)
                 }
@@ -163,7 +163,7 @@ struct AddSpotSheet: View {
                                 .foregroundStyle(Color.systemOrange)
                         }
                         .accessibilityElement(children: .combine)
-                        .accessibilityLabel("Invalid coordinates")
+                        .accessibilityLabel("validation.invalid_coordinates")
                     }
                 }
             }
@@ -225,8 +225,8 @@ struct AddSpotSheet: View {
                 saveSpot()
             }
             .disabled(!isValid)
-            .accessibilityLabel("Save spot")
-            .accessibilityHint(isValid ? "Tap to save the spot" : "Fill in all required fields")
+            .accessibilityLabel("spots.action.save")
+            .accessibilityHint(isValid ? "spots.add.help.message" : "validation.fill_required_fields")
         }
     }
 
