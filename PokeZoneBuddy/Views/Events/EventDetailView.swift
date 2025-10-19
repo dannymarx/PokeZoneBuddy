@@ -19,6 +19,7 @@ struct EventDetailView: View {
     @Environment(\.dynamicTypeSize) private var dynamicTypeSize
     
     private let timezoneService = TimezoneService.shared
+    @State private var selectedCityIDs: Set<String> = []
     
     // MARK: - Body
     
@@ -49,12 +50,16 @@ struct EventDetailView: View {
                     pokemonDetailsSection
 
                     // Multi-city Timeline (single-day events)
-                    if shouldShowTimeline {
-                        EventTimelineView(
-                            event: event,
-                            favoriteCities: favoriteCities
-                        )
-                        .transition(.opacity.combined(with: .scale))
+                    if !selectableCities.isEmpty {
+                        if shouldShowTimeline(for: selectedTimelineCities) {
+                            EventTimelineView(
+                                event: event,
+                                favoriteCities: selectedTimelineCities
+                            )
+                            .transition(.opacity.combined(with: .scale))
+                        } else {
+                            timelineSelectionPlaceholder
+                        }
                     }
 
                     // Event Reminder Settings
@@ -83,6 +88,10 @@ struct EventDetailView: View {
             }
             .scrollIndicators(.hidden, axes: .vertical)
             .hideScrollIndicatorsCompat()
+            .onAppear(perform: syncSelectedCities)
+            .onChange(of: selectableCityIdentifiers) { _ in
+                syncSelectedCities()
+            }
             .onChange(of: event.id) { _, _ in
                 // Scroll to top when event changes
                 withAnimation(.easeOut(duration: 0.3)) {
@@ -307,7 +316,11 @@ struct EventDetailView: View {
             
             VStack(spacing: 12) {
                 ForEach(favoriteCities) { city in
-                    CityTimeCard(event: event, city: city)
+                    CityTimeCard(
+                        event: event,
+                        city: city,
+                        selectionBinding: timelineSelectionBinding(for: city)
+                    )
                 }
             }
         }
@@ -372,8 +385,59 @@ struct EventDetailView: View {
     private var contentAlignment: HorizontalAlignment {
         usesCompactLayout ? .leading : .center
     }
-    
+
+    private var timelineSelectionPlaceholder: some View {
+        VStack(alignment: .leading, spacing: 8) {
+            Text(String(localized: "timeline.selection.empty"))
+                .font(.system(size: 13))
+                .foregroundStyle(.secondary)
+        }
+        .padding(16)
+        .frame(maxWidth: .infinity, alignment: .leading)
+        .background(
+            RoundedRectangle(cornerRadius: 14, style: .continuous)
+                .fill(Color.primary.opacity(0.04))
+        )
+    }
+
+    private func timelineSelectionBinding(for city: FavoriteCity) -> Binding<Bool>? {
+        guard city.timeZone != nil else { return nil }
+        let identifier = city.timeZoneIdentifier
+        return Binding(
+            get: { selectedCityIDs.contains(identifier) },
+            set: { isSelected in
+                setCitySelection(city, isSelected: isSelected)
+            }
+        )
+    }
+
+    private func setCitySelection(_ city: FavoriteCity, isSelected: Bool) {
+        guard city.timeZone != nil else { return }
+        let identifier = city.timeZoneIdentifier
+        if isSelected {
+            selectedCityIDs.insert(identifier)
+        } else {
+            guard selectedCityIDs.contains(identifier) else { return }
+            var newSelection = selectedCityIDs
+            newSelection.remove(identifier)
+            selectedCityIDs = newSelection
+        }
+    }
+
     private var maxContentWidth: CGFloat? { nil }
+
+    private var selectableCities: [FavoriteCity] {
+        favoriteCities.filter { $0.timeZone != nil }
+    }
+    
+    private var selectableCityIdentifiers: [String] {
+        selectableCities.map { $0.timeZoneIdentifier }.sorted()
+    }
+    
+    private var selectedTimelineCities: [FavoriteCity] {
+        let ids = selectedCityIDs
+        return selectableCities.filter { ids.contains($0.timeZoneIdentifier) }
+    }
     
     private var chipMinimumWidth: CGFloat {
         usesCompactLayout ? 120 : 160
@@ -478,9 +542,9 @@ struct EventDetailView: View {
         return TimezoneService.shared.format(date, style: .dateTime, in: tz)
     }
     
-    private var shouldShowTimeline: Bool {
+    private func shouldShowTimeline(for cities: [FavoriteCity]) -> Bool {
         guard isSingleDayEvent else { return false }
-        return favoriteCities.filter { $0.timeZone != nil }.count >= 2
+        return !cities.isEmpty
     }
     
     private var isSingleDayEvent: Bool {
@@ -496,6 +560,20 @@ struct EventDetailView: View {
         
         let duration = event.endTime.timeIntervalSince(event.startTime)
         return duration <= 86_400
+    }
+
+    private func syncSelectedCities() {
+        let validIDs = Set(selectableCities.map { $0.timeZoneIdentifier })
+        if validIDs.isEmpty {
+            selectedCityIDs = []
+            return
+        }
+        if selectedCityIDs.isEmpty {
+            selectedCityIDs = validIDs
+        } else {
+            let intersection = selectedCityIDs.intersection(validIDs)
+            selectedCityIDs = intersection.isEmpty ? validIDs : intersection
+        }
     }
 }
 
@@ -513,16 +591,101 @@ private struct FeatureChipItem: Identifiable {
 private struct CityTimeCard: View {
     let event: Event
     let city: FavoriteCity
+    let selectionBinding: Binding<Bool>?
     
     private let timezoneService = TimezoneService.shared
     
+    init(event: Event, city: FavoriteCity, selectionBinding: Binding<Bool>? = nil) {
+        self.event = event
+        self.city = city
+        self.selectionBinding = selectionBinding
+    }
+    
+    private var isSelected: Bool {
+        selectionBinding?.wrappedValue ?? false
+    }
+    
+    private var selectionStrokeStyle: AnyShapeStyle {
+        if isSelected {
+            return AnyShapeStyle(Color.systemBlue.opacity(0.45))
+        }
+        return AnyShapeStyle(
+            LinearGradient(
+                colors: [
+                    .white.opacity(0.3),
+                    .systemBlue.opacity(0.2),
+                    .clear
+                ],
+                startPoint: .topLeading,
+                endPoint: .bottomTrailing
+            )
+        )
+    }
+    
+    private var selectionShadow: Color {
+        isSelected ? Color.systemBlue.opacity(0.18) : Color.systemBlue.opacity(0.12)
+    }
+    
+    private var selectionButtonText: String {
+        String(
+            localized: isSelected
+            ? "timeline.selection.toggle.selected"
+            : "timeline.selection.toggle.unselected"
+        )
+    }
+    
     var body: some View {
         VStack(alignment: .leading, spacing: 16) {
-            // City Header
+            // City Header with timeline selector
             HStack(spacing: 12) {
                 Text(city.name)
                     .font(.system(size: 16, weight: .semibold))
+                    .lineLimit(1)
+                    .minimumScaleFactor(0.9)
+                
                 Spacer()
+                
+                if let selectionBinding {
+                    Button {
+                        withAnimation(.easeInOut(duration: 0.2)) {
+                            selectionBinding.wrappedValue.toggle()
+                        }
+                    } label: {
+                        Label {
+                            Text(selectionButtonText)
+                                .font(.system(size: 12, weight: .semibold))
+                                .foregroundStyle(isSelected ? Color.systemBlue : .secondary)
+                        } icon: {
+                            Image(systemName: isSelected ? "checkmark.circle.fill" : "circle")
+                                .font(.system(size: 13, weight: .semibold))
+                                .foregroundStyle(isSelected ? Color.systemBlue : Color.secondary.opacity(0.45))
+                        }
+                        .padding(.horizontal, 12)
+                        .padding(.vertical, 6)
+                        .background(
+                            RoundedRectangle(cornerRadius: 10, style: .continuous)
+                                .fill(isSelected ? Color.systemBlue.opacity(0.15) : Color.secondary.opacity(0.08))
+                        )
+                        .overlay(
+                            RoundedRectangle(cornerRadius: 10, style: .continuous)
+                                .stroke(
+                                    isSelected ? Color.systemBlue.opacity(0.35) : Color.secondary.opacity(0.12),
+                                    lineWidth: 1
+                                )
+                        )
+                    }
+                    .buttonStyle(.plain)
+                    .accessibilityLabel(
+                        String(
+                            format: String(
+                                localized: isSelected
+                                ? "timeline.selection.accessibility.selected"
+                                : "timeline.selection.accessibility.unselected"
+                            ),
+                            city.displayName
+                        )
+                    )
+                }
             }
             
             Divider()
@@ -586,25 +749,21 @@ private struct CityTimeCard: View {
         }
         .padding(20)
         .background(
-            RoundedRectangle(cornerRadius: 16, style: .continuous)
-                .fill(.ultraThinMaterial)
+            ZStack {
+                RoundedRectangle(cornerRadius: 16, style: .continuous)
+                    .fill(.ultraThinMaterial)
+                
+                if isSelected {
+                    RoundedRectangle(cornerRadius: 16, style: .continuous)
+                        .fill(Color.systemBlue.opacity(0.12))
+                }
+            }
         )
         .overlay(
             RoundedRectangle(cornerRadius: 16, style: .continuous)
-                .strokeBorder(
-                    LinearGradient(
-                        colors: [
-                            .white.opacity(0.3),
-                            .systemBlue.opacity(0.2),
-                            .clear
-                        ],
-                        startPoint: .topLeading,
-                        endPoint: .bottomTrailing
-                    ),
-                    lineWidth: 1.5
-                )
+                .strokeBorder(selectionStrokeStyle, lineWidth: 1.5)
         )
-        .shadow(color: Color.systemBlue.opacity(0.12), radius: 12, x: 0, y: 4)
+        .shadow(color: selectionShadow, radius: 12, x: 0, y: 4)
     }
 }
 
