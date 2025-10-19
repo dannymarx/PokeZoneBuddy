@@ -87,7 +87,7 @@ struct SpotlightHourDetailView: View {
             // All Featured Pokemon (if multiple)
             if details.allFeaturedPokemon.count > 1 {
                 VStack(alignment: .leading, spacing: 8) {
-                    Text(String(localized: "all_featured_pokemon"))
+                    Text(String(localized: "label.all_featured_pokemon"))
                         .font(.system(size: 13, weight: .semibold))
                         .foregroundStyle(.secondary)
                     
@@ -140,7 +140,7 @@ struct RaidBattleDetailView: View {
                 Image(systemName: "flame.fill")
                     .font(.system(size: 18))
                     .foregroundStyle(Color.systemRed)
-                Text(String(localized: "raid_bosses"))
+                Text(String(localized: "label.raid_bosses"))
                     .font(.system(size: 18, weight: .semibold))
                 Spacer()
             }
@@ -159,7 +159,7 @@ struct RaidBattleDetailView: View {
             // Available Shinies
             if !details.availableShinies.isEmpty {
                 VStack(alignment: .leading, spacing: 8) {
-                    Text(String(localized: "available_shinies"))
+                    Text(String(localized: "label.available_shinies"))
                         .font(.system(size: 13, weight: .semibold))
                         .foregroundStyle(.secondary)
                     
@@ -220,7 +220,7 @@ struct CommunityDayDetailView: View {
             // Featured Pokemon
             if !details.featuredPokemon.isEmpty {
                 VStack(alignment: .leading, spacing: 12) {
-                    Text(String(localized: "featured_pokemon"))
+                    Text(String(localized: "label.featured_pokemon"))
                         .font(.system(size: 13, weight: .semibold))
                         .foregroundStyle(.secondary)
                     
@@ -240,7 +240,7 @@ struct CommunityDayDetailView: View {
             if !details.shinies.isEmpty {
                 VStack(alignment: .leading, spacing: 12) {
                     HStack(spacing: 6) {
-                        Text(String(localized: "shiny_pokemon"))
+                        Text(String(localized: "label.shiny_pokemon"))
                             .font(.system(size: 13, weight: .semibold))
                             .foregroundStyle(.secondary)
                         ShinyBadge()
@@ -261,7 +261,7 @@ struct CommunityDayDetailView: View {
             // Bonuses
             if !details.bonuses.isEmpty {
                 VStack(alignment: .leading, spacing: 12) {
-                    Text(String(localized: "bonuses"))
+                    Text(String(localized: "label.bonuses"))
                         .font(.system(size: 13, weight: .semibold))
                         .foregroundStyle(.secondary)
                     
@@ -279,7 +279,7 @@ struct CommunityDayDetailView: View {
                     Image(systemName: "doc.text.fill")
                         .font(.system(size: 14))
                         .foregroundStyle(Color.systemPurple)
-                    Text(String(localized: "special_research_available"))
+                    Text(String(localized: "label.special_research_available"))
                         .font(.system(size: 13, weight: .medium))
                         .foregroundStyle(.primary)
                 }
@@ -421,7 +421,7 @@ struct ShinyBadge: View {
             Image(systemName: "sparkles")
                 .font(.system(size: compact ? 8 : 10, weight: .bold))
             if !compact {
-                Text(String(localized: "shiny_label"))
+                Text(String(localized: "label.shiny"))
                     .font(.system(size: 10, weight: .bold))
             }
         }

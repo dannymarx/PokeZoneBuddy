@@ -20,11 +20,11 @@ enum ThemePreference: String, CaseIterable, Identifiable {
     var label: LocalizedStringKey {
         switch self {
         case .system:
-            return "System"
+            return "settings.appearance.system"
         case .light:
-            return "Light"
+            return "settings.appearance.light"
         case .dark:
-            return "Dark"
+            return "settings.appearance.dark"
         }
     }
 
@@ -181,15 +181,15 @@ struct SettingsView: View {
                 Text(String(localized: "cache.confirm.delete_old.message"))
             }
             .confirmationDialog(
-                "Delete All User Data",
+                String(localized: "data.delete_all.title"),
                 isPresented: $showDeleteAllDataConfirmation
             ) {
-                Button("Delete All Data", role: .destructive) {
+                Button(String(localized: "data.delete_all.action"), role: .destructive) {
                     deleteAllUserData()
                 }
                 Button(String(localized: "common.cancel"), role: .cancel) { }
             } message: {
-                Text("This will permanently delete all your saved cities, spots, and favorite events. This action cannot be undone.")
+                Text(String(localized: "data.delete_all.warning"))
             }
         }
 #if os(macOS)
@@ -231,7 +231,7 @@ struct SettingsView: View {
     private var appearanceSection: some View {
         VStack(spacing: 16) {
             HStack {
-                Text("Appearance")
+                Text(String(localized: "settings.appearance.title"))
                     .font(.system(size: 18, weight: .semibold))
                     .foregroundStyle(.primary)
                 Spacer()
@@ -246,7 +246,7 @@ struct SettingsView: View {
                 }
                 .pickerStyle(.segmented)
 
-                Text("Choose a display mode or follow the device setting.")
+                Text(String(localized: "settings.appearance.help"))
                     .font(.system(size: 13))
                     .foregroundStyle(.secondary)
                     .frame(maxWidth: .infinity, alignment: .leading)
@@ -279,7 +279,7 @@ struct SettingsView: View {
     private var notificationsNavigationSection: some View {
         VStack(spacing: 16) {
             HStack {
-                Text("Notifications")
+                Text(String(localized: "settings.notifications.title"))
                     .font(.system(size: 18, weight: .semibold))
                     .foregroundStyle(.primary)
                 Spacer()
@@ -297,11 +297,11 @@ struct SettingsView: View {
                         )
 
                     VStack(alignment: .leading, spacing: 4) {
-                        Text("Event Reminders")
+                        Text(String(localized: "reminders.event.title"))
                             .font(.system(size: 14, weight: .medium))
                             .foregroundStyle(.primary)
 
-                        Text("Get notified before your favorite events")
+                        Text(String(localized: "notifications.help.message"))
                             .font(.system(size: 12))
                             .foregroundStyle(.secondary)
                     }
@@ -342,7 +342,7 @@ struct SettingsView: View {
     private var dataManagementSection: some View {
         VStack(spacing: 16) {
             HStack {
-                Text("Data Management")
+                Text(String(localized: "settings.data.title"))
                     .font(.system(size: 18, weight: .semibold))
                     .foregroundStyle(.primary)
                 Spacer()
@@ -470,9 +470,9 @@ struct SettingsView: View {
                     .padding(.leading, 16)
 
                 ActionRow(
-                    title: "Delete All User Data",
-                    subtitle: "Permanently delete all cities, spots, and favorite events",
-                    buttonText: "Delete All",
+                    title: String(localized: "data.delete_all.action"),
+                    subtitle: String(localized: "data.delete_all.warning"),
+                    buttonText: String(localized: "common.delete"),
                     buttonColor: .systemRed
                 ) {
                     showDeleteAllDataConfirmation = true

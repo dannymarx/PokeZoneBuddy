@@ -135,7 +135,7 @@ struct SharedSpotRow: View {
             Image(systemName: "checkmark.circle.fill")
                 .foregroundStyle(Color.systemGreen)
                 .symbolRenderingMode(.hierarchical)
-            Text("Copied!")
+            Text("clipboard.copied")
                 .font(.caption)
                 .fontWeight(.semibold)
                 .foregroundStyle(.primary)

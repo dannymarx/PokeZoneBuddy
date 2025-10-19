@@ -133,7 +133,7 @@ struct EventReminderDetailView: View {
             showTimeOptions.toggle()
         } label: {
             HStack {
-                Text("Notification time")
+                Text("notifications.time.label")
                     .font(.system(size: 14, weight: .medium))
                     .foregroundStyle(.primary)
 
