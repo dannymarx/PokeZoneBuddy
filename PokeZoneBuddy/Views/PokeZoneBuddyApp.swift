@@ -13,6 +13,12 @@ import UserNotifications
 @main
 struct PokeZoneBuddyApp: App {
 
+    // MARK: - App Delegate (macOS)
+
+    #if os(macOS)
+    @NSApplicationDelegateAdaptor(AppDelegate.self) var appDelegate
+    #endif
+
     // MARK: - Initialization
 
     init() {
@@ -84,8 +90,8 @@ struct PokeZoneBuddyApp: App {
         }
         .modelContainer(sharedModelContainer)
         #if os(macOS)
-        .defaultSize(width: 1200, height: 800)
-        .windowStyle(.hiddenTitleBar)
+        .defaultSize(width: 1200, height: 700)
+        .windowStyle(.automatic)
         .commands {
             // Refresh Command for macOS Menu Bar
             CommandGroup(after: .newItem) {
