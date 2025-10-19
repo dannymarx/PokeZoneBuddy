@@ -265,7 +265,7 @@ struct EventDetailView: View {
                 if event.isUpcoming {
                     reminderTile
                         .gridCellColumns(metaColumnCount)
-                        .padding(.top, usesCompactLayout ? 6 : 8)
+                        .padding(.top, usesCompactLayout ? 4 : 0)
                 }
             }
             .padding(.horizontal, 16)
