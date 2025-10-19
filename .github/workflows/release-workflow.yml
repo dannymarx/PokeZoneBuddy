@@ -38,53 +38,31 @@ jobs:
           fi
           echo "version=$version" >> "$GITHUB_OUTPUT"
 
-      - name: Extract macOS build settings
+      - name: Resolve macOS build settings
         id: build_settings
         run: |
           set -euo pipefail
-          settings_json=$(mktemp)
-          xcodebuild \
+          settings=$(xcodebuild \
             -project PokeZoneBuddy.xcodeproj \
             -scheme "PokeZoneBuddy" \
             -configuration Release \
             -destination 'generic/platform=macOS' \
-            -showBuildSettings -json > "$settings_json"
+            -showBuildSettings)
 
-          export SETTINGS_JSON="$settings_json"
-          python3 <<'PY'
-import json
-import os
-import sys
+          marketing=$(printf '%s\n' "$settings" | awk '/^[[:space:]]*MARKETING_VERSION = / {print $3; exit}')
+          if [[ -z "$marketing" ]]; then
+            echo "MARKETING_VERSION missing from build settings" >&2
+            exit 1
+          fi
 
-settings_path = os.environ["SETTINGS_JSON"]
-with open(settings_path) as fh:
-    data = json.load(fh)
+          target=$(printf '%s\n' "$settings" | awk '/^[[:space:]]*MACOSX_DEPLOYMENT_TARGET = / {print $3; exit}')
+          if [[ -z "$target" ]]; then
+            echo "MACOSX_DEPLOYMENT_TARGET missing from build settings" >&2
+            exit 1
+          fi
 
-build_settings = None
-for entry in data:
-    if entry.get("target") == "PokeZoneBuddy":
-        build_settings = entry.get("buildSettings")
-        break
-
-if not build_settings and data:
-    build_settings = data[0].get("buildSettings")
-
-if not build_settings:
-    raise SystemExit("Unable to determine build settings for target PokeZoneBuddy")
-
-marketing = build_settings.get("MARKETING_VERSION", "")
-deployment = build_settings.get("MACOSX_DEPLOYMENT_TARGET", "")
-
-if not marketing:
-    raise SystemExit("MARKETING_VERSION missing from build settings")
-if not deployment:
-    raise SystemExit("MACOSX_DEPLOYMENT_TARGET missing from build settings")
-
-with open(os.environ["GITHUB_OUTPUT"], "a") as fh:
-    fh.write(f"marketing_version={marketing}\n")
-    fh.write(f"deployment_target={deployment}\n")
-          PY
-          rm -f "$settings_json"
+          echo "marketing_version=$marketing" >> "$GITHUB_OUTPUT"
+          echo "deployment_target=$target" >> "$GITHUB_OUTPUT"
 
       - name: Validate versions
         run: |
