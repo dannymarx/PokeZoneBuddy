@@ -20,6 +20,11 @@ struct EventDetailView: View {
     
     private let timezoneService = TimezoneService.shared
     @State private var selectedCityIDs: Set<String> = []
+
+    private var eventImageURL: URL? {
+        guard let imageURL = event.imageURL else { return nil }
+        return URL(string: imageURL)
+    }
     
     // MARK: - Body
     
@@ -33,15 +38,17 @@ struct EventDetailView: View {
                         .id("top")
                     
                     // Event Image Header
-                    if let imageURL = event.imageURL, let url = URL(string: imageURL) {
+                    if let url = eventImageURL {
                         eventImageHeader(url: url)
                     }
                     
                     // Event Header
                     eventHeaderSection
                     
-                    // Countdown/Status
-                    EventCountdownView(event: event)
+                    // Countdown/Status (fallback when no image header)
+                    if eventImageURL == nil {
+                        EventCountdownView(event: event)
+                    }
                     
                     // Event Meta & Reminders
                     eventMetaCard
@@ -123,8 +130,8 @@ struct EventDetailView: View {
                         .controlSize(.large)
                 }
                 .aspectRatio(16 / 9, contentMode: .fit)
-                .frame(maxWidth: .infinity)
-                .shadow(color: .black.opacity(0.05), radius: 10, y: 4)
+                    .frame(maxWidth: .infinity)
+                    .shadow(color: .black.opacity(0.05), radius: 10, y: 4)
             @unknown default:
                 RoundedRectangle(cornerRadius: 20, style: .continuous)
                     .fill(.quaternary.opacity(0.4))
@@ -132,6 +139,22 @@ struct EventDetailView: View {
                     .frame(maxWidth: .infinity)
                     .shadow(color: .black.opacity(0.05), radius: 10, y: 4)
             }
+        }
+        .overlay { countdownOverlay() }
+    }
+
+    private func countdownOverlay() -> some View {
+        GeometryReader { geometry in
+            VStack {
+                Spacer()
+
+                EventCountdownView(event: event)
+                    .frame(width: min(geometry.size.width * 0.6, 420))
+                    .padding(.bottom, 12)
+                    .shadow(color: Color.black.opacity(0.18), radius: 14, y: 6)
+            }
+            .frame(width: geometry.size.width, height: geometry.size.height, alignment: .bottom)
+            .allowsHitTesting(false)
         }
     }
     
