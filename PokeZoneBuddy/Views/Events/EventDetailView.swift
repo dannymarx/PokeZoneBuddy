@@ -50,7 +50,7 @@ struct EventDetailView: View {
                     pokemonDetailsSection
 
                     // Multi-city Timeline (single-day events)
-                    if !selectableCities.isEmpty {
+                    if shouldDisplayMultiCitySection {
                         if shouldShowTimeline(for: selectedTimelineCities) {
                             EventTimelineView(
                                 event: event,
@@ -322,7 +322,7 @@ struct EventDetailView: View {
 
                 Spacer()
 
-                if !selectedCityIDs.isEmpty {
+                if shouldDisplayMultiCitySection && !selectedCityIDs.isEmpty {
                     Button {
                         withAnimation(.easeInOut(duration: 0.2)) {
                             selectedCityIDs.removeAll()
@@ -434,33 +434,55 @@ struct EventDetailView: View {
     }
 
     private var timelineSelectionPlaceholder: some View {
-        VStack(alignment: .leading, spacing: 12) {
-            Label {
-                Text(String(localized: "timeline.selection.empty"))
-                    .font(.system(size: 13, weight: .semibold))
-                    .foregroundStyle(.primary)
-                    .fixedSize(horizontal: false, vertical: true)
-            } icon: {
-                Image(systemName: "calendar.badge.plus")
-                    .font(.system(size: 20, weight: .medium))
+        VStack(alignment: .leading, spacing: 16) {
+            HStack(spacing: 8) {
+                Image(systemName: "map.fill")
+                    .font(.system(size: 18, weight: .semibold))
                     .foregroundStyle(Color.systemBlue)
+
+                Text(String(localized: "timeline.planning.title"))
+                    .font(.system(size: 20, weight: .semibold, design: .rounded))
+                    .foregroundStyle(.primary)
             }
-            
-            Text(String(localized: "timeline.selection.empty.helper"))
-                .font(.system(size: 12))
+
+            Text(String(localized: "timeline.planning.subtitle"))
+                .font(.system(size: 14))
                 .foregroundStyle(.secondary)
-                .fixedSize(horizontal: false, vertical: true)
+
+            VStack(alignment: .leading, spacing: 12) {
+                Label {
+                    Text(String(localized: "timeline.selection.empty"))
+                        .font(.system(size: 13, weight: .semibold))
+                        .foregroundStyle(.primary)
+                        .fixedSize(horizontal: false, vertical: true)
+                } icon: {
+                    Image(systemName: "calendar.badge.plus")
+                        .font(.system(size: 20, weight: .medium))
+                        .foregroundStyle(Color.systemBlue)
+                }
+
+                Text(String(localized: "timeline.selection.empty.helper"))
+                    .font(.system(size: 12))
+                    .foregroundStyle(.secondary)
+                    .fixedSize(horizontal: false, vertical: true)
+            }
+            .padding(18)
+            .frame(maxWidth: .infinity, alignment: .leading)
+            .background(
+                RoundedRectangle(cornerRadius: 14, style: .continuous)
+                    .fill(Color.primary.opacity(0.04))
+            )
         }
-        .padding(18)
+        .padding(20)
         .frame(maxWidth: .infinity, alignment: .leading)
         .background(
-            RoundedRectangle(cornerRadius: 14, style: .continuous)
-                .fill(Color.primary.opacity(0.04))
+            RoundedRectangle(cornerRadius: 20, style: .continuous)
+                .fill(Color.primary.opacity(0.03))
         )
     }
 
     private func timelineSelectionBinding(for city: FavoriteCity) -> Binding<Bool>? {
-        guard city.timeZone != nil else { return nil }
+        guard shouldDisplayMultiCitySection, city.timeZone != nil else { return nil }
         let identifier = city.timeZoneIdentifier
         return Binding(
             get: { selectedCityIDs.contains(identifier) },
@@ -496,6 +518,10 @@ struct EventDetailView: View {
     private var selectedTimelineCities: [FavoriteCity] {
         let ids = selectedCityIDs
         return selectableCities.filter { ids.contains($0.timeZoneIdentifier) }
+    }
+
+    private var shouldDisplayMultiCitySection: Bool {
+        isSingleDayEvent && !selectableCities.isEmpty
     }
     
     private var chipMinimumWidth: CGFloat {
@@ -622,6 +648,10 @@ struct EventDetailView: View {
     }
 
     private func syncSelectedCities() {
+        guard shouldDisplayMultiCitySection else {
+            selectedCityIDs = []
+            return
+        }
         let validIDs = Set(selectableCities.map { $0.timeZoneIdentifier })
         if validIDs.isEmpty {
             selectedCityIDs = []

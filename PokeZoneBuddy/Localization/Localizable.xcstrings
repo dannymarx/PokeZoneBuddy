@@ -5683,13 +5683,13 @@
         "de": {
           "stringUnit": {
             "state": "translated",
-            "value": "Multi-Stadt-Planung"
+            "value": "Multi-Stadt-Planungstool"
           }
         },
         "en": {
           "stringUnit": {
             "state": "translated",
-            "value": "Multi-City Planning"
+            "value": "Multi-City Planning Tool"
           }
         }
       }
