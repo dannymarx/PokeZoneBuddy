@@ -2410,6 +2410,42 @@
         }
       }
     },
+    "events.show_more" : {
+      "comment" : "Button label to show more past events in the events list.",
+      "extractionState" : "manual",
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Mehr anzeigen"
+          }
+        },
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Show More"
+          }
+        }
+      }
+    },
+    "events.show_less" : {
+      "comment" : "Button label to show fewer past events in the events list.",
+      "extractionState" : "manual",
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Weniger anzeigen"
+          }
+        },
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Show Less"
+          }
+        }
+      }
+    },
     "fatal.model_container_creation_failed" : {
       "comment" : "An error message that will be shown if the ModelContainer could not be created. The argument is a description of the error that occurred.",
       "extractionState" : "manual",
