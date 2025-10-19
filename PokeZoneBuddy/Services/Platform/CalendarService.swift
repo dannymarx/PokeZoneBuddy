@@ -323,7 +323,7 @@ class CalendarService {
         // App credit
         notes.append("")
         notes.append("Added via PokeZoneBuddy")
-        notes.append("Multi-City Planning Feature")
+        notes.append("Multi-City Planner")
 
         return notes.joined(separator: "\n")
     }
