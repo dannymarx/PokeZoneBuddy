@@ -107,6 +107,19 @@ private struct SequentialTimelineView: View {
     let event: Event
     let cities: [FavoriteCity]
 
+    private var totalInterval: TimeInterval {
+        timeline.totalEnd.timeIntervalSince(timeline.totalStart)
+    }
+
+    private var playInterval: TimeInterval {
+        timeline.items.reduce(0) { partialResult, item in
+            guard case .event(let entry) = item else {
+                return partialResult
+            }
+            return partialResult + entry.endTime.timeIntervalSince(entry.startTime)
+        }
+    }
+
     var body: some View {
         VStack(alignment: .leading, spacing: 16) {
             // Header
@@ -123,9 +136,8 @@ private struct SequentialTimelineView: View {
 
                 // Total duration badge
                 DurationBadge(
-                    start: timeline.totalStart,
-                    end: timeline.totalEnd,
-                    timezone: timeline.timezone
+                    totalInterval: totalInterval,
+                    playInterval: playInterval
                 )
             }
 
@@ -421,12 +433,18 @@ private struct GapSegmentView: View {
 // MARK: - Duration Badge
 
 private struct DurationBadge: View {
-    let start: Date
-    let end: Date
-    let timezone: TimeZone
+    let totalInterval: TimeInterval
+    let playInterval: TimeInterval
 
-    private var totalDuration: String {
-        let interval = end.timeIntervalSince(start)
+    private var totalLabel: String {
+        localized("timeline.badge.total", fallback: "Total")
+    }
+
+    private var playLabel: String {
+        localized("timeline.badge.play", fallback: "Playing")
+    }
+
+    private func formattedDuration(_ interval: TimeInterval) -> String {
         let hours = Int(interval) / 3600
         let minutes = (Int(interval) % 3600) / 60
 
@@ -440,24 +458,59 @@ private struct DurationBadge: View {
     }
 
     var body: some View {
-        HStack(spacing: 6) {
-            Image(systemName: "clock.badge.checkmark.fill")
-                .font(.system(size: 12))
-                .foregroundStyle(Color.systemGreen)
+        HStack(spacing: 8) {
+            MetricCapsule(
+                icon: "clock.badge.checkmark.fill",
+                tint: Color.systemGreen,
+                title: totalLabel,
+                value: formattedDuration(totalInterval)
+            )
 
-            Text(totalDuration)
-                .font(.system(size: 13, weight: .semibold))
-                .foregroundStyle(.primary)
+            MetricCapsule(
+                icon: "gamecontroller.fill",
+                tint: Color.systemBlue,
+                title: playLabel,
+                value: formattedDuration(playInterval)
+            )
+        }
+    }
+
+    private func localized(_ key: String, fallback: String) -> String {
+        NSLocalizedString(key, tableName: nil, bundle: .main, value: fallback, comment: "")
+    }
+}
+
+private struct MetricCapsule: View {
+    let icon: String
+    let tint: Color
+    let title: String
+    let value: String
+
+    var body: some View {
+        HStack(spacing: 8) {
+            Image(systemName: icon)
+                .font(.system(size: 12, weight: .semibold))
+                .foregroundStyle(tint)
+
+            VStack(alignment: .leading, spacing: 2) {
+                Text(title)
+                    .font(.system(size: 11, weight: .semibold))
+                    .foregroundStyle(.secondary)
+
+                Text(value)
+                    .font(.system(size: 13, weight: .semibold))
+                    .foregroundStyle(.primary)
+            }
         }
         .padding(.horizontal, 12)
-        .padding(.vertical, 6)
+        .padding(.vertical, 8)
         .background(
             Capsule()
-                .fill(Color.systemGreen.opacity(0.15))
+                .fill(tint.opacity(0.12))
         )
         .overlay(
             Capsule()
-                .strokeBorder(Color.systemGreen.opacity(0.3), lineWidth: 1)
+                .strokeBorder(tint.opacity(0.25), lineWidth: 1)
         )
     }
 }
