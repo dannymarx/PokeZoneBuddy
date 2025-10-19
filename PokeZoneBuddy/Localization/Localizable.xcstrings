@@ -22,12 +22,12 @@
         }
       }
     },
-    "%@. %@. %@. %@." : {
+    "%@, %@" : {
       "localizations" : {
         "en" : {
           "stringUnit" : {
             "state" : "new",
-            "value" : "%1$@. %2$@. %3$@. %4$@."
+            "value" : "%1$@, %2$@"
           }
         }
       }
@@ -5275,6 +5275,41 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Local window: %1$@ – %2$@ (%3$@)"
+          }
+        }
+      }
+    },
+    "timeline.selection.empty" : {
+
+    },
+    "timeline.selection.toggle.selected" : {
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "In der Zeitleiste"
+          }
+        },
+        "en" : {
+          "stringUnit" : {
+            "state" : "new",
+            "value" : "In timeline"
+          }
+        }
+      }
+    },
+    "timeline.selection.toggle.unselected" : {
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Zur Zeitleiste hinzufügen"
+          }
+        },
+        "en" : {
+          "stringUnit" : {
+            "state" : "new",
+            "value" : "Add to timeline"
           }
         }
       }

@@ -2,405 +2,168 @@
 //  EventTimelineView.swift
 //  PokeZoneBuddy
 //
-//  A clean, focused multi-city timeline for single-day events.
+//  Created for streamlined multi-city planning.
 //
 
 import SwiftUI
 
 struct EventTimelineView: View {
-    
-    // MARK: - Properties
-    
     let event: Event
     let favoriteCities: [FavoriteCity]
     
     private let timezoneService = TimezoneService.shared
     
-    // MARK: - Body
-    
     var body: some View {
-        if let timeline = buildTimeline() {
-            TimelineContentView(
-                data: timeline,
-                timezoneService: timezoneService
-            )
+        if let layout = buildTimelineLayout() {
+            TimelineLayoutView(layout: layout, timezoneService: timezoneService)
         } else {
-            EmptyTimelinePlaceholder()
+            TimelineEmptyState()
         }
     }
     
-    // MARK: - Timeline Construction
+    // MARK: - Layout Builder
     
-    private func buildTimeline() -> TimelineData? {
+    private func buildTimelineLayout() -> TimelineLayout? {
+        guard !favoriteCities.isEmpty else { return nil }
+        
         let userTimezone = timezoneService.userTimezone
-        let palette = Color.palette
+        let cityRows: [TimelineCity] = favoriteCities.compactMap { city -> TimelineCity? in
+            guard let timezone = city.timeZone else { return nil }
+            let converted = convertEventTimes(for: city, timezone: timezone, userTimezone: userTimezone)
+            guard converted.end > converted.start else { return nil }
+            
+            let userStart = timezoneService.format(converted.start, style: .time, in: userTimezone)
+            let userTimezoneAbbr = userTimezone.abbreviation(for: converted.start)
+                ?? userTimezone.abbreviation()
+                ?? userTimezone.identifier
+            
+            return TimelineCity(
+                id: "\(city.timeZoneIdentifier)-\(converted.start.timeIntervalSince1970)",
+                name: city.displayName,
+                start: converted.start,
+                end: converted.end,
+                userStartLabel: "\(userStart) \(userTimezoneAbbr)",
+                color: Color.randomElement(for: city.timeZoneIdentifier)
+            )
+        }
         
-        let cityTimelines = favoriteCities
-            .sorted { $0.displayName < $1.displayName }
-            .enumerated()
-            .compactMap { index, city -> CityTimeline? in
-                guard let timezone = city.timeZone else { return nil }
-                
-                let color = palette[index % palette.count]
-                return buildCityTimeline(for: city, timezone: timezone, color: color, userTimezone: userTimezone)
-            }
-        
-        guard cityTimelines.count >= 2 else { return nil }
+        guard !cityRows.isEmpty else { return nil }
         
         guard
-            let earliestStart = cityTimelines.map(\.userInterval.start).min(),
-            let latestEnd = cityTimelines.map(\.userInterval.end).max(),
-            latestEnd > earliestStart
+            let earliest = cityRows.map(\.start).min(),
+            let latest = cityRows.map(\.end).max(),
+            latest > earliest
         else { return nil }
         
-        let focusedRange = EventTimelineView.makeFocusedRange(start: earliestStart, end: latestEnd)
-        let contentWidth = EventTimelineView.timelineWidth(for: focusedRange)
-        let ticks = EventTimelineView.axisMarks(for: focusedRange, userTimezone: userTimezone)
-        let laneAssignment = EventTimelineView.assignMarkers(for: cityTimelines)
+        let duration = latest.timeIntervalSince(earliest)
+        let padding = TimelineLayout.padding(for: duration)
+        let clampedRange = DateInterval(
+            start: earliest.addingTimeInterval(-padding),
+            end: latest.addingTimeInterval(padding)
+        )
         
-        let headerStart = timezoneService.format(focusedRange.start, style: .dateTime, in: userTimezone)
-        let headerEnd = timezoneService.format(focusedRange.end, style: .dateTime, in: userTimezone)
-        let tzSummary = EventTimelineView.timezoneSummary(for: focusedRange.start, timezone: userTimezone)
+        let lanes = TimelineLayout.assignLanes(for: cityRows)
+        let contentWidth = TimelineLayout.width(for: clampedRange)
+        let ticks = TimelineLayout.tickMarks(for: clampedRange, timezone: userTimezone)
         
-        return TimelineData(
-            range: focusedRange,
+        return TimelineLayout(
+            range: clampedRange,
             contentWidth: contentWidth,
             tickMarks: ticks,
-            summary: TimelineSummary(
-                start: headerStart,
-                end: headerEnd,
-                timezoneDescription: tzSummary
-            ),
-            markers: laneAssignment.markers,
-            maxLane: laneAssignment.maxLane
+            axisTimezone: userTimezone,
+            markers: lanes.markers,
+            laneCount: lanes.maxLane + 1
         )
     }
     
-    private func buildCityTimeline(
+    private func convertEventTimes(
         for city: FavoriteCity,
         timezone: TimeZone,
-        color: Color,
         userTimezone: TimeZone
-    ) -> CityTimeline? {
-        let absoluteStart: Date
-        let absoluteEnd: Date
-        
+    ) -> DateInterval {
         if event.isGlobalTime {
-            absoluteStart = event.startTime
-            absoluteEnd = event.endTime
+            return DateInterval(start: event.startTime, end: event.endTime)
         } else {
-            absoluteStart = timezoneService.convertLocalEventTime(
-                event.startTime,
-                from: timezone,
-                to: userTimezone
-            )
-            absoluteEnd = timezoneService.convertLocalEventTime(
-                event.endTime,
-                from: timezone,
-                to: userTimezone
-            )
-        }
-        
-        guard absoluteEnd > absoluteStart else { return nil }
-        
-        let userDateString = timezoneService.format(absoluteStart, style: .date, in: userTimezone)
-        let userStartString = timezoneService.format(absoluteStart, style: .time, in: userTimezone)
-        let userEndString = timezoneService.format(absoluteEnd, style: .time, in: userTimezone)
-        
-        let cityDateString = timezoneService.format(absoluteStart, style: .date, in: timezone)
-        let cityStartString = timezoneService.format(absoluteStart, style: .time, in: timezone)
-        let cityEndString = timezoneService.format(absoluteEnd, style: .time, in: timezone)
-        
-        let userDescription = String(
-            format: String(localized: "timeline.city.user_range"),
-            userDateString,
-            userStartString,
-            userEndString
-        )
-        
-        let cityDescription = String(
-            format: String(localized: "timeline.city.local_range"),
-            cityDateString,
-            cityStartString,
-            cityEndString
-        )
-        
-        let offsetDescription = timezoneService.timeDifferenceDescription(
-            from: userTimezone,
-            to: timezone,
-            at: absoluteStart
-        )
-        
-        return CityTimeline(
-            id: "\(city.timeZoneIdentifier)-\(city.displayName)",
-            cityName: city.displayName,
-            timezoneLabel: timezone.abbreviation() ?? timezone.identifier,
-            userInterval: DateInterval(start: absoluteStart, end: absoluteEnd),
-            userDescription: userDescription,
-            cityDescription: cityDescription,
-            offsetDescription: offsetDescription,
-            color: color
-        )
-    }
-}
-
-// MARK: - Timeline Content View
-
-private struct TimelineContentView: View {
-    let data: TimelineData
-    let timezoneService: TimezoneService
-    
-    var body: some View {
-        VStack(alignment: .leading, spacing: 20) {
-            header
-            
-            TimelineScrollContainer(
-                data: data,
-                timezoneService: timezoneService
-            )
-        }
-        .padding(20)
-        .background(
-            RoundedRectangle(cornerRadius: 18, style: .continuous)
-                .fill(Color.primary.opacity(0.03))
-        )
-    }
-    
-    private var header: some View {
-        VStack(alignment: .leading, spacing: 8) {
-            HStack(spacing: 12) {
-                Image(systemName: "clock")
-                    .foregroundStyle(Color.systemBlue)
-                    .font(.system(size: 18, weight: .semibold))
-                
-                Text(String(localized: "timeline.title"))
-                    .font(.system(size: 20, weight: .semibold))
-                
-                Spacer()
-            }
-            
-            Text(String(localized: "timeline.subtitle"))
-                .font(.system(size: 14, weight: .medium))
-                .foregroundStyle(.secondary)
-            
-            let summaryText = String(
-                format: String(localized: "timeline.local_window.summary"),
-                data.summary.start,
-                data.summary.end,
-                data.summary.timezoneDescription
-            )
-            
-            Text(summaryText)
-                .font(.system(size: 13, weight: .medium))
-                .foregroundStyle(Color.systemBlue)
+            let start = timezoneService.convertLocalEventTime(event.startTime, from: timezone, to: userTimezone)
+            let end = timezoneService.convertLocalEventTime(event.endTime, from: timezone, to: userTimezone)
+            return DateInterval(start: start, end: end)
         }
     }
 }
 
-// MARK: - Single Timeline Track
+// MARK: - Timeline Layout View
 
-// MARK: - Scroll Container & Timeline Track
-
-#if os(macOS)
-private struct TimelineScrollContainer: View {
-    let data: TimelineData
+private struct TimelineLayoutView: View {
+    let layout: TimelineLayout
     let timezoneService: TimezoneService
     
-    @State private var offset: CGFloat = 0
-    @GestureState private var drag: CGFloat = 0
-    
-    private let rubberBand: CGFloat = 120
+    private let capsuleHeight: CGFloat = 32
+    private let laneSpacing: CGFloat = 18
+    private let axisSpacing: CGFloat = 32
     
     var body: some View {
-        GeometryReader { geometry in
-            let viewport = max(geometry.size.width, 1)
-            let totalWidth = data.contentWidth
-            let maxOffset = max(totalWidth - viewport, 0)
-            
-            let activeDrag = drag
-            let rawOffset = clamp(offset - activeDrag, lower: -rubberBand, upper: maxOffset + rubberBand)
-            let clampedOffset = clamp(rawOffset, lower: 0, upper: maxOffset)
-            
-            ZStack(alignment: .topLeading) {
-                TimelineTrackRenderView(
-                    data: data,
-                    timezoneService: timezoneService
-                )
-                .frame(width: totalWidth)
-                .offset(x: -clampedOffset)
-                .accessibilityHidden(true)
-            }
-            .frame(width: viewport, height: TimelineTrackRenderView.totalHeight(for: data), alignment: .topLeading)
-            .clipped()
-            .contentShape(Rectangle())
-            .overlay(alignment: .leading) {
-                edgeFade(visible: clampedOffset > 4, direction: .leading)
-            }
-            .overlay(alignment: .trailing) {
-                edgeFade(visible: clampedOffset < maxOffset - 4, direction: .trailing)
-            }
-            .gesture(
-                DragGesture(minimumDistance: 4, coordinateSpace: .local)
-                    .updating($drag) { value, state, _ in
-                        state = value.translation.width
+        ScrollView(.horizontal, showsIndicators: false) {
+            VStack(alignment: .leading, spacing: 24) {
+                ZStack(alignment: .topLeading) {
+                    ForEach(layout.markers) { marker in
+                        CityChipView(
+                            marker: marker,
+                            layout: layout,
+                            capsuleHeight: capsuleHeight,
+                            laneSpacing: laneSpacing
+                        )
                     }
-                    .onEnded { value in
-                        let projected = offset - value.predictedEndTranslation.width
-                        offset = clamp(projected, lower: 0, upper: maxOffset)
-                    }
-            )
-            .overlay(
-                HStack(spacing: 16) {
-                    timelineButton(systemName: "chevron.left") {
-                        offset = clamp(offset - viewport * 0.4, lower: 0, upper: maxOffset)
-                    }
-                    .opacity(maxOffset > 0 ? 1 : 0)
-                    
-                    Spacer()
-                    
-                    timelineButton(systemName: "chevron.right") {
-                        offset = clamp(offset + viewport * 0.4, lower: 0, upper: maxOffset)
-                    }
-                    .opacity(maxOffset > 0 ? 1 : 0)
+                    axisView
                 }
-                .padding(.horizontal, 12)
-                .padding(.top, 8),
-                alignment: .top
-            )
-        }
-        .frame(height: TimelineTrackRenderView.totalHeight(for: data))
-        .onAppear { offset = 0 }
-    }
-    
-    private func timelineButton(systemName: String, action: @escaping () -> Void) -> some View {
-        Button(action: action) {
-            Image(systemName: systemName)
-                .font(.system(size: 14, weight: .semibold))
-                .frame(width: 28, height: 28)
-        }
-        .buttonStyle(.borderedProminent)
-        .controlSize(.small)
-        .tint(.secondary.opacity(0.3))
-    }
-    
-    private func edgeFade(visible: Bool, direction: Edge) -> some View {
-        Group {
-            if visible {
-                LinearGradient(
-                    colors: [Color.black.opacity(0.18), .clear],
-                    startPoint: direction == .leading ? .leading : .trailing,
-                    endPoint: direction == .leading ? .trailing : .leading
-                )
-                .blendMode(.plusLighter)
-                .frame(width: 24)
-                .allowsHitTesting(false)
+                .frame(width: layout.contentWidth, height: totalHeight, alignment: .topLeading)
             }
+            .padding(.vertical, 18)
+            .padding(.horizontal, 12)
         }
     }
     
-    private func clamp(_ value: CGFloat, lower: CGFloat, upper: CGFloat) -> CGFloat {
-        min(max(value, lower), upper)
-    }
-}
-#else
-private struct TimelineScrollContainer: View {
-    let data: TimelineData
-    let timezoneService: TimezoneService
-    
-    var body: some View {
-        ScrollView(.horizontal) {
-            TimelineTrackRenderView(
-                data: data,
-                timezoneService: timezoneService
-            )
-            .padding(.vertical, 16)
-            .padding(.horizontal, 8)
-        }
-        .scrollIndicators(.hidden)
-    }
-}
-#endif
-
-private struct TimelineTrackRenderView: View {
-    let data: TimelineData
-    let timezoneService: TimezoneService
-    
-    private static let capsuleHeight: CGFloat = 28
-    private static let laneSpacing: CGFloat = 16
-    private static let axisSpacing: CGFloat = 28
-    private static let tickLabelOffset: CGFloat = 18
-    
-    var body: some View {
-        ZStack(alignment: .topLeading) {
-            ForEach(data.markers) { marker in
-                CityMarkerChip(
-                    marker: marker,
-                    range: data.range,
-                    contentWidth: data.contentWidth,
-                    capsuleHeight: Self.capsuleHeight,
-                    laneSpacing: Self.laneSpacing
-                )
-            }
-            
-            axisLayer
-        }
-        .frame(width: data.contentWidth, height: Self.totalHeight(for: data), alignment: .topLeading)
+    private var totalHeight: CGFloat {
+        CGFloat(layout.laneCount) * (capsuleHeight + laneSpacing) + axisSpacing
     }
     
-    private var axisLayer: some View {
-        let axisY = CGFloat(data.maxLane + 1) * (Self.capsuleHeight + Self.laneSpacing) + 8
-        
-        return ZStack(alignment: .leading) {
+    private var axisY: CGFloat {
+        CGFloat(layout.laneCount) * (capsuleHeight + laneSpacing) + 8
+    }
+    
+    private var axisView: some View {
+        ZStack(alignment: .leading) {
             Rectangle()
                 .fill(Color.primary.opacity(0.18))
-                .frame(width: data.contentWidth, height: 1)
+                .frame(width: layout.contentWidth, height: 1)
                 .offset(y: axisY)
             
-            ForEach(data.tickMarks, id: \.timeIntervalSinceReferenceDate) { tick in
-                let x = position(for: tick)
-                
+            ForEach(layout.tickMarks, id: \.timeIntervalSinceReferenceDate) { tick in
+                let position = position(for: tick)
                 VStack(spacing: 6) {
                     Rectangle()
                         .fill(Color.primary.opacity(0.25))
                         .frame(width: 1, height: 12)
-                    
-                    Text(timezoneService.format(tick, style: .time, in: timezoneService.userTimezone))
+                    Text(timezoneService.format(tick, style: .time, in: layout.axisTimezone))
                         .font(.system(size: 11, weight: .medium))
                         .foregroundStyle(.secondary)
                         .monospacedDigit()
-                        .frame(maxWidth: 70, alignment: .center)
                 }
-                .offset(x: x - 0.5, y: axisY + 4)
+                .offset(x: position - 0.5, y: axisY + 4)
             }
         }
     }
     
     private func position(for date: Date) -> CGFloat {
-        let progress = EventTimelineView.normalizedProgress(for: date, in: data.range)
-        return CGFloat(progress) * data.contentWidth
-    }
-    
-    static func totalHeight(for data: TimelineData) -> CGFloat {
-        let trackHeight = CGFloat(data.maxLane + 1) * (capsuleHeight + laneSpacing)
-        return trackHeight + axisSpacing + tickLabelOffset + 32
+        let progress = TimelineLayout.progress(for: date, in: layout.range)
+        return CGFloat(progress) * layout.contentWidth
     }
 }
-#if os(macOS)
-#else
-private struct TimelineTrackView: View {
-    let data: TimelineData
-    let timezoneService: TimezoneService
-    
-    var body: some View {
-        TimelineTrackRenderView(data: data, timezoneService: timezoneService)
-    }
-}
-#endif
 
-private struct CityMarkerChip: View {
-    let marker: CityMarker
-    let range: DateInterval
-    let contentWidth: CGFloat
+// MARK: - Chip View
+
+private struct CityChipView: View {
+    let marker: TimelineMarker
+    let layout: TimelineLayout
     let capsuleHeight: CGFloat
     let laneSpacing: CGFloat
     
@@ -409,100 +172,78 @@ private struct CityMarkerChip: View {
     }
     
     var body: some View {
-        let startX = position(for: marker.timeline.userInterval.start)
-        let endX = position(for: marker.timeline.userInterval.end)
-        let minimumWidth = CityMarkerChip.minimumWidth(for: range, contentWidth: contentWidth)
-        var width = max(endX - startX, minimumWidth)
-        var originX = startX
+        let startX = position(for: marker.start)
+        let endX = position(for: marker.end)
+        let width = CityChipView.minimumWidth(for: layout.range, contentWidth: layout.contentWidth, startX: startX, endX: endX)
+        let adjustedStart = max(min(startX, layout.contentWidth - width), 0)
         
-        if width > contentWidth {
-            width = contentWidth
-            originX = 0
-        } else if originX + width > contentWidth {
-            originX = contentWidth - width
-        }
-        if originX < 0 { originX = 0 }
-        
-        return VStack(alignment: .leading, spacing: 6) {
-            Text(marker.timeline.cityName)
+        HStack(spacing: 10) {
+            Text(marker.name)
                 .font(.system(size: 14, weight: .semibold))
-                .foregroundStyle(marker.timeline.color)
+                .foregroundStyle(marker.color)
                 .lineLimit(1)
                 .minimumScaleFactor(0.75)
             
-            Text(marker.timeline.userDescription)
-                .font(.system(size: 12, weight: .medium))
+            Spacer(minLength: 6)
+            
+            Text(marker.userStartLabel)
+                .font(.system(size: 13, weight: .semibold))
                 .foregroundStyle(.primary)
                 .monospacedDigit()
                 .lineLimit(1)
-            
-            Text(marker.timeline.cityDescription)
-                .font(.system(size: 11))
-                .foregroundStyle(.secondary)
-                .monospacedDigit()
-                .lineLimit(1)
-            
-            Text(marker.timeline.offsetDescription)
-                .font(.system(size: 10, weight: .medium))
-                .foregroundStyle(.secondary)
+                .minimumScaleFactor(0.85)
         }
-        .padding(.horizontal, 12)
-        .padding(.vertical, 8)
+        .padding(.horizontal, 16)
+        .padding(.vertical, 12)
         .frame(width: width, alignment: .leading)
         .background(
             RoundedRectangle(cornerRadius: 14, style: .continuous)
-                .fill(marker.timeline.color.opacity(0.12))
+                .fill(marker.color.opacity(0.14))
         )
         .overlay(
             RoundedRectangle(cornerRadius: 14, style: .continuous)
-                .stroke(marker.timeline.color.opacity(0.35), lineWidth: 1)
+                .stroke(marker.color.opacity(0.35), lineWidth: 1)
         )
-        .offset(x: originX, y: laneOffset)
+        .offset(x: adjustedStart, y: laneOffset)
         .accessibilityElement(children: .combine)
-        .accessibilityLabel(
-            "\(marker.timeline.cityName). \(marker.timeline.userDescription). \(marker.timeline.cityDescription). \(marker.timeline.offsetDescription)."
-        )
+        .accessibilityLabel("\(marker.name), \(marker.userStartLabel)")
     }
     
     private func position(for date: Date) -> CGFloat {
-        let progress = EventTimelineView.normalizedProgress(for: date, in: range)
-        return CGFloat(progress) * contentWidth
+        let progress = TimelineLayout.progress(for: date, in: layout.range)
+        return CGFloat(progress) * layout.contentWidth
     }
     
-    private static func minimumWidth(for range: DateInterval, contentWidth: CGFloat) -> CGFloat {
-        let hours = max(range.duration / 3_600, 0.5)
-        let target: CGFloat
+    private static func minimumWidth(for range: DateInterval, contentWidth: CGFloat, startX: CGFloat, endX: CGFloat) -> CGFloat {
+        let duration = range.duration
+        guard duration > 0 else { return min(160, max(contentWidth, 160)) }
+        let hours = duration / 3_600
+        let base: CGFloat
         switch hours {
-        case ..<4: target = 160
-        case ..<8: target = 120
-        case ..<16: target = 100
-        case ..<32: target = 84
-        default: target = 64
+        case ..<4: base = 240
+        case ..<8: base = 200
+        case ..<16: base = 160
+        case ..<32: base = 140
+        default: base = 120
         }
-        return min(target, contentWidth)
+        return min(max(endX - startX, base), contentWidth)
     }
 }
 
-// MARK: - Placeholder
+// MARK: - Empty State
 
-private struct EmptyTimelinePlaceholder: View {
+private struct TimelineEmptyState: View {
     var body: some View {
-        VStack(alignment: .leading, spacing: 12) {
-            HStack(spacing: 10) {
-                Image(systemName: "clock.badge.questionmark")
-                    .font(.system(size: 20))
-                    .foregroundStyle(.secondary)
-                
-                Text(String(localized: "timeline.unavailable.title"))
-                    .font(.system(size: 16, weight: .semibold))
-            }
-            
-            Text(String(localized: "timeline.unavailable.subtitle"))
-                .font(.system(size: 13))
+        VStack(spacing: 8) {
+            Image(systemName: "clock.badge.questionmark")
+                .font(.system(size: 28))
+                .foregroundStyle(.tertiary)
+            Text(String(localized: "timeline.unavailable.title"))
+                .font(.system(size: 14, weight: .semibold))
                 .foregroundStyle(.secondary)
         }
         .padding(24)
-        .frame(maxWidth: .infinity, alignment: .leading)
+        .frame(maxWidth: .infinity)
         .background(
             RoundedRectangle(cornerRadius: 16, style: .continuous)
                 .fill(Color.primary.opacity(0.04))
@@ -510,210 +251,124 @@ private struct EmptyTimelinePlaceholder: View {
     }
 }
 
-// MARK: - Data Structures
+// MARK: - Supporting Models
 
-private struct TimelineData {
+private struct TimelineLayout {
     let range: DateInterval
     let contentWidth: CGFloat
     let tickMarks: [Date]
-    let summary: TimelineSummary
-    let markers: [CityMarker]
-    let maxLane: Int
-}
-
-private struct TimelineSummary {
-    let start: String
-    let end: String
-    let timezoneDescription: String
-}
-
-private struct CityTimeline: Identifiable {
-    let id: String
-    let cityName: String
-    let timezoneLabel: String
-    let userInterval: DateInterval
-    let userDescription: String
-    let cityDescription: String
-    let offsetDescription: String
-    let color: Color
-}
-
-private struct CityMarker: Identifiable {
-    let id: String
-    let timeline: CityTimeline
-    let lane: Int
-}
-
-// MARK: - Helper Extensions & Functions
-
-private extension EventTimelineView {
+    let axisTimezone: TimeZone
+    let markers: [TimelineMarker]
+    let laneCount: Int
     
-    static func makeFocusedRange(start: Date, end: Date) -> DateInterval {
-        let duration = end.timeIntervalSince(start)
-        let padding = clampPadding(duration: duration)
-        return DateInterval(
-            start: start.addingTimeInterval(-padding),
-            end: end.addingTimeInterval(padding)
-        )
+    static func padding(for duration: TimeInterval) -> TimeInterval {
+        let suggested = max(duration * 0.1, 900)
+        return min(suggested, 10_800)
     }
     
-    static func clampPadding(duration: TimeInterval) -> TimeInterval {
-        let suggested = max(duration * 0.1, 600) // at least 10 minutes
-        let maxPadding: TimeInterval = 10_800    // at most 3 hours
-        return min(suggested, maxPadding)
+    static func width(for range: DateInterval) -> CGFloat {
+        let hours = max(range.duration / 3_600, 1)
+        let perHour: CGFloat
+        switch hours {
+        case ..<2: perHour = 220
+        case ..<6: perHour = 180
+        case ..<12: perHour = 140
+        case ..<24: perHour = 110
+        case ..<36: perHour = 90
+        default: perHour = 72
+        }
+        return min(max(CGFloat(hours) * perHour, 600), 3600)
     }
     
-    static func assignMarkers(for timelines: [CityTimeline]) -> (markers: [CityMarker], maxLane: Int) {
+    static func tickMarks(for range: DateInterval, timezone: TimeZone) -> [Date] {
+        let totalSeconds = range.duration
+        guard totalSeconds > 0 else { return [range.start, range.end] }
+        let hours = totalSeconds / 3_600
+        let stepHours: Double
+        switch hours {
+        case ..<3: stepHours = 0.5
+        case ..<8: stepHours = 1
+        case ..<16: stepHours = 2
+        case ..<32: stepHours = 3
+        default: stepHours = max(ceil(hours / 8.0), 4)
+        }
+        let step = stepHours * 3_600
+        var ticks: [Date] = []
+        var current = floor(range.start.timeIntervalSinceReferenceDate / step) * step
+        var count = 0
+        while count < 80 {
+            let date = Date(timeIntervalSinceReferenceDate: current)
+            if date >= range.start - 60 && date <= range.end + 60 {
+                ticks.append(date)
+            }
+            if date > range.end + step { break }
+            current += step
+            count += 1
+        }
+        if ticks.isEmpty { ticks = [range.start, range.end] }
+        if let first = ticks.first, first > range.start + 60 { ticks.insert(range.start, at: 0) }
+        if let last = ticks.last, last < range.end - 60 { ticks.append(range.end) }
+        return ticks
+    }
+    
+    static func progress(for date: Date, in range: DateInterval) -> Double {
+        guard range.duration > 0 else { return 0 }
+        let clamped = min(max(date, range.start), range.end)
+        return clamped.timeIntervalSince(range.start) / range.duration
+    }
+    
+    static func assignLanes(for cities: [TimelineCity]) -> (markers: [TimelineMarker], maxLane: Int) {
         var laneEndTimes: [Date] = []
-        var markers: [CityMarker] = []
-        var maxLane = 0
+        var markers: [TimelineMarker] = []
+        var highestLane = 0
         
-        for timeline in timelines.sorted(by: { $0.userInterval.start < $1.userInterval.start }) {
+        for city in cities.sorted(by: { $0.start < $1.start }) {
             var assignedLane = 0
-            var reuseLane = false
-            
-            for (index, endTime) in laneEndTimes.enumerated() {
-                if timeline.userInterval.start >= endTime {
-                    assignedLane = index
-                    laneEndTimes[index] = timeline.userInterval.end
-                    reuseLane = true
-                    break
-                }
+            var reused = false
+            for (index, endTime) in laneEndTimes.enumerated() where city.start >= endTime {
+                assignedLane = index
+                laneEndTimes[index] = city.end
+                reused = true
+                break
             }
-            
-            if !reuseLane {
+            if !reused {
                 assignedLane = laneEndTimes.count
-                laneEndTimes.append(timeline.userInterval.end)
+                laneEndTimes.append(city.end)
             }
-            
+            highestLane = max(highestLane, assignedLane)
             markers.append(
-                CityMarker(
-                    id: timeline.id,
-                    timeline: timeline,
+                TimelineMarker(
+                    id: city.id,
+                    name: city.name,
+                    start: city.start,
+                    end: city.end,
+                    userStartLabel: city.userStartLabel,
+                    color: city.color,
                     lane: assignedLane
                 )
             )
-            maxLane = max(maxLane, assignedLane)
         }
-        
-        return (markers, maxLane)
-    }
-    
-    static func axisMarks(for range: DateInterval, userTimezone: TimeZone) -> [Date] {
-        let totalSeconds = range.duration
-        guard totalSeconds > 0 else { return [range.start, range.end] }
-        
-        let totalHours = totalSeconds / 3_600
-        let step: Double
-        
-        switch totalHours {
-        case ..<3: step = 0.5
-        case ..<8: step = 1
-        case ..<16: step = 2
-        case ..<24: step = 3
-        case ..<40: step = 4
-        default: step = max(ceil(totalHours / 10.0), 4)
-        }
-        
-        let stepSeconds = step * 3_600
-        let lowerReference = range.start.timeIntervalSinceReferenceDate
-        var currentInterval = floor(lowerReference / stepSeconds) * stepSeconds
-        
-        var marks: [Date] = []
-        var iterations = 0
-        
-        while iterations < 80 {
-            let currentDate = Date(timeIntervalSinceReferenceDate: currentInterval)
-            if currentDate >= range.start - 0.5 && currentDate <= range.end + 0.5 {
-                marks.append(currentDate)
-            }
-            if currentDate > range.end + stepSeconds { break }
-            currentInterval += stepSeconds
-            iterations += 1
-        }
-        
-        if marks.isEmpty {
-            marks = [range.start, range.end]
-        } else {
-            if let first = marks.first, first > range.start + 60 {
-                let delta = first.timeIntervalSince(range.start)
-                if delta > stepSeconds * 0.35 {
-                    marks.insert(range.start, at: 0)
-                } else {
-                    marks[0] = range.start
-                }
-            }
-            
-            if let last = marks.last, last < range.end - 60 {
-                let delta = range.end.timeIntervalSince(last)
-                if delta > stepSeconds * 0.35 {
-                    marks.append(range.end)
-                } else {
-                    marks[marks.count - 1] = range.end
-                }
-            }
-        }
-        
-        return marks
-    }
-    
-    static func timelineWidth(for range: DateInterval) -> CGFloat {
-        let duration = range.duration
-        guard duration > 0 else { return 600 }
-        
-        let hours = duration / 3_600
-        let pointsPerHour: CGFloat
-        
-        switch hours {
-        case ..<2: pointsPerHour = 200
-        case ..<6: pointsPerHour = 150
-        case ..<12: pointsPerHour = 120
-        case ..<24: pointsPerHour = 100
-        case ..<36: pointsPerHour = 84
-        case ..<48: pointsPerHour = 72
-        default: pointsPerHour = 60
-        }
-        
-        let minimumWidth: CGFloat = 540
-        let maximumWidth: CGFloat = 3200
-        let proposedWidth = CGFloat(hours) * pointsPerHour
-        return min(max(proposedWidth, minimumWidth), maximumWidth)
-    }
-    
-    static func timezoneSummary(for referenceDate: Date, timezone: TimeZone) -> String {
-        let abbreviation = timezone.abbreviation(for: referenceDate)
-            ?? timezone.abbreviation()
-            ?? timezone.identifier
-        let offset = offsetString(for: referenceDate, timezone: timezone)
-        return "\(abbreviation) \(offset)"
-    }
-    
-    static func offsetString(for referenceDate: Date, timezone: TimeZone) -> String {
-        let seconds = timezone.secondsFromGMT(for: referenceDate)
-        let totalMinutes = abs(seconds) / 60
-        let hours = totalMinutes / 60
-        let minutes = totalMinutes % 60
-        let sign = seconds >= 0 ? "+" : "-"
-        
-        if minutes == 0 {
-            return "UTC\(sign)\(String(format: "%02d", hours))"
-        } else {
-            return "UTC\(sign)\(String(format: "%02d:%02d", hours, minutes))"
-        }
-    }
-    
-    static func normalizedProgress(for date: Date, in range: DateInterval) -> Double {
-        guard range.duration > 0 else { return 0 }
-        let clampedDate = min(max(date, range.start), range.end)
-        let elapsed = clampedDate.timeIntervalSince(range.start)
-        return min(max(elapsed / range.duration, 0), 1)
+        return (markers, highestLane)
     }
 }
 
-private extension DateInterval {
-    var duration: TimeInterval {
-        end.timeIntervalSince(start)
-    }
+private struct TimelineCity {
+    let id: String
+    let name: String
+    let start: Date
+    let end: Date
+    let userStartLabel: String
+    let color: Color
+}
+
+private struct TimelineMarker: Identifiable {
+    let id: String
+    let name: String
+    let start: Date
+    let end: Date
+    let userStartLabel: String
+    let color: Color
+    let lane: Int
 }
 
 private extension Color {
@@ -729,4 +384,10 @@ private extension Color {
         .systemGreen,
         .systemRed
     ]
+    
+    static func randomElement(for key: String) -> Color {
+        let hash = abs(key.hashValue)
+        let index = hash % palette.count
+        return palette[index]
+    }
 }
