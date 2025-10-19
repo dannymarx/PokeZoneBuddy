@@ -38,17 +38,67 @@ jobs:
           fi
           echo "version=$version" >> "$GITHUB_OUTPUT"
 
-      - name: Validate Xcode marketing version
+      - name: Extract macOS build settings
+        id: build_settings
+        run: |
+          set -euo pipefail
+          settings_json=$(mktemp)
+          xcodebuild \
+            -project PokeZoneBuddy.xcodeproj \
+            -scheme "PokeZoneBuddy" \
+            -configuration Release \
+            -destination 'generic/platform=macOS' \
+            -showBuildSettings -json > "$settings_json"
+
+          export SETTINGS_JSON="$settings_json"
+          python3 <<'PY'
+import json
+import os
+import sys
+
+settings_path = os.environ["SETTINGS_JSON"]
+with open(settings_path) as fh:
+    data = json.load(fh)
+
+build_settings = None
+for entry in data:
+    if entry.get("target") == "PokeZoneBuddy":
+        build_settings = entry.get("buildSettings")
+        break
+
+if not build_settings and data:
+    build_settings = data[0].get("buildSettings")
+
+if not build_settings:
+    raise SystemExit("Unable to determine build settings for target PokeZoneBuddy")
+
+marketing = build_settings.get("MARKETING_VERSION", "")
+deployment = build_settings.get("MACOSX_DEPLOYMENT_TARGET", "")
+
+if not marketing:
+    raise SystemExit("MARKETING_VERSION missing from build settings")
+if not deployment:
+    raise SystemExit("MACOSX_DEPLOYMENT_TARGET missing from build settings")
+
+with open(os.environ["GITHUB_OUTPUT"], "a") as fh:
+    fh.write(f"marketing_version={marketing}\n")
+    fh.write(f"deployment_target={deployment}\n")
+PY
+          rm -f "$settings_json"
+
+      - name: Validate versions
         run: |
           set -euo pipefail
           version="${{ steps.read_version.outputs.version }}"
-          marketing_version=$(xcodebuild -project PokeZoneBuddy.xcodeproj -scheme "PokeZoneBuddy" -configuration Release -destination 'generic/platform=macOS' -showBuildSettings | awk -F' = ' '/MARKETING_VERSION/ {print $2; exit}')
-          if [[ -z "$marketing_version" ]]; then
-            echo "Unable to resolve MARKETING_VERSION from build settings" >&2
+          marketing="${{ steps.build_settings.outputs.marketing_version }}"
+          if [[ "$marketing" != "$version" ]]; then
+            echo "Version mismatch: MARKETING_VERSION=$marketing, VERSION=$version" >&2
             exit 1
           fi
-          if [[ "$marketing_version" != "$version" ]]; then
-            echo "Version mismatch: MARKETING_VERSION=$marketing_version, VERSION=$version" >&2
+
+          target="${{ steps.build_settings.outputs.deployment_target }}"
+          if [[ "$target" != "26.0" ]]; then
+            echo "Deployment target mismatch: MACOSX_DEPLOYMENT_TARGET=$target, expected 26.0" >&2
             exit 1
           fi
 
@@ -57,22 +107,6 @@ jobs:
         run: |
           set -euo pipefail
           echo "tag=v${{ steps.read_version.outputs.version }}" >> "$GITHUB_OUTPUT"
-
-      - name: Validate deployment target
-        run: |
-          set -euo pipefail
-          settings=$(xcodebuild -project PokeZoneBuddy.xcodeproj -scheme "PokeZoneBuddy" -configuration Release -destination 'generic/platform=macOS' -showBuildSettings)
-          target=$(echo "$settings" | awk -F' = ' '/MACOSX_DEPLOYMENT_TARGET/ {print $2; exit}')
-          if [[ -z "$target" ]]; then
-            echo "Unable to resolve MACOSX_DEPLOYMENT_TARGET from build settings" >&2
-            exit 1
-          fi
-          if [[ "$target" != "26.0" ]]; then
-            echo "Deployment target mismatch: MACOSX_DEPLOYMENT_TARGET=$target, expected 26.0" >&2
-            echo "Full settings:"
-            echo "$settings"
-            exit 1
-          fi
 
       - name: Build app
         run: |
