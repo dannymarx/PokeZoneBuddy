@@ -43,40 +43,41 @@ struct MacOSSidebarView: View {
     // MARK: - Body
 
     var body: some View {
-        ZStack {
-            // Liquid Glass background
-            Rectangle()
-                .fill(.ultraThinMaterial)
-                .ignoresSafeArea()
+        GeometryReader { geometry in
+            ZStack {
+                // Liquid Glass background
+                Rectangle()
+                    .fill(.ultraThinMaterial)
+                    .ignoresSafeArea()
 
-            VStack(spacing: 0) {
-                ScrollView {
-                    VStack(spacing: 12) {
-                        // Navigation section
-                        navigationSection
+                VStack(spacing: 0) {
+                    ScrollView {
+                        VStack(spacing: 12) {
+                            // Navigation section
+                            navigationSection
 
-                        // Favorite events section
-                        if !favoriteEvents.isEmpty {
-                            Divider()
-                                .padding(.vertical, 8)
+                            // Favorite events section - only show if there's space
+                            if !favoriteEvents.isEmpty {
+                                Divider()
+                                    .padding(.vertical, 8)
 
-                            favoriteEventsSection
+                                favoriteEventsSection
+                            }
                         }
+                        .padding(.horizontal, 12)
+                        .padding(.top, 16)
+                        .padding(.bottom, 16)
                     }
-                    .padding(.horizontal, 12)
-                    .padding(.top, 16)
-                    .padding(.bottom, 16)
+                    .hideScrollIndicatorsCompat()
+
+                    Divider()
+                        .padding(.horizontal, 12)
+
+                    creditsFooter
                 }
-                .hideScrollIndicatorsCompat()
-
-                Spacer()
-
-                Divider()
-                    .padding(.horizontal, 12)
-
-                creditsFooter
             }
         }
+        .frame(minWidth: 0, maxWidth: .infinity, minHeight: 0, maxHeight: .infinity)
     }
 
     // MARK: - Navigation Section
@@ -243,7 +244,7 @@ struct MacOSSidebarView: View {
                 }
                 .padding(.horizontal, 12)
             }
-            .frame(height: 80)
+            .frame(minHeight: 60, idealHeight: 80, maxHeight: 100)
             .clipShape(RoundedRectangle(cornerRadius: 14, style: .continuous))
             .overlay(
                 RoundedRectangle(cornerRadius: 14, style: .continuous)

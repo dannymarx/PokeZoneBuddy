@@ -54,9 +54,6 @@ struct SpotListView: View {
                 stackLayout
             }
         }
-#if os(macOS)
-        .frame(minWidth: 760, minHeight: 640)
-#endif
         .sheet(isPresented: $showingAddSpot) {
             AddSpotSheet(city: city, viewModel: viewModel)
         }

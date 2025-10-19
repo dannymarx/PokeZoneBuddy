@@ -97,9 +97,6 @@ struct CitiesManagementView: View {
                 activeSpotForSpots = nil
             }
         }
-#if os(macOS)
-        .frame(minWidth: 600, minHeight: 700)
-#endif
     }
     
     // MARK: - Content Section
