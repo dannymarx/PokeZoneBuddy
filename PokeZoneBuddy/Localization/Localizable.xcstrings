@@ -5693,6 +5693,23 @@
         }
       }
     },
+    "timeline.selection.deselect_all": {
+      "comment": "Button label that clears all city selections for the multi-city timeline.",
+      "localizations": {
+        "de": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Alle Städte abwählen"
+          }
+        },
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Deselect All Cities"
+          }
+        }
+      }
+    },
     "timeline.selection.toggle.selected": {
       "extractionState": "stale",
       "localizations": {

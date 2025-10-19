@@ -307,9 +307,30 @@ struct EventDetailView: View {
 
     private var timeZonesSection: some View {
         VStack(alignment: .leading, spacing: 16) {
-            Text(String(localized: "timezones.title"))
-                .font(.system(size: 20, weight: .semibold, design: .rounded))
-                .foregroundStyle(.primary)
+            HStack(alignment: .firstTextBaseline, spacing: 12) {
+                Text(String(localized: "timezones.title"))
+                    .font(.system(size: 20, weight: .semibold, design: .rounded))
+                    .foregroundStyle(.primary)
+
+                Spacer()
+
+                if !selectedCityIDs.isEmpty {
+                    Button {
+                        withAnimation(.easeInOut(duration: 0.2)) {
+                            selectedCityIDs.removeAll()
+                        }
+                    } label: {
+                        Label(
+                            String(localized: "timeline.selection.deselect_all"),
+                            systemImage: "xmark.circle.fill"
+                        )
+                        .font(.system(size: 13, weight: .semibold))
+                        .labelStyle(.titleAndIcon)
+                    }
+                    .buttonStyle(.plain)
+                    .accessibilityLabel(String(localized: "timeline.selection.deselect_all"))
+                }
+            }
 
             Text(String(localized: "timezones.subtitle"))
                 .secondaryStyle()
