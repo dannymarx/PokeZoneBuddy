@@ -43,8 +43,8 @@ struct EventDetailView: View {
                     // Countdown/Status
                     EventCountdownView(event: event)
                     
-                    // Event Info Cards
-                    eventInfoSection
+                    // Event Meta & Reminders
+                    eventMetaCard
                     
                     // Pokemon Details (Spotlight/Raid/CD)
                     pokemonDetailsSection
@@ -60,11 +60,6 @@ struct EventDetailView: View {
                         } else {
                             timelineSelectionPlaceholder
                         }
-                    }
-
-                    // Event Reminder Settings
-                    if event.isUpcoming {
-                        EventReminderDetailView(event: event)
                     }
 
                     // Time Zones Section
@@ -231,75 +226,88 @@ struct EventDetailView: View {
         }
     }
     
-    // MARK: - Event Info Section
-    
-    private var eventInfoSection: some View {
-        VStack(spacing: 16) {
-            infoRowLayout {
-                InfoCard(
-                    icon: "timer",
-                    title: String(localized: "info.duration"),
-                    value: event.formattedDuration,
-                    color: Color.systemBlue
-                )
-                
-                InfoCard(
-                    icon: statusIcon,
-                    title: String(localized: "info.status"),
-                    value: statusText,
-                    color: statusColor
-                )
-            }
-            
-            infoRowLayout {
-                InfoCard(
-                    icon: "play.circle.fill",
-                    title: String(localized: "info.start"),
-                    value: formatEventTime(event.startTime),
-                    color: Color.systemGreen
-                )
-                
-                InfoCard(
-                    icon: "stop.circle.fill",
-                    title: String(localized: "info.end"),
-                    value: formatEventTime(event.endTime),
-                    color: Color.systemRed
-                )
-            }
-            
-            // Full Date Card
-            VStack(alignment: .leading, spacing: 12) {
-                HStack {
-                    Image(systemName: "calendar")
-                        .font(.system(size: 20))
-                        .foregroundStyle(.secondary)
-                    
-                    Text(String(localized: "info.date"))
-                        .font(.system(size: 13, weight: .semibold))
-                        .foregroundStyle(.secondary)
-                        .textCase(.uppercase)
-                        .kerning(0.5)
+    // MARK: - Event Meta Card
+
+    private var eventMetaCard: some View {
+        VStack(spacing: 0) {
+            LazyVGrid(
+                columns: metaColumns,
+                alignment: .leading,
+                spacing: usesCompactLayout ? 12 : 16
+            ) {
+                ForEach(eventMetaItems) { item in
+                    EventMetaCell(item: item)
                 }
-                
-                Text(formatEventDateTime(event.startTime))
-                    .font(.system(size: 16, weight: .medium))
-                    .foregroundStyle(.primary)
             }
-            .padding(16)
-            .frame(maxWidth: .infinity, alignment: .leading)
-            .background(
-                RoundedRectangle(cornerRadius: 12, style: .continuous)
-                    .fill(.quaternary.opacity(0.3))
-            )
+            .padding(.horizontal, 16)
+            .padding(.top, 18)
+            .padding(.bottom, event.isUpcoming ? 12 : 18)
+
+            if event.isUpcoming {
+                Divider()
+
+                VStack(alignment: .leading, spacing: 12) {
+                    Text(String(localized: "settings.reminders.title"))
+                        .font(.system(size: 14, weight: .semibold))
+                        .foregroundStyle(.primary)
+
+                    EventReminderDetailView(event: event, layout: .embedded)
+                        .frame(maxWidth: .infinity, alignment: .leading)
+                }
+                .padding(.horizontal, 16)
+                .padding(.bottom, 16)
+                .padding(.top, 14)
+            }
         }
+        .background(
+            RoundedRectangle(cornerRadius: 16, style: .continuous)
+                .fill(.ultraThinMaterial)
+        )
+        .overlay(
+            RoundedRectangle(cornerRadius: 16, style: .continuous)
+                .strokeBorder(Color.primary.opacity(0.08), lineWidth: 1)
+        )
+        .shadow(color: .black.opacity(0.05), radius: 12, x: 0, y: 4)
     }
-    
-    @ViewBuilder
-    private func infoRowLayout<Content: View>(@ViewBuilder content: () -> Content) -> some View {
+
+    private var eventMetaItems: [EventMetaItem] {
+        [
+            EventMetaItem(
+                id: "duration",
+                title: String(localized: "info.duration"),
+                value: event.formattedDuration
+            ),
+            EventMetaItem(
+                id: "status",
+                title: String(localized: "info.status"),
+                value: statusText
+            ),
+            EventMetaItem(
+                id: "start",
+                title: String(localized: "info.start"),
+                value: formatEventTime(event.startTime)
+            ),
+            EventMetaItem(
+                id: "end",
+                title: String(localized: "info.end"),
+                value: formatEventTime(event.endTime)
+            ),
+            EventMetaItem(
+                id: "date",
+                title: String(localized: "info.date"),
+                value: formatEventDateTime(event.startTime)
+            )
+        ]
+    }
+
+    private var metaColumns: [GridItem] {
         if usesCompactLayout {
-            VStack(spacing: 16, content: content)
+            return [GridItem(.flexible())]
         } else {
-            HStack(spacing: 16, content: content)
+            return [
+                GridItem(.flexible(), spacing: 24),
+                GridItem(.flexible(), spacing: 24)
+            ]
         }
     }
     
@@ -620,6 +628,35 @@ struct EventDetailView: View {
         } else {
             selectedCityIDs = selectedCityIDs.intersection(validIDs)
         }
+    }
+}
+
+// MARK: - Event Meta
+
+private struct EventMetaItem: Identifiable {
+    let id: String
+    let title: String
+    let value: String
+}
+
+private struct EventMetaCell: View {
+    let item: EventMetaItem
+
+    var body: some View {
+        VStack(alignment: .leading, spacing: 4) {
+            Text(item.title)
+                .font(.system(size: 12, weight: .semibold))
+                .foregroundStyle(.secondary)
+                .textCase(.uppercase)
+                .kerning(0.5)
+
+            Text(item.value)
+                .font(.system(size: 16, weight: .semibold))
+                .foregroundStyle(.primary)
+                .monospacedDigit()
+                .fixedSize(horizontal: false, vertical: true)
+        }
+        .frame(maxWidth: .infinity, alignment: .leading)
     }
 }
 
