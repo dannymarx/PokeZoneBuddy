@@ -82,28 +82,37 @@ final class EventsViewModel {
             isOffline = true
             return
         }
-        
+
         isLoading = true
         isOffline = false
         errorMessage = nil
         showError = false
-        
+
         defer { isLoading = false }
-        
+
         do {
             // Fetch from API (with cache fallback)
             let apiEvents = try await apiService.fetchEvents()
-            
+
             // OFFLINE: Save to SwiftData for offline access
             await saveEventsToLocalStorage(apiEvents)
-            
+
             lastSyncDate = Date()
-            
+
         } catch {
+            // Don't show cancellation errors to the user
+            let nsError = error as NSError
+            if nsError.domain == NSURLErrorDomain && nsError.code == NSURLErrorCancelled {
+                AppLogger.viewModel.debug("Sync was cancelled (likely due to concurrent request)")
+                // OFFLINE: We still have local data, so it's okay
+                isOffline = true
+                return
+            }
+
             self.errorMessage = error.localizedDescription
             self.showError = true
             AppLogger.viewModel.error("Sync error: \(error)")
-            
+
             // OFFLINE: We still have local data, so it's okay
             isOffline = true
         }
@@ -117,16 +126,23 @@ final class EventsViewModel {
             showError = true
             return
         }
-        
+
         isLoading = true
         defer { isLoading = false }
-        
+
         do {
             let apiEvents = try await apiService.fetchEvents(forceRefresh: true)
             await saveEventsToLocalStorage(apiEvents)
             lastSyncDate = Date()
             isOffline = false
         } catch {
+            // Don't show cancellation errors to the user
+            let nsError = error as NSError
+            if nsError.domain == NSURLErrorDomain && nsError.code == NSURLErrorCancelled {
+                AppLogger.viewModel.debug("Force refresh was cancelled (likely due to concurrent request)")
+                return
+            }
+
             self.errorMessage = error.localizedDescription
             self.showError = true
             AppLogger.viewModel.error("Force refresh error: \(error)")
