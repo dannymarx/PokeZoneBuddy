@@ -12,9 +12,15 @@ import SwiftData
 /// A simple, streamlined reminder toggle for event detail views
 struct EventReminderDetailView: View {
 
+    enum LayoutStyle {
+        case standalone
+        case embedded
+    }
+
     // MARK: - Properties
 
     let event: Event
+    let layout: LayoutStyle
     private let notificationManager = NotificationManager.shared
 
     // MARK: - Environment
@@ -27,13 +33,17 @@ struct EventReminderDetailView: View {
     @State private var selectedOffset: ReminderOffset = .thirtyMinutes
     @State private var showTimeOptions = false
 
+    // MARK: - Init
+
+    init(event: Event, layout: LayoutStyle = .standalone) {
+        self.event = event
+        self.layout = layout
+    }
+
     // MARK: - Body
 
     var body: some View {
-        VStack(spacing: 16) {
-            headerView
-            cardContent
-        }
+        contentView
         .id(event.id)
         .task(id: event.id) {
             await loadNotifications()
@@ -49,6 +59,19 @@ struct EventReminderDetailView: View {
         }
     }
 
+    @ViewBuilder
+    private var contentView: some View {
+        switch layout {
+        case .standalone:
+            VStack(spacing: 16) {
+                headerView
+                cardContainer
+            }
+        case .embedded:
+            cardContainer
+        }
+    }
+
     private var headerView: some View {
         HStack {
             Text("settings.reminders.title")
@@ -58,7 +81,35 @@ struct EventReminderDetailView: View {
         }
     }
 
-    private var cardContent: some View {
+    @ViewBuilder
+    private var cardContainer: some View {
+        if layout == .standalone {
+            cardBody
+                .background(
+                    RoundedRectangle(cornerRadius: 12, style: .continuous)
+                        .fill(.ultraThinMaterial)
+                )
+                .overlay(
+                    RoundedRectangle(cornerRadius: 12, style: .continuous)
+                        .strokeBorder(
+                            LinearGradient(
+                                colors: [
+                                    .white.opacity(0.25),
+                                    .systemBlue.opacity(0.15)
+                                ],
+                                startPoint: .topLeading,
+                                endPoint: .bottomTrailing
+                            ),
+                            lineWidth: 1
+                        )
+                )
+                .shadow(color: .black.opacity(0.05), radius: 8, x: 0, y: 2)
+        } else {
+            cardBody
+        }
+    }
+
+    private var cardBody: some View {
         VStack(spacing: 0) {
             toggleSection
 
@@ -77,25 +128,10 @@ struct EventReminderDetailView: View {
                 permissionWarning
             }
         }
-        .background(
-            RoundedRectangle(cornerRadius: 12, style: .continuous)
-                .fill(.ultraThinMaterial)
-        )
-        .overlay(
-            RoundedRectangle(cornerRadius: 12, style: .continuous)
-                .strokeBorder(
-                    LinearGradient(
-                        colors: [
-                            .white.opacity(0.25),
-                            .systemBlue.opacity(0.15)
-                        ],
-                        startPoint: .topLeading,
-                        endPoint: .bottomTrailing
-                    ),
-                    lineWidth: 1
-                )
-        )
-        .shadow(color: .black.opacity(0.05), radius: 8, x: 0, y: 2)
+    }
+
+    private var contentPadding: CGFloat {
+        layout == .standalone ? 16 : 12
     }
 
     private var toggleSection: some View {
@@ -125,7 +161,7 @@ struct EventReminderDetailView: View {
         .onChange(of: isEnabled) { oldValue, newValue in
             handleToggle(newValue)
         }
-        .padding(16)
+        .padding(contentPadding)
     }
 
     private var timeSelectorButton: some View {
@@ -149,7 +185,7 @@ struct EventReminderDetailView: View {
                     .rotationEffect(.degrees(showTimeOptions ? 90 : 0))
                     .animation(.spring(response: 0.3), value: showTimeOptions)
             }
-            .padding(16)
+            .padding(contentPadding)
             .contentShape(Rectangle())
         }
         .buttonStyle(.plain)
@@ -162,7 +198,7 @@ struct EventReminderDetailView: View {
 
                 if offset != ReminderOffset.allCases.last {
                     Divider()
-                        .padding(.leading, 16)
+                        .padding(.leading, contentPadding)
                 }
             }
         }
@@ -189,7 +225,7 @@ struct EventReminderDetailView: View {
                         .foregroundStyle(Color.systemBlue)
                 }
             }
-            .padding(.horizontal, 16)
+            .padding(.horizontal, contentPadding)
             .padding(.vertical, 12)
             .background(offset == selectedOffset ? Color.systemBlue.opacity(0.1) : Color.clear)
             .contentShape(Rectangle())
@@ -214,7 +250,7 @@ struct EventReminderDetailView: View {
             .font(.system(size: 12, weight: .medium))
             .foregroundStyle(Color.systemBlue)
         }
-        .padding(16)
+        .padding(contentPadding)
     }
 
     // MARK: - Actions
