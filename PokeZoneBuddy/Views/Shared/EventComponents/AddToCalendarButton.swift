@@ -33,20 +33,20 @@ struct AddToCalendarButton: View {
                 await addToCalendar()
             }
         } label: {
-            Label("Add to Calendar", systemImage: "calendar.badge.plus")
+            Label(String(localized: "calendar.action.add"), systemImage: "calendar.badge.plus")
         }
         .disabled(isAdding)
-        .alert("Error", isPresented: $showError) {
-            Button("OK") { }
+        .alert(String(localized: "alert.error.title"), isPresented: $showError) {
+            Button(String(localized: "common.ok")) { }
         } message: {
             Text(errorMessage)
         }
-        .alert("Success", isPresented: $showSuccess) {
-            Button("OK") { }
+        .alert(String(localized: "alert.success.title"), isPresented: $showSuccess) {
+            Button(String(localized: "common.ok")) { }
         } message: {
-            Text("Event added to calendar")
+            Text(String(localized: "calendar.success"))
         }
-        .help("Add this event to your calendar")
+        .help(String(localized: "calendar.action.add.help"))
     }
     
     // MARK: - Private Methods

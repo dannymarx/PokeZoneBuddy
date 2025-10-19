@@ -32,13 +32,13 @@ struct FavoriteButton: View {
         Button {
             toggleFavorite()
         } label: {
-            Label("Favorite", systemImage: isFavorite ? "star.fill" : "star")
+            Label("favorites.action.add", systemImage: isFavorite ? "star.fill" : "star")
                 .labelStyle(.iconOnly)
                 .foregroundStyle(isFavorite ? Color.systemYellow : .secondary)
         }
         .buttonStyle(.borderless) // Critical for buttons in List rows!
         .symbolEffect(.bounce, value: isFavorite)
-        .help(isFavorite ? "Remove from favorites" : "favorites.action.add")
+        .help(isFavorite ? "favorites.action.remove" : "favorites.action.add")
     }
 
     // MARK: - Private Methods
