@@ -60,6 +60,16 @@ struct NotificationSettingsView: View {
         .refreshable {
             await updateStatus()
         }
+#if os(macOS)
+        .toolbar {
+            ToolbarItem(placement: .cancellationAction) {
+                Button(String(localized: "common.close")) {
+                    dismiss()
+                }
+                .keyboardShortcut(.cancelAction)
+            }
+        }
+#endif
     }
 
     // MARK: - Permission Card

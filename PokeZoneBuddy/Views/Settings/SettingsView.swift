@@ -103,6 +103,7 @@ struct SettingsView: View {
     @State private var showDeleteAllDataConfirmation = false
     @State private var isRefreshing = false
     @State private var navigationPath = NavigationPath()
+    @State private var showNotificationSettings = false
     @State private var citiesViewModel: CitiesViewModel?
 
     // MARK: - Body
@@ -145,10 +146,8 @@ struct SettingsView: View {
                 }
             }
 #endif
-            .navigationDestination(for: String.self) { destination in
-                if destination == "notifications" {
-                    NotificationSettingsView()
-                }
+            .sheet(isPresented: $showNotificationSettings) {
+                NotificationSettingsView()
             }
             .onAppear {
                 if citiesViewModel == nil {
@@ -211,17 +210,7 @@ struct SettingsView: View {
 
     @ViewBuilder
     private var supplementarySectionGroup: some View {
-        VStack(spacing: 32) {
-            creditsSection
-            legalSection
-            linksSection
-
-            Divider()
-                .padding(.vertical, 8)
-
-            appHeaderSection
-                .padding(.bottom, 16)
-        }
+        SettingsSupplementaryContent()
     }
 
 
@@ -285,7 +274,9 @@ struct SettingsView: View {
                 Spacer()
             }
 
-            NavigationLink(value: "notifications") {
+            Button {
+                showNotificationSettings = true
+            } label: {
                 HStack(spacing: 12) {
                     Image(systemName: "bell.fill")
                         .font(.system(size: 20))
@@ -485,165 +476,6 @@ struct SettingsView: View {
         }
     }
 
-    // MARK: - App Header
-
-    private var appHeaderSection: some View {
-        HStack(spacing: 16) {
-            // App Icon (macOS only)
-            #if os(macOS)
-            if let appIcon = applicationIcon() {
-                Image(nsImage: appIcon)
-                    .resizable()
-                    .frame(width: 48, height: 48)
-                    .clipShape(RoundedRectangle(cornerRadius: 10))
-                    .shadow(radius: 4)
-                    .accessibilityHidden(true)
-            }
-            #endif
-
-            VStack(alignment: .leading, spacing: 4) {
-                Text(appDisplayName())
-                    .font(.system(size: 16, weight: .semibold))
-                    .accessibilityAddTraits(.isHeader)
-
-                Text("\(L("about.version_prefix", "Version")) \(appVersionString())")
-                    .font(.system(size: 13, weight: .medium))
-                    .foregroundStyle(.secondary)
-
-                Text(L("about.tagline", "Pokémon GO event times — in your local time."))
-                    .font(.system(size: 12))
-                    .foregroundStyle(.secondary)
-            }
-
-            Spacer()
-        }
-        .padding(16)
-        .background(
-            RoundedRectangle(cornerRadius: 12, style: .continuous)
-                .fill(.quaternary.opacity(0.2))
-        )
-    }
-
-    // MARK: - Credits Section
-
-    private var creditsSection: some View {
-        VStack(alignment: .leading, spacing: 16) {
-            Text(L("about.credits.title", "about.credits.title"))
-                .font(.system(size: 18, weight: .semibold))
-
-            VStack(alignment: .leading, spacing: 12) {
-                CreditRow(
-                    title: L("credits.event_data", "Event data (LeekDuck)"),
-                    description: "LeekDuck.com",
-                    link: Constants.Credits.leekDuckURL
-                )
-
-                CreditRow(
-                    title: L("credits.api", "Event mirror / API"),
-                    description: L("credits.scraper_by", "ScrapedDuck (LeekDuck mirror, with permission)"),
-                    link: Constants.Credits.scrapedDuckURL
-                )
-            }
-
-            Text(L("credits.update_note", "Event data refreshes periodically and may change without notice."))
-                .font(.system(size: 12))
-                .foregroundStyle(.secondary)
-                .padding(.top, 8)
-        }
-    }
-
-    // MARK: - Legal Section
-
-    private var legalSection: some View {
-        VStack(alignment: .leading, spacing: 16) {
-            Text(LSafe("about.legal.title", "Legal"))
-                .font(.system(size: 18, weight: .semibold))
-
-            VStack(alignment: .leading, spacing: 12) {
-                LegalTextBox(
-                    title: LSafe("legal.copyright.title", "Urheberrecht"),
-                    text: LSafe(
-                        "legal.copyright.text",
-                        {
-                            let year = Calendar.current.component(.year, from: Date())
-                            return """
-                            Pokémon GO © 2016–\(year) Niantic, Inc. Pokémon © 1995–\(year) Nintendo / Creatures Inc. / GAME FREAK inc. Alle Rechte vorbehalten.
-                            """
-                        }(),
-                        comment: "Copyright notice with dynamic current year."
-                    )
-                )
-
-                LegalTextBox(
-                    title: LSafe("legal.trademark.title", "Marken"),
-                    text: LSafe(
-                        "legal.trademark.text",
-                        """
-                        „Pokémon" und die Namen der Pokémon‑Charaktere sind Marken von Nintendo. Pokémon GO ist ein Produkt von Niantic, Inc. Weitere erwähnte Marken sind Eigentum der jeweiligen Inhaber.
-                        """,
-                        comment: "Trademark clarification; concise and neutral."
-                    )
-                )
-
-                LegalTextBox(
-                    title: LSafe("legal.disclaimer.title", "Haftungsausschluss"),
-                    text: LSafe(
-                        "legal.disclaimer.text",
-                        """
-                        PokeZoneBuddy ist eine inoffizielle, fan‑gemachte App. Es besteht keine Partnerschaft oder Verbindung zu Niantic, The Pokémon Company, Nintendo, Creatures Inc. oder GAME FREAK. Alle Inhalte dienen ausschließlich Informationszwecken.
-                        """,
-                        comment: "Independence disclaimer."
-                    )
-                )
-
-                LegalTextBox(
-                    title: LSafe("legal.attribution.title", "Attribution & Quellen"),
-                    text: LSafe(
-                        "legal.attribution.text",
-                        """
-                        Eventdaten: LeekDuck (leekduck.com). Spiegel/Feed: ScrapedDuck (mit Erlaubnis). Bitte unterstützt die Originalquelle.
-                        """,
-                        comment: "Required attribution for LeekDuck & ScrapedDuck; concise."
-                    )
-                )
-            }
-
-            Text(LSafe(
-                "legal.images_and_names_note",
-                "Bildmaterial und Namen zu Pokémon erscheinen hier im Rahmen von Fair‑Use‑ und Markennutzungs‑Hinweisen.")
-            )
-            .font(.system(size: 11, weight: .medium))
-            .foregroundStyle(.tertiary)
-            .padding(.top, 8)
-        }
-    }
-
-    // MARK: - Links Section
-
-    private var linksSection: some View {
-        VStack(alignment: .leading, spacing: 16) {
-            Text(L("about.links.title", "about.links.title"))
-                .font(.system(size: 18, weight: .semibold))
-
-            VStack(spacing: 8) {
-                LinkButton(
-                    title: L("links.website", "Website"),
-                    url: "https://dannymarx.github.io/PokeZoneBuddy"
-                )
-
-                LinkButton(
-                    title: L("links.github", "GitHub"),
-                    url: "https://github.com/dannymarx/PokeZoneBuddy"
-                )
-
-                LinkButton(
-                    title: L("links.license_mit", "License (MIT)"),
-                    url: "https://github.com/dannymarx/PokeZoneBuddy/blob/main/LICENSE"
-                )
-            }
-        }
-    }
-
     // MARK: - Actions
 
     private func updateStats() {
@@ -738,39 +570,6 @@ struct SettingsView: View {
         )
     }
 
-    private func L(_ key: String, _ fallback: String, comment: String = "") -> String {
-        return NSLocalizedString(key, tableName: nil, bundle: .main, value: fallback, comment: comment)
-    }
-
-    private func LSafe(_ key: String, _ fallback: String, comment: String = "") -> String {
-        let resolved = NSLocalizedString(key, tableName: nil, bundle: .main, value: fallback, comment: comment)
-            .trimmingCharacters(in: .whitespacesAndNewlines)
-        let lowered = resolved.lowercased()
-        if resolved.isEmpty || resolved == key || lowered == "title" || lowered == "placeholder" || lowered.contains("todo") {
-            return fallback
-        }
-        return resolved
-    }
-
-    private func appDisplayName() -> String {
-        let dict = Bundle.main.infoDictionary
-        return (dict?["CFBundleDisplayName"] as? String)
-            ?? (dict?["CFBundleName"] as? String)
-            ?? "app.name"
-    }
-
-    private func appVersionString() -> String {
-        let dict = Bundle.main.infoDictionary
-        let version = (dict?["CFBundleShortVersionString"] as? String) ?? "0.0"
-        let build = (dict?["CFBundleVersion"] as? String) ?? ""
-        return build.isEmpty || build == version ? version : "\(version) (\(build))"
-    }
-
-    #if os(macOS)
-    private func applicationIcon() -> NSImage? {
-        return NSImage(named: NSImage.applicationIconName)
-    }
-    #endif
 }
 
 // MARK: - Stat Row
@@ -861,6 +660,186 @@ private struct ActionRow: View {
             }
         }
         .padding(16)
+    }
+}
+
+// MARK: - Supplementary Content
+
+struct SettingsSupplementaryPane: View {
+    var body: some View {
+        ScrollView(.vertical, showsIndicators: false) {
+            SettingsSupplementaryContent()
+                .padding(24)
+        }
+        .scrollIndicators(.hidden, axes: .vertical)
+        .hideScrollIndicatorsCompat()
+        .background(Color.appBackground)
+    }
+}
+
+private struct SettingsSupplementaryContent: View {
+    var body: some View {
+        VStack(spacing: 32) {
+            creditsSection
+            legalSection
+            linksSection
+
+            Divider()
+                .padding(.vertical, 8)
+
+            appHeaderSection
+                .padding(.bottom, 16)
+        }
+    }
+
+    private var creditsSection: some View {
+        VStack(alignment: .leading, spacing: 16) {
+            Text(L("about.credits.title", "about.credits.title"))
+                .font(.system(size: 18, weight: .semibold))
+
+            VStack(alignment: .leading, spacing: 12) {
+                CreditRow(
+                    title: L("credits.event_data", "Event data (LeekDuck)"),
+                    description: "LeekDuck.com",
+                    link: Constants.Credits.leekDuckURL
+                )
+
+                CreditRow(
+                    title: L("credits.api", "Event mirror / API"),
+                    description: L("credits.scraper_by", "ScrapedDuck (LeekDuck mirror, with permission)"),
+                    link: Constants.Credits.scrapedDuckURL
+                )
+            }
+
+            Text(L("credits.update_note", "Event data refreshes periodically and may change without notice."))
+                .font(.system(size: 12))
+                .foregroundStyle(.secondary)
+                .padding(.top, 8)
+        }
+    }
+
+    private var legalSection: some View {
+        VStack(alignment: .leading, spacing: 16) {
+            Text(LSafe("about.legal.title", "Legal"))
+                .font(.system(size: 18, weight: .semibold))
+
+            VStack(alignment: .leading, spacing: 12) {
+                LegalTextBox(
+                    title: LSafe("legal.copyright.title", "Urheberrecht"),
+                    text: LSafe(
+                        "legal.copyright.text",
+                        {
+                            let year = Calendar.current.component(.year, from: Date())
+                            return """
+                            Pokémon GO © 2016–\(year) Niantic, Inc. Pokémon © 1995–\(year) Nintendo / Creatures Inc. / GAME FREAK inc. Alle Rechte vorbehalten.
+                            """
+                        }(),
+                        comment: "Copyright notice with dynamic current year."
+                    )
+                )
+
+                LegalTextBox(
+                    title: LSafe("legal.trademark.title", "Marken"),
+                    text: LSafe(
+                        "legal.trademark.text",
+                        """
+                        „Pokémon" und die Namen der Pokémon‑Charaktere sind Marken von Nintendo. Pokémon GO ist ein Produkt von Niantic, Inc. Weitere erwähnte Marken sind Eigentum der jeweiligen Inhaber.
+                        """,
+                        comment: "Trademark clarification; concise and neutral."
+                    )
+                )
+
+                LegalTextBox(
+                    title: LSafe("legal.disclaimer.title", "Haftungsausschluss"),
+                    text: LSafe(
+                        "legal.disclaimer.text",
+                        """
+                        PokeZoneBuddy ist eine inoffizielle, fan‑gemachte App. Es besteht keine Partnerschaft oder Verbindung zu Niantic, The Pokémon Company, Nintendo, Creatures Inc. oder GAME FREAK. Alle Inhalte dienen ausschließlich Informationszwecken.
+                        """,
+                        comment: "Independence disclaimer."
+                    )
+                )
+
+                LegalTextBox(
+                    title: LSafe("legal.attribution.title", "Attribution & Quellen"),
+                    text: LSafe(
+                        "legal.attribution.text",
+                        """
+                        Eventdaten: LeekDuck (leekduck.com). Spiegel/Feed: ScrapedDuck (mit Erlaubnis). Bitte unterstützt die Originalquelle.
+                        """,
+                        comment: "Required attribution for LeekDuck & ScrapedDuck; concise."
+                    )
+                )
+            }
+
+            Text(LSafe(
+                "legal.images_and_names_note",
+                "Bildmaterial und Namen zu Pokémon erscheinen hier im Rahmen von Fair‑Use‑ und Markennutzungs‑Hinweisen.")
+            )
+            .font(.system(size: 11, weight: .medium))
+            .foregroundStyle(.tertiary)
+            .padding(.top, 8)
+        }
+    }
+
+    private var linksSection: some View {
+        VStack(alignment: .leading, spacing: 16) {
+            Text(L("about.links.title", "about.links.title"))
+                .font(.system(size: 18, weight: .semibold))
+
+            VStack(spacing: 8) {
+                LinkButton(
+                    title: L("links.website", "Website"),
+                    url: "https://dannymarx.github.io/PokeZoneBuddy"
+                )
+
+                LinkButton(
+                    title: L("links.github", "GitHub"),
+                    url: "https://github.com/dannymarx/PokeZoneBuddy"
+                )
+
+                LinkButton(
+                    title: L("links.license_mit", "License (MIT)"),
+                    url: "https://github.com/dannymarx/PokeZoneBuddy/blob/main/LICENSE"
+                )
+            }
+        }
+    }
+
+    private var appHeaderSection: some View {
+        HStack(spacing: 16) {
+            #if os(macOS)
+            if let icon = applicationIcon() {
+                Image(nsImage: icon)
+                    .resizable()
+                    .frame(width: 48, height: 48)
+                    .clipShape(RoundedRectangle(cornerRadius: 10))
+                    .shadow(radius: 4)
+                    .accessibilityHidden(true)
+            }
+            #endif
+
+            VStack(alignment: .leading, spacing: 4) {
+                Text(appDisplayName())
+                    .font(.system(size: 16, weight: .semibold))
+                    .accessibilityAddTraits(.isHeader)
+
+                Text("\(L("about.version_prefix", "Version")) \(appVersionString())")
+                    .font(.system(size: 13, weight: .medium))
+                    .foregroundStyle(.secondary)
+
+                Text(L("about.tagline", "Pokémon GO event times — in your local time."))
+                    .font(.system(size: 12))
+                    .foregroundStyle(.secondary)
+            }
+
+            Spacer()
+        }
+        .padding(16)
+        .background(
+            RoundedRectangle(cornerRadius: 12, style: .continuous)
+                .fill(.quaternary.opacity(0.2))
+        )
     }
 }
 
@@ -965,6 +944,42 @@ private struct LinkButton: View {
         }
     }
 }
+
+// MARK: - Localization Helpers
+
+private func L(_ key: String, _ fallback: String, comment: String = "") -> String {
+    NSLocalizedString(key, tableName: nil, bundle: .main, value: fallback, comment: comment)
+}
+
+private func LSafe(_ key: String, _ fallback: String, comment: String = "") -> String {
+    let resolved = NSLocalizedString(key, tableName: nil, bundle: .main, value: fallback, comment: comment)
+        .trimmingCharacters(in: .whitespacesAndNewlines)
+    let lowered = resolved.lowercased()
+    if resolved.isEmpty || resolved == key || lowered == "title" || lowered == "placeholder" || lowered.contains("todo") {
+        return fallback
+    }
+    return resolved
+}
+
+private func appDisplayName() -> String {
+    let dict = Bundle.main.infoDictionary
+    return (dict?["CFBundleDisplayName"] as? String)
+        ?? (dict?["CFBundleName"] as? String)
+        ?? "app.name"
+}
+
+private func appVersionString() -> String {
+    let dict = Bundle.main.infoDictionary
+    let version = (dict?["CFBundleShortVersionString"] as? String) ?? "0.0"
+    let build = (dict?["CFBundleVersion"] as? String) ?? ""
+    return build.isEmpty || build == version ? version : "\(version) (\(build))"
+}
+
+#if os(macOS)
+private func applicationIcon() -> NSImage? {
+    NSImage(named: NSImage.applicationIconName)
+}
+#endif
 
 // MARK: - Preview
 
