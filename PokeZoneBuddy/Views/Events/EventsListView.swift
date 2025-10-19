@@ -488,6 +488,7 @@ struct EventsContentView: View {
     @State private var selectedFilter: EventFilter = .all
     @State private var filterConfig = FilterConfiguration()
     @State private var showFilterSheet = false
+    @State private var showAllPastEvents = false
     
     var body: some View {
         VStack(spacing: 0) {
@@ -523,12 +524,11 @@ struct EventsContentView: View {
         .navigationBarTitleDisplayMode(.large)
         .toolbar {
             ToolbarItem(placement: .topBarTrailing) {
-                Button {
-                    Task { await viewModel.refreshEvents() }
-                } label: {
-                    Label(String(localized: "events.refresh.help"), systemImage: "arrow.clockwise")
-                }
-                .disabled(viewModel.isLoading)
+                StatefulRefreshToolbarButton(
+                    onRefresh: { await viewModel.refreshEvents() },
+                    refreshState: viewModel.refreshState,
+                    isDisabled: viewModel.isLoading
+                )
             }
 
             ToolbarItem(placement: .topBarTrailing) {
@@ -612,16 +612,11 @@ struct EventsContentView: View {
             .help(String(localized: "events.filter.help"))
 
             // Refresh Button
-            Button {
-                Task { await viewModel.refreshEvents() }
-            } label: {
-                Image(systemName: "arrow.clockwise")
-                    .font(.system(size: 14, weight: .semibold))
-                    .foregroundStyle(viewModel.isLoading ? .tertiary : .secondary)
-            }
-            .buttonStyle(.plain)
-            .disabled(viewModel.isLoading)
-            .help(String(localized: "events.refresh.help"))
+            StatefulRefreshButton(
+                onRefresh: { await viewModel.refreshEvents() },
+                refreshState: viewModel.refreshState,
+                isDisabled: viewModel.isLoading
+            )
         }
         .padding(.horizontal, 20)
         .padding(.vertical, 16)
@@ -745,12 +740,48 @@ struct EventsContentView: View {
         // Past Events
         if !filteredPastEvents.isEmpty {
             Section {
-                ForEach(filteredPastEvents.prefix(5)) { event in
+                let eventsToShow = showAllPastEvents ? filteredPastEvents : Array(filteredPastEvents.prefix(5))
+
+                ForEach(eventsToShow) { event in
                     EventRow(event: event, isSelected: layout == .split && selectedEvent?.id == event.id, isPast: true)
                         .contentShape(Rectangle())
                         .onTapGesture {
                             onEventSelected(event)
                         }
+                }
+
+                // Show More/Less button
+                if filteredPastEvents.count > 5 {
+                    Button {
+                        withAnimation(.spring(response: 0.4, dampingFraction: 0.8)) {
+                            showAllPastEvents.toggle()
+                        }
+                    } label: {
+                        HStack {
+                            Spacer()
+                            HStack(spacing: 6) {
+                                Text(showAllPastEvents ? String(localized: "events.show_less") : String(localized: "events.show_more"))
+                                    .font(.system(size: 13, weight: .medium))
+                                Image(systemName: showAllPastEvents ? "chevron.up" : "chevron.down")
+                                    .font(.system(size: 11, weight: .semibold))
+                            }
+                            .foregroundStyle(Color.systemBlue)
+                            Spacer()
+                        }
+                        .padding(.vertical, 12)
+                        .padding(.horizontal, 20)
+                        .background(
+                            RoundedRectangle(cornerRadius: 10, style: .continuous)
+                                .fill(.ultraThinMaterial)
+                        )
+                        .overlay(
+                            RoundedRectangle(cornerRadius: 10, style: .continuous)
+                                .strokeBorder(Color.systemBlue.opacity(0.2), lineWidth: 1)
+                        )
+                    }
+                    .buttonStyle(.plain)
+                    .padding(.horizontal, 20)
+                    .padding(.top, 8)
                 }
             } header: {
                 sectionHeader(title: String(localized: "section.past_events"), icon: "checkmark.circle.fill", color: Color.systemGray, topPadding: 20)
