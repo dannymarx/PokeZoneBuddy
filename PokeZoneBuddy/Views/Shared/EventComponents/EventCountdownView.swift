@@ -64,17 +64,11 @@ struct EventCountdownView: View {
                     ZStack(alignment: .leading) {
                         // Background
                         RoundedRectangle(cornerRadius: 4)
-                            .fill(.quaternary)
+                            .fill(Color.primary.opacity(0.08))
                         
                         // Progress
                         RoundedRectangle(cornerRadius: 4)
-                            .fill(
-                                LinearGradient(
-                                    colors: [Color.systemGreen, Color.systemGreen.opacity(0.7)],
-                                    startPoint: .leading,
-                                    endPoint: .trailing
-                                )
-                            )
+                            .fill(Color.primary.opacity(0.65))
                             .frame(width: geometry.size.width * event.eventProgress)
                             .animation(.linear(duration: 0.5), value: event.eventProgress)
                     }
@@ -85,7 +79,7 @@ struct EventCountdownView: View {
         .padding(16)
         .background(
             RoundedRectangle(cornerRadius: 12, style: .continuous)
-                .fill(Color.systemGreen.opacity(0.1))
+                .fill(.thinMaterial)
         )
     }
     
@@ -95,13 +89,13 @@ struct EventCountdownView: View {
         VStack(alignment: .leading, spacing: 12) {
             // Status Badge
             HStack(spacing: 8) {
-                Image(systemName: "clock.fill")
+                Image(systemName: "clock")
                     .font(.system(size: 12))
-                    .foregroundStyle(Color.systemOrange)
+                    .foregroundStyle(.secondary)
 
                 Text(String(localized: "countdown.starting_soon"))
                     .font(.system(size: 12, weight: .bold))
-                    .foregroundStyle(Color.systemOrange)
+                    .foregroundStyle(.secondary)
             }
             
             // Countdown
@@ -112,14 +106,14 @@ struct EventCountdownView: View {
                 Spacer()
                 Text(countdownText)
                     .font(.system(size: 15, weight: .bold))
-                    .foregroundStyle(Color.systemOrange)
+                    .foregroundStyle(.primary)
                     .monospacedDigit()
             }
         }
         .padding(16)
         .background(
             RoundedRectangle(cornerRadius: 12, style: .continuous)
-                .fill(Color.systemOrange.opacity(0.1))
+                .fill(.thinMaterial)
         )
     }
     
@@ -277,4 +271,3 @@ struct CompactCountdownBadge: View {
     .padding()
     .frame(width: 400)
 }
-
