@@ -189,7 +189,7 @@ private struct MacOSContentView: View {
             )
 
         case .settings:
-            SettingsView(displayMode: .primaryOnly, showsDismissButton: false)
+            SettingsView(displayMode: .full, showsDismissButton: false)
         }
     }
 
@@ -229,7 +229,7 @@ private struct MacOSContentView: View {
             }
 
         case .settings:
-            SettingsView(displayMode: .supplementaryOnly, showsDismissButton: false)
+            EmptyView()
         }
     }
 
