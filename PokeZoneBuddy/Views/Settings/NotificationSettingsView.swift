@@ -44,7 +44,7 @@ struct NotificationSettingsView: View {
         .scrollIndicators(.hidden, axes: .vertical)
         .hideScrollIndicatorsCompat()
         .background(Color.appBackground)
-        .navigationTitle("Notifications")
+        .navigationTitle("settings.notifications.title")
         #if os(iOS)
         .navigationBarTitleDisplayMode(.large)
         #endif
@@ -98,7 +98,7 @@ struct NotificationSettingsView: View {
                         }
                     }
                 } label: {
-                    Text("Enable Notifications")
+                    Text("notifications.enable.title")
                         .font(.system(size: 14, weight: .semibold))
                         .foregroundStyle(.white)
                         .frame(maxWidth: .infinity)
@@ -114,7 +114,7 @@ struct NotificationSettingsView: View {
                     openSettings()
                 } label: {
                     HStack {
-                        Text("Open Settings")
+                        Text("action.open_settings")
                             .font(.system(size: 14, weight: .semibold))
                         Spacer()
                         Image(systemName: "arrow.up.right")
@@ -152,7 +152,7 @@ struct NotificationSettingsView: View {
         VStack(spacing: 12) {
             HStack {
                 VStack(alignment: .leading, spacing: 4) {
-                    Text("Active Reminders")
+                    Text("reminders.active_title")
                         .font(.system(size: 13))
                         .foregroundStyle(.secondary)
 
@@ -170,7 +170,7 @@ struct NotificationSettingsView: View {
 
             Divider()
 
-            Text("Set reminders for events in their detail view")
+            Text("reminders.help.message")
                 .font(.system(size: 12))
                 .foregroundStyle(.secondary)
                 .frame(maxWidth: .infinity, alignment: .leading)
@@ -195,7 +195,7 @@ struct NotificationSettingsView: View {
     private var testingSection: some View {
         VStack(spacing: 12) {
             HStack {
-                Text("Testing")
+                Text("settings.testing.title")
                     .font(.system(size: 14, weight: .semibold))
                     .foregroundStyle(.secondary)
                     .textCase(.uppercase)
@@ -212,10 +212,10 @@ struct NotificationSettingsView: View {
                         .font(.system(size: 16))
 
                     VStack(alignment: .leading, spacing: 2) {
-                        Text("Send Test Notification")
+                        Text("notifications.action.send_test")
                             .font(.system(size: 14, weight: .medium))
 
-                        Text("Arrives in 5 seconds")
+                        Text("countdown.arrives_in_seconds")
                             .font(.system(size: 12))
                             .foregroundStyle(.secondary)
                     }

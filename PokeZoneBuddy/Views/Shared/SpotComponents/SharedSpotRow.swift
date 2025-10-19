@@ -45,7 +45,7 @@ struct SharedSpotRow: View {
                         .foregroundStyle(Color.systemYellow)
                         .symbolRenderingMode(.hierarchical)
                         .shadow(color: Color.systemYellow.opacity(0.3), radius: 2, x: 0, y: 1)
-                        .accessibilityLabel("Favorite spot")
+                        .accessibilityLabel("spots.action.favorite")
                 }
 
                 // Category badge - Right aligned
@@ -104,14 +104,14 @@ struct SharedSpotRow: View {
         Button {
             copyToClipboard()
         } label: {
-            Label("Copy Coordinates", systemImage: "doc.on.doc")
+            Label("spots.action.copy_coordinates", systemImage: "doc.on.doc")
         }
 
         if let onEdit = onEdit {
             Button {
                 onEdit()
             } label: {
-                Label("Edit", systemImage: "pencil")
+                Label("common.edit", systemImage: "pencil")
             }
         }
 
@@ -123,7 +123,7 @@ struct SharedSpotRow: View {
             Button(role: .destructive) {
                 onDelete()
             } label: {
-                Label("Delete", systemImage: "trash")
+                Label("common.delete", systemImage: "trash")
             }
         }
     }
@@ -135,7 +135,7 @@ struct SharedSpotRow: View {
             Image(systemName: "checkmark.circle.fill")
                 .foregroundStyle(Color.systemGreen)
                 .symbolRenderingMode(.hierarchical)
-            Text("Copied!")
+            Text("clipboard.copied")
                 .font(.caption)
                 .fontWeight(.semibold)
                 .foregroundStyle(.primary)

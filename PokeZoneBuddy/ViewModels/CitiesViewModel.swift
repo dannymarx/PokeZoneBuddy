@@ -329,7 +329,7 @@ final class CitiesViewModel {
             from: "\(latitude),\(longitude)"
         ) != nil else {
             AppLogger.viewModel.error("Spot-Validierung fehlgeschlagen: Ungültige Koordinaten")
-            errorMessage = "Invalid coordinates"
+            errorMessage = "validation.invalid_coordinates"
             showError = true
             return false
         }

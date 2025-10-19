@@ -592,7 +592,7 @@ struct EventsContentView: View {
                     .foregroundStyle(Color.systemBlue)
                 #endif
 
-                Text("PokeZone Buddy")
+                Text("app.name")
                     .font(.system(size: 16, weight: .semibold))
                     .foregroundStyle(.primary)
             }
