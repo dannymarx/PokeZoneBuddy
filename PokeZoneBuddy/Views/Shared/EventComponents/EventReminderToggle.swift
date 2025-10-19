@@ -31,7 +31,6 @@ struct EventReminderDetailView: View {
 
     @State private var isEnabled = false
     @State private var selectedOffset: ReminderOffset = .thirtyMinutes
-    @State private var showTimeOptions = false
 
     // MARK: - Init
 
@@ -47,10 +46,6 @@ struct EventReminderDetailView: View {
         .id(event.id)
         .task(id: event.id) {
             await loadNotifications()
-        }
-        .onDisappear {
-            // Reset state when view disappears
-            showTimeOptions = false
         }
         .onChange(of: notificationManager.authorizationStatus) { oldValue, newValue in
             Task {
@@ -110,24 +105,7 @@ struct EventReminderDetailView: View {
     }
 
     private var cardBody: some View {
-        VStack(spacing: 0) {
-            toggleSection
-
-            if isEnabled {
-                Divider()
-                timeSelectorButton
-
-                if showTimeOptions {
-                    Divider()
-                    timeOptionsMenu
-                }
-            }
-
-            if !notificationManager.isAuthorized {
-                Divider()
-                permissionWarning
-            }
-        }
+        toggleSection
     }
 
     private var contentPadding: CGFloat {
@@ -135,102 +113,96 @@ struct EventReminderDetailView: View {
     }
 
     private var toggleSection: some View {
-        Toggle(isOn: $isEnabled) {
+        VStack(alignment: .leading, spacing: layout == .embedded ? 4 : 8) {
             HStack(spacing: 12) {
-                Image(systemName: "bell.fill")
-                    .font(.system(size: 20))
-                    .foregroundStyle(Color.systemBlue)
-                    .frame(width: 36, height: 36)
-                    .background(
-                        Circle()
-                            .fill(Color.systemBlue.opacity(0.1))
-                    )
+                Toggle(isOn: $isEnabled) {
+                    Image(systemName: "bell.fill")
+                        .font(.system(size: 16))
+                        .foregroundStyle(isEnabled ? Color.systemBlue : .secondary)
+                        .frame(width: 28, height: 28)
+                        .background(
+                            Circle()
+                                .fill(Color.primary.opacity(0.08))
+                        )
+                }
+                .toggleStyle(.switch)
+                .disabled(!notificationManager.isAuthorized)
+                .onChange(of: isEnabled) { _, newValue in
+                    handleToggle(newValue)
+                }
 
                 VStack(alignment: .leading, spacing: 2) {
-                    Text("notifications.notify_before_event")
-                        .font(.system(size: 14, weight: .medium))
+                    Text(String(localized: "notifications.notify_before_event"))
+                        .font(.system(size: 13, weight: .medium))
 
-                    Text(isEnabled ? selectedOffset.displayName : "No reminders set")
-                        .font(.system(size: 12))
+                    Text(isEnabled ? selectedOffset.displayName : String(localized: "notifications.none_set"))
+                        .font(.system(size: 11))
                         .foregroundStyle(.secondary)
                 }
+
+                Spacer(minLength: 8)
+
+                if layout == .standalone {
+                    Menu {
+                        ForEach(ReminderOffset.allCases, id: \.self) { offset in
+                            Button {
+                                selectedOffset = offset
+                                updateReminder()
+                            } label: {
+                                HStack {
+                                    Text(offset.displayName)
+                                    if selectedOffset == offset {
+                                        Image(systemName: "checkmark")
+                                    }
+                                }
+                            }
+                        }
+                    } label: {
+                        HStack(spacing: 6) {
+                            Text(selectedOffset.shortDisplayName)
+                                .font(.system(size: 12, weight: .semibold))
+                            Image(systemName: "chevron.down")
+                                .font(.system(size: 10, weight: .medium))
+                        }
+                        .padding(.horizontal, 10)
+                        .padding(.vertical, 5)
+                        .background(
+                            RoundedRectangle(cornerRadius: 9, style: .continuous)
+                                .fill(Color.primary.opacity(0.06))
+                        )
+                    }
+                    .disabled(!isEnabled)
+                }
             }
-        }
-        .toggleStyle(.switch)
-        .disabled(!notificationManager.isAuthorized)
-        .onChange(of: isEnabled) { oldValue, newValue in
-            handleToggle(newValue)
-        }
-        .padding(contentPadding)
-    }
 
-    private var timeSelectorButton: some View {
-        Button {
-            showTimeOptions.toggle()
-        } label: {
-            HStack {
-                Text("notifications.time.label")
-                    .font(.system(size: 14, weight: .medium))
-                    .foregroundStyle(.primary)
+            if !notificationManager.isAuthorized {
+                if layout == .embedded {
+                    HStack(spacing: 6) {
+                        Image(systemName: "exclamationmark.triangle")
+                            .font(.system(size: 11, weight: .semibold))
+                            .foregroundStyle(.tertiary)
 
-                Spacer()
+                        Text(String(localized: "notifications.enable.instruction"))
+                            .font(.system(size: 11))
+                            .foregroundStyle(.secondary)
+                            .lineLimit(1)
+                            .truncationMode(.tail)
 
-                Text(selectedOffset.shortDisplayName)
-                    .font(.system(size: 14))
-                    .foregroundStyle(Color.systemBlue)
+                        Spacer(minLength: 4)
 
-                Image(systemName: "chevron.right")
-                    .font(.system(size: 12))
-                    .foregroundStyle(.tertiary)
-                    .rotationEffect(.degrees(showTimeOptions ? 90 : 0))
-                    .animation(.spring(response: 0.3), value: showTimeOptions)
-            }
-            .padding(contentPadding)
-            .contentShape(Rectangle())
-        }
-        .buttonStyle(.plain)
-    }
-
-    private var timeOptionsMenu: some View {
-        VStack(spacing: 0) {
-            ForEach(ReminderOffset.allCases, id: \.self) { offset in
-                timeOptionButton(for: offset)
-
-                if offset != ReminderOffset.allCases.last {
-                    Divider()
-                        .padding(.leading, contentPadding)
+                        Button(String(localized: "action.open_settings")) {
+                            openSettings()
+                        }
+                        .buttonStyle(.borderless)
+                        .font(.system(size: 11, weight: .semibold))
+                    }
+                } else {
+                    permissionWarning
                 }
             }
         }
-    }
-
-    private func timeOptionButton(for offset: ReminderOffset) -> some View {
-        Button {
-            withAnimation(.spring(response: 0.3)) {
-                selectedOffset = offset
-                showTimeOptions = false
-            }
-            updateReminder()
-        } label: {
-            HStack {
-                Text(offset.displayName)
-                    .font(.system(size: 14))
-                    .foregroundStyle(.primary)
-
-                Spacer()
-
-                if offset == selectedOffset {
-                    Image(systemName: "checkmark")
-                        .font(.system(size: 14, weight: .semibold))
-                        .foregroundStyle(Color.systemBlue)
-                }
-            }
-            .padding(.horizontal, contentPadding)
-            .padding(.vertical, 12)
-            .background(offset == selectedOffset ? Color.systemBlue.opacity(0.1) : Color.clear)
-            .contentShape(Rectangle())
-        }
-        .buttonStyle(.plain)
+        .padding(.vertical, layout == .standalone ? 12 : 6)
+        .padding(.horizontal, contentPadding)
     }
 
     private var permissionWarning: some View {
@@ -238,23 +210,23 @@ struct EventReminderDetailView: View {
             Image(systemName: "exclamationmark.triangle.fill")
                 .foregroundStyle(Color.systemOrange)
 
-            Text("notifications.enable.instruction")
+            Text(String(localized: "notifications.enable.instruction"))
                 .font(.system(size: 12))
                 .foregroundStyle(.secondary)
 
             Spacer()
 
-            Button("action.open_settings") {
+            Button(String(localized: "action.open_settings")) {
                 openSettings()
             }
+            .buttonStyle(.borderless)
             .font(.system(size: 12, weight: .medium))
-            .foregroundStyle(Color.systemBlue)
         }
-        .padding(contentPadding)
+        .padding(.top, 6)
     }
 
     // MARK: - Actions
-
+    
     private func loadNotifications() async {
         let preferencesManager = ReminderPreferencesManager(modelContext: modelContext)
         if let preferences = preferencesManager.getPreferences(for: event.id) {
@@ -265,38 +237,30 @@ struct EventReminderDetailView: View {
             selectedOffset = .thirtyMinutes
         }
     }
-
+    
     private func handleToggle(_ enabled: Bool) {
         Task {
             let preferencesManager = ReminderPreferencesManager(modelContext: modelContext)
-
             if enabled {
-                // Save preferences and schedule notification
                 preferencesManager.updatePreferences(for: event.id, offsets: [selectedOffset], isEnabled: true)
                 await notificationManager.scheduleNotifications(for: event, offsets: [selectedOffset])
             } else {
-                // Save preferences and cancel notification
                 preferencesManager.updatePreferences(for: event.id, offsets: [selectedOffset], isEnabled: false)
                 await notificationManager.cancelNotifications(for: event.id)
             }
         }
     }
-
+    
     private func updateReminder() {
         guard isEnabled else { return }
-
         Task {
             let preferencesManager = ReminderPreferencesManager(modelContext: modelContext)
-
-            // Update preferences with new offset
             preferencesManager.updatePreferences(for: event.id, offsets: [selectedOffset], isEnabled: true)
-
-            // Reschedule notifications
             await notificationManager.cancelNotifications(for: event.id)
             await notificationManager.scheduleNotifications(for: event, offsets: [selectedOffset])
         }
     }
-
+    
     private func openSettings() {
         #if os(iOS)
         if let url = URL(string: UIApplication.openSettingsURLString) {
@@ -324,7 +288,7 @@ struct EventReminderDetailView: View {
     )
 
     return VStack {
-        EventReminderDetailView(event: event)
+        EventReminderDetailView(event: event, layout: .embedded)
     }
     .padding()
 }
