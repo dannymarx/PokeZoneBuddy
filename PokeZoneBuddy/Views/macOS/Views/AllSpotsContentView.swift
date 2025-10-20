@@ -103,6 +103,7 @@ struct AllSpotsContentView: View {
             }
         }
         .listStyle(.inset)
+        .id(viewModel.dataVersion) // Force list recreation when data changes
     }
 
     // MARK: - Empty States

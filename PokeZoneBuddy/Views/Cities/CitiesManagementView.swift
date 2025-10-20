@@ -127,6 +127,7 @@ struct CitiesManagementView: View {
                         viewModel.removeCities(at: offsets)
                     }
                 }
+                .id(viewModel.dataVersion) // Force list recreation when data changes
 #if os(macOS)
                 .listStyle(.inset)
 #else
