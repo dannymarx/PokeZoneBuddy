@@ -7,6 +7,9 @@
 //
 
 import SwiftUI
+#if os(macOS)
+import AppKit
+#endif
 
 struct EventDetailView: View {
     
@@ -19,11 +22,13 @@ struct EventDetailView: View {
     @Environment(\.dynamicTypeSize) private var dynamicTypeSize
     @Environment(TimelineService.self) private var timelineService
     @Environment(\.colorScheme) private var colorScheme
+    @Environment(\.modelContext) private var modelContext
 #if os(macOS)
     @Environment(CalendarService.self) private var calendarService
 #endif
 
     private let timezoneService = TimezoneService.shared
+    private let notificationManager = NotificationManager.shared
     @State private var selectedCityIDs: Set<String> = []
 
     // Timeline Plans & Templates (v1.6.0)
@@ -35,6 +40,10 @@ struct EventDetailView: View {
     @State private var isExportingData = false
     @State private var exportError: String?
     @State private var showExportError = false
+    @State private var reminderEnabled = false
+    @State private var reminderOffset: ReminderOffset = .thirtyMinutes
+    @State private var reminderCityIdentifier: String?
+    @State private var isUpdatingReminder = false
 #if os(macOS)
     @State private var calendarSuccessCityName: String?
     @State private var calendarErrorMessage: String?
@@ -188,6 +197,7 @@ struct EventDetailView: View {
                 .onAppear {
                     syncSelectedCities()
                     loadTimelinePlansAndTemplates()
+                    loadReminderPreferences()
                 }
                 .onChange(of: selectableCityIdentifiers) { _, _ in
                     syncSelectedCities()
@@ -199,6 +209,7 @@ struct EventDetailView: View {
                     }
                     // Load plans for new event
                     loadTimelinePlansAndTemplates()
+                    loadReminderPreferences()
                 }
             }
             .frame(maxWidth: .infinity, maxHeight: .infinity)
@@ -362,11 +373,6 @@ struct EventDetailView: View {
                     EventMetaCell(item: item)
                 }
 
-                if event.isUpcoming {
-                    reminderTile
-                        .gridCellColumns(metaColumnCount)
-                        .padding(.top, usesCompactLayout ? 4 : 0)
-                }
             }
             .padding(.horizontal, 16)
             .padding(.top, 18)
@@ -381,22 +387,6 @@ struct EventDetailView: View {
                 .strokeBorder(Color.primary.opacity(0.08), lineWidth: 1)
         )
         .shadow(color: .black.opacity(0.05), radius: 12, x: 0, y: 4)
-    }
-
-    private var reminderTile: some View {
-        EventReminderDetailView(event: event, layout: .embedded)
-            .padding(.vertical, 10)
-            .padding(.horizontal, 12)
-            .background(
-                RoundedRectangle(cornerRadius: 14, style: .continuous)
-                    .fill(Color.primary.opacity(0.035))
-            )
-            .overlay(
-                RoundedRectangle(cornerRadius: 14, style: .continuous)
-                    .strokeBorder(Color.primary.opacity(0.08), lineWidth: 1)
-            )
-            .clipShape(RoundedRectangle(cornerRadius: 14, style: .continuous))
-            .padding(.horizontal, usesCompactLayout ? 0 : 4)
     }
 
     private var eventMetaItems: [EventMetaItem] {
@@ -829,6 +819,92 @@ struct EventDetailView: View {
                 }
                 .disabled(selectedCityIDs.isEmpty)
             }
+
+            Section {
+                Button {
+                    if reminderEnabled {
+                        disableReminders()
+                    } else {
+                        enableReminders(for: currentReminderCity())
+                    }
+                } label: {
+                    Label(
+                        reminderEnabled ? "Disable Notifications" : "Enable Notifications",
+                        systemImage: reminderEnabled ? "bell.slash" : "bell.fill"
+                    )
+                }
+                .disabled(isUpdatingReminder || (!notificationManager.isAuthorized && !reminderEnabled))
+
+                Menu {
+                    ForEach(ReminderOffset.allCases, id: \.self) { offset in
+                        Button {
+                            updateReminderOffset(to: offset)
+                        } label: {
+                            HStack {
+                                Text(offset.displayName)
+                                if reminderOffset == offset {
+                                    Image(systemName: "checkmark")
+                                }
+                            }
+                        }
+                    }
+                } label: {
+                    Label("Reminder Offset: \(reminderOffset.displayName)", systemImage: "timer")
+                }
+                .disabled(isUpdatingReminder)
+
+#if os(macOS)
+                Menu {
+                    if selectedTimelineCities.isEmpty {
+                        Text("Select a city to target notifications.")
+                            .foregroundStyle(.secondary)
+                    } else {
+                        Button {
+                            selectReminderCity(nil)
+                        } label: {
+                            HStack {
+                                Text("Default Timezone")
+                                if reminderCityIdentifier == nil {
+                                    Image(systemName: "checkmark")
+                                }
+                            }
+                        }
+                        ForEach(selectedTimelineCities) { city in
+                            Button {
+                                selectReminderCity(city)
+                            } label: {
+                                HStack {
+                                    Text(city.name)
+                                    if reminderCityIdentifier == city.timeZoneIdentifier {
+                                        Image(systemName: "checkmark")
+                                    }
+                                }
+                            }
+                        }
+                    }
+                } label: {
+                    Label(
+                        reminderCityMenuTitle,
+                        systemImage: "globe"
+                    )
+                }
+                .disabled(isUpdatingReminder)
+
+                if !notificationManager.isAuthorized {
+                    Button(String(localized: "action.open_system_settings")) {
+                        openNotificationSettings()
+                    }
+                    .disabled(isUpdatingReminder)
+                }
+#endif
+            } header: {
+#if os(macOS)
+                Text("Event Notifications")
+#else
+                EmptyView()
+#endif
+            }
+
 #if os(macOS)
             Section(String(localized: "calendar.action.add")) {
                 let cities = selectedTimelineCities
@@ -1024,7 +1100,130 @@ struct EventDetailView: View {
         } else {
             selectedCityIDs = selectedCityIDs.intersection(validIDs)
         }
+
+        if let currentID = reminderCityIdentifier,
+           !selectedTimelineCities.contains(where: { $0.timeZoneIdentifier == currentID }) {
+            reminderCityIdentifier = selectedTimelineCities.first?.timeZoneIdentifier
+        } else if reminderCityIdentifier == nil {
+            reminderCityIdentifier = selectedTimelineCities.first?.timeZoneIdentifier
+        }
     }
+
+    // MARK: - Reminder Helpers
+
+    private func loadReminderPreferences() {
+        let manager = ReminderPreferencesManager(modelContext: modelContext)
+        if let preferences = manager.getPreferences(for: event.id) {
+            reminderEnabled = preferences.isEnabled
+            reminderOffset = preferences.enabledOffsets.first ?? .thirtyMinutes
+        } else {
+            reminderEnabled = false
+            reminderOffset = .thirtyMinutes
+        }
+
+        if reminderCityIdentifier == nil {
+            reminderCityIdentifier = selectedTimelineCities.first?.timeZoneIdentifier
+        }
+
+        Task {
+            await notificationManager.updateAuthorizationStatus()
+        }
+    }
+
+    private func enableReminders(for city: FavoriteCity?) {
+        reminderEnabled = true
+        reminderCityIdentifier = city?.timeZoneIdentifier ?? reminderCityIdentifier ?? selectedTimelineCities.first?.timeZoneIdentifier
+        rescheduleReminders()
+    }
+
+    private func disableReminders() {
+        reminderEnabled = false
+        rescheduleReminders()
+    }
+
+    private func updateReminderOffset(to offset: ReminderOffset) {
+        guard reminderOffset != offset else { return }
+        reminderOffset = offset
+        if reminderEnabled {
+            rescheduleReminders()
+        } else {
+            Task { await MainActor.run { updateReminderPreferences(isEnabled: false) } }
+        }
+    }
+
+    private func selectReminderCity(_ city: FavoriteCity?) {
+        reminderCityIdentifier = city?.timeZoneIdentifier
+        if reminderEnabled {
+            rescheduleReminders()
+        }
+    }
+
+    private func currentReminderCity() -> FavoriteCity? {
+        if let identifier = reminderCityIdentifier,
+           let city = selectedTimelineCities.first(where: { $0.timeZoneIdentifier == identifier }) {
+            return city
+        }
+        return selectedTimelineCities.first
+    }
+
+    private var reminderCityMenuTitle: String {
+        if let identifier = reminderCityIdentifier,
+           let city = selectedTimelineCities.first(where: { $0.timeZoneIdentifier == identifier }) {
+            return city.name
+        }
+        return "Default Timezone"
+    }
+
+    private func rescheduleReminders() {
+        guard !isUpdatingReminder else { return }
+        isUpdatingReminder = true
+
+        let cityIdentifier = resolvedReminderCityIdentifier()
+        let offset = reminderOffset
+        let enabled = reminderEnabled
+
+        Task {
+            await MainActor.run {
+                updateReminderPreferences(isEnabled: enabled)
+            }
+
+            await notificationManager.cancelNotifications(for: event.id)
+
+            if enabled {
+                if let cityIdentifier {
+                    await notificationManager.scheduleNotifications(for: event, city: cityIdentifier, offsets: [offset])
+                } else {
+                    await notificationManager.scheduleNotifications(for: event, offsets: [offset])
+                }
+            }
+
+            await MainActor.run {
+                isUpdatingReminder = false
+            }
+        }
+    }
+
+    private func resolvedReminderCityIdentifier() -> String? {
+        if let identifier = reminderCityIdentifier,
+           selectedTimelineCities.contains(where: { $0.timeZoneIdentifier == identifier }) {
+            return identifier
+        }
+        return nil
+    }
+
+    @MainActor
+    private func updateReminderPreferences(isEnabled: Bool) {
+        let manager = ReminderPreferencesManager(modelContext: modelContext)
+        manager.updatePreferences(for: event.id, offsets: [reminderOffset], isEnabled: isEnabled)
+    }
+
+#if os(macOS)
+    private func openNotificationSettings() {
+        if let url = URL(string: "x-apple.systempreferences:com.apple.preference.notifications") {
+            NSWorkspace.shared.open(url)
+        }
+    }
+#endif
 }
 
 // MARK: - Event Meta
