@@ -54,9 +54,6 @@ struct SpotListView: View {
                 stackLayout
             }
         }
-#if os(macOS)
-        .frame(minWidth: 760, minHeight: 640)
-#endif
         .sheet(isPresented: $showingAddSpot) {
             AddSpotSheet(city: city, viewModel: viewModel)
         }
@@ -229,7 +226,7 @@ struct SpotListView: View {
         List {
             ForEach(spots, id: \.persistentModelID) { spot in
                 NavigationLink(value: spot.persistentModelID) {
-                    SpotRowView(
+                    SharedSpotRow(
                         spot: spot,
                         onEdit: { editingSpot = spot },
                         onDelete: { deleteSpot(spot) }
@@ -276,7 +273,7 @@ struct SpotListView: View {
         } label: {
             Label(String(localized: "spots.action.edit"), systemImage: "pencil")
         }
-        .tint(.blue)
+        .tint(.systemBlue)
     }
 
     /// Delete Button für Swipe Actions
@@ -287,7 +284,7 @@ struct SpotListView: View {
         } label: {
             Label(String(localized: "spots.action.delete"), systemImage: "trash")
         }
-        .tint(.red)
+        .tint(.systemRed)
     }
 
     /// Favorite Toggle Button für Swipe Actions
@@ -302,7 +299,7 @@ struct SpotListView: View {
                 Label(String(localized: "favorites.add"), systemImage: "star")
             }
         }
-        .tint(.yellow)
+        .tint(.systemYellow)
     }
 
     // MARK: - View Components
@@ -334,7 +331,9 @@ struct SpotListView: View {
 
     /// Aktuelle Liste der Spots für die Stadt
     private var spots: [CitySpot] {
-        viewModel.getSpots(for: city)
+        // Force recomputation when dataVersion changes
+        _ = viewModel.dataVersion
+        return viewModel.getSpots(for: city)
     }
 
     /// Layout-Style basierend auf Plattform und Size Class
@@ -486,9 +485,9 @@ private struct SimpleSpotRow: View {
                 if spot.isFavorite {
                     Image(systemName: "star.fill")
                         .font(.system(size: 12))
-                        .foregroundStyle(.yellow)
+                        .foregroundStyle(Color.systemYellow)
                         .symbolRenderingMode(.hierarchical)
-                        .shadow(color: .yellow.opacity(0.3), radius: 2, x: 0, y: 1)
+                        .shadow(color: Color.systemYellow.opacity(0.3), radius: 2, x: 0, y: 1)
                 }
 
                 // Category badge - Right aligned
@@ -539,10 +538,10 @@ private struct SimpleSpotRow: View {
 
     private var categoryColor: Color {
         switch spot.category {
-        case .pokestop: return .blue
-        case .gym: return .red
-        case .meetingPoint: return .purple
-        case .other: return .gray
+        case .pokestop: return .systemBlue
+        case .gym: return .systemRed
+        case .meetingPoint: return .systemPurple
+        case .other: return .systemGray
         }
     }
 }

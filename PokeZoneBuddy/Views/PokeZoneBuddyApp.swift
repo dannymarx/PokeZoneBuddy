@@ -13,6 +13,12 @@ import UserNotifications
 @main
 struct PokeZoneBuddyApp: App {
 
+    // MARK: - App Delegate (macOS)
+
+    #if os(macOS)
+    @NSApplicationDelegateAdaptor(AppDelegate.self) var appDelegate
+    #endif
+
     // MARK: - Initialization
 
     init() {
@@ -21,8 +27,7 @@ struct PokeZoneBuddyApp: App {
     }
 
     // MARK: - SwiftData Container
-    @AppStorage(ThemePreference.storageKey) private var themePreferenceRaw = ThemePreference.system.rawValue
-    
+
     /// SwiftData ModelContainer for local persistence
     /// Stores Events, FavoriteCities, and FavoriteEvents locally (no CloudKit)
     /// Nested models (SpotlightDetails, RaidDetails, etc.) are automatically discovered via @Relationship
@@ -48,17 +53,20 @@ struct PokeZoneBuddyApp: App {
     }()
     
     // MARK: - Services (Version 0.4)
-    
+
     /// Network connectivity monitor
     @State private var networkMonitor = NetworkMonitor()
-    
+
     /// Calendar service for EventKit integration (macOS only)
     #if os(macOS)
     @State private var calendarService = CalendarService()
     #endif
-    
-    private var currentTheme: ThemePreference {
-        ThemePreference(rawValue: themePreferenceRaw) ?? .system
+
+    /// Theme preference with proper reactive binding
+    @AppStorage(ThemePreference.storageKey) private var themePreferenceRaw = ThemePreference.system.rawValue
+
+    private var currentTheme: ColorScheme? {
+        (ThemePreference(rawValue: themePreferenceRaw) ?? .system).colorScheme
     }
 
     // MARK: - Scene
@@ -68,7 +76,7 @@ struct PokeZoneBuddyApp: App {
             #if os(iOS)
             MainTabView()
                 .environment(networkMonitor)
-                .preferredColorScheme(currentTheme.colorScheme)
+                .preferredColorScheme(currentTheme)
                 .onAppear {
                     setupBackgroundRefresh()
                 }
@@ -76,7 +84,7 @@ struct PokeZoneBuddyApp: App {
             MacOSMainView()
                 .environment(networkMonitor)
                 .environment(calendarService)
-                .preferredColorScheme(currentTheme.colorScheme)
+                .preferredColorScheme(currentTheme)
                 .onAppear {
                     setupBackgroundRefresh()
                 }
@@ -84,8 +92,8 @@ struct PokeZoneBuddyApp: App {
         }
         .modelContainer(sharedModelContainer)
         #if os(macOS)
-        .defaultSize(width: 1200, height: 800)
-        .windowStyle(.hiddenTitleBar)
+        .defaultSize(width: 1200, height: 700)
+        .windowStyle(.automatic)
         .commands {
             // Refresh Command for macOS Menu Bar
             CommandGroup(after: .newItem) {

@@ -35,6 +35,7 @@ struct MacOSMainView: View {
                 loadingView
             }
         }
+        .frame(minWidth: 0, maxWidth: .infinity, minHeight: 0, maxHeight: .infinity)
         .onAppear {
             if eventsViewModel == nil {
                 initializeViewModels()
@@ -83,6 +84,7 @@ private struct MacOSContentView: View {
     @State private var selectedSpot: CitySpot?
     @State private var editingSpot: CitySpot?
     @State private var columnVisibility: NavigationSplitViewVisibility = .all
+    @State private var showNotificationSettings = false
 
     // MARK: - Body
 
@@ -100,18 +102,23 @@ private struct MacOSContentView: View {
                     selectedSpot = spot
                 }
             )
-            .navigationSplitViewColumnWidth(min: 220, ideal: 260, max: 320)
+            .navigationSplitViewColumnWidth(ideal: 240)
+            .frame(minWidth: 0, maxWidth: .infinity, minHeight: 0, maxHeight: .infinity)
 
         } content: {
             // Content (middle column)
             contentColumn
-                .navigationSplitViewColumnWidth(min: 420, ideal: 480, max: 600)
+                .navigationSplitViewColumnWidth(ideal: 450)
+                .frame(minWidth: 0, maxWidth: .infinity, minHeight: 0, maxHeight: .infinity)
 
         } detail: {
             // Detail (right column)
             detailColumn
+                .navigationSplitViewColumnWidth(ideal: 400)
+                .frame(minWidth: 0, maxWidth: .infinity, minHeight: 0, maxHeight: .infinity)
         }
         .navigationSplitViewStyle(.balanced)
+        .frame(minWidth: 0, maxWidth: .infinity, minHeight: 0, maxHeight: .infinity)
         .sheet(isPresented: $showAddCity) {
             AddCitySheet(viewModel: citiesViewModel)
                 .presentationSizing(.fitted)
@@ -132,9 +139,13 @@ private struct MacOSContentView: View {
             EditSpotSheet(spot: spot, viewModel: citiesViewModel)
                 .presentationSizing(.fitted)
         }
-        .onChange(of: selectedSidebarItem) { _, newValue in
+        .onChange(of: selectedSidebarItem) { oldValue, newValue in
             if newValue == .settings {
                 columnVisibility = .all
+            }
+            // Clear notification settings when leaving settings
+            if oldValue == .settings && newValue != .settings {
+                showNotificationSettings = false
             }
         }
         .onReceive(NotificationCenter.default.publisher(for: .refreshEvents)) { _ in
@@ -189,7 +200,12 @@ private struct MacOSContentView: View {
             )
 
         case .settings:
-            SettingsView(displayMode: .primaryOnly, showsDismissButton: false)
+            SettingsView(
+                displayMode: .primaryOnly,
+                showsDismissButton: false,
+                citiesViewModel: citiesViewModel,
+                showNotificationSettings: $showNotificationSettings
+            )
         }
     }
 
@@ -229,7 +245,11 @@ private struct MacOSContentView: View {
             }
 
         case .settings:
-            SettingsView(displayMode: .supplementaryOnly, showsDismissButton: false)
+            if showNotificationSettings {
+                NotificationSettingsView()
+            } else {
+                SettingsSupplementaryPane()
+            }
         }
     }
 
@@ -288,13 +308,13 @@ enum SidebarItem: String, CaseIterable, Identifiable {
     var accentColor: Color {
         switch self {
         case .events:
-            return .blue
+            return .systemBlue
         case .cities:
-            return .purple
+            return .systemPurple
         case .allSpots:
-            return .green
+            return .systemGreen
         case .settings:
-            return .gray
+            return .systemGray
         }
     }
 }

@@ -37,9 +37,10 @@ final class Event {
     /// Wenn isGlobalTime = false: Local timezone des Users
     var endTime: Date
     
-    /// Gibt an ob das Event global zur gleichen Zeit startet (UTC)
-    /// true = Event startet global zur selben Zeit (hat "Z" im Datum)
-    /// false = Event startet basierend auf lokaler Zeit
+    /// Gibt an ob die Zeit in UTC gespeichert ist (technische Bedeutung)
+    /// true = Zeit ist in UTC (hat "Z" im Datum) → Location-specific event (z.B. Safari Zone)
+    /// false = Zeit ist als lokale Zeitkomponenten gespeichert → Global event (alle spielen zur gleichen lokalen Zeit)
+    /// HINWEIS: Name ist technisch, nicht gameplay-bezogen! Für UI-Anzeige invertieren.
     var isGlobalTime: Bool
     
     /// Optionale Bild-URL für Event-Grafik
@@ -270,21 +271,21 @@ extension Event {
     /// Die tatsächliche Startzeit unter Berücksichtigung von isGlobalTime
     var actualStartTime: Date {
         if isGlobalTime {
-            // Global event: Die Zeit ist bereits in UTC
+            // Location-specific event: Die Zeit ist bereits in UTC
             return startTime
         } else {
-            // Local event: UTC-Komponenten als lokale Zeit interpretieren
+            // Global event: UTC-Komponenten als lokale Zeit interpretieren
             return convertLocalTimeToUserTime(startTime)
         }
     }
-    
+
     /// Die tatsächliche Endzeit unter Berücksichtigung von isGlobalTime
     var actualEndTime: Date {
         if isGlobalTime {
-            // Global event: Die Zeit ist bereits in UTC
+            // Location-specific event: Die Zeit ist bereits in UTC
             return endTime
         } else {
-            // Local event: UTC-Komponenten als lokale Zeit interpretieren
+            // Global event: UTC-Komponenten als lokale Zeit interpretieren
             return convertLocalTimeToUserTime(endTime)
         }
     }
@@ -318,40 +319,7 @@ extension Event {
             return String(format: String(localized: "duration.hours_minutes_short"), hours, minutes)
         }
     }
-    
-    /// Icon basierend auf Event-Features
-    var eventIcon: String {
-        if hasSpawns && hasFieldResearchTasks {
-            return "star.fill"
-        } else if hasSpawns {
-            return "location.fill"
-        } else if hasFieldResearchTasks {
-            return "doc.text.fill"
-        } else {
-            return "calendar"
-        }
-    }
-    
-    /// Event Type Color für farbcodierte Badges
-    var eventTypeColor: String {
-        switch eventType {
-        case "community-day":
-            return "green"
-        case "raid-hour", "raid-day", "raid-battles", "raid-weekend":
-            return "red"
-        case "pokemon-spotlight-hour":
-            return "yellow"
-        case "go-battle-league":
-            return "purple"
-        case "research", "ticketed-event":
-            return "blue"
-        case "season":
-            return "orange"
-        default:
-            return "gray"
-        }
-    }
-    
+
     /// Countdown Text für kommende Events
     var countdownText: String? {
         guard isUpcoming else { return nil }

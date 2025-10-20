@@ -430,7 +430,7 @@ private struct CityCard: View {
                         .foregroundStyle(.tertiary)
                     Text(city.formattedUTCOffset)
                         .font(.system(size: 11, weight: .medium))
-                        .foregroundStyle(.blue)
+                        .foregroundStyle(Color.systemBlue)
                 }
             }
             .padding(12)
@@ -445,7 +445,7 @@ private struct CityCard: View {
                         LinearGradient(
                             colors: [
                                 .white.opacity(isHovered ? 0.4 : 0.2),
-                                .blue.opacity(isHovered ? 0.3 : 0.1)
+                                .systemBlue.opacity(isHovered ? 0.3 : 0.1)
                             ],
                             startPoint: .topLeading,
                             endPoint: .bottomTrailing
@@ -454,7 +454,7 @@ private struct CityCard: View {
                     )
             )
             .shadow(
-                color: .blue.opacity(isHovered ? 0.2 : 0.1),
+                color: Color.systemBlue.opacity(isHovered ? 0.2 : 0.1),
                 radius: isHovered ? 10 : 6,
                 x: 0,
                 y: isHovered ? 4 : 2
@@ -469,82 +469,11 @@ private struct CityCard: View {
     }
 }
 
-// MARK: - Event Filter
-
-enum EventFilter: String, CaseIterable {
-    case all = "filter.all"
-    case live = "filter.live"
-    case upcoming = "filter.upcoming"
-    case past = "filter.past"
-    
-    var icon: String {
-        switch self {
-        case .all: return "calendar"
-        case .live: return "circle.fill"
-        case .upcoming: return "clock.fill"
-        case .past: return "checkmark.circle.fill"
-        }
-    }
-    
-    var color: Color {
-        switch self {
-        case .all: return .blue
-        case .live: return .green
-        case .upcoming: return .orange
-        case .past: return .gray
-        }
-    }
-
-    var localizedKey: LocalizedStringKey { .init(self.rawValue) }
-}
+// MARK: - Events Layout Style
 
 enum EventsLayoutStyle {
     case split
     case compact
-}
-
-// MARK: - Filter Button
-
-private struct FilterButton: View {
-    let filter: EventFilter
-    let isSelected: Bool
-    let count: Int
-    let action: () -> Void
-    
-    var body: some View {
-        Button(action: action) {
-            HStack(spacing: 6) {
-                Image(systemName: filter.icon)
-                    .font(.system(size: 11, weight: .semibold))
-
-                Text(filter.localizedKey)
-
-                if count > 0 {
-                    Text("\(count)")
-                        .font(.system(size: 11, weight: .bold))
-                        .foregroundStyle(isSelected ? filter.color : .secondary)
-                        .padding(.horizontal, 6)
-                        .padding(.vertical, 2)
-                        .background(
-                            Capsule()
-                                .fill(isSelected ? filter.color.opacity(0.2) : Color.secondary.opacity(0.15))
-                        )
-                }
-            }
-            .padding(.horizontal, 14)
-            .padding(.vertical, 8)
-            .background(
-                RoundedRectangle(cornerRadius: 10, style: .continuous)
-                    .fill(isSelected ? filter.color.opacity(0.15) : Color.clear)
-            )
-            .overlay(
-                RoundedRectangle(cornerRadius: 10, style: .continuous)
-                    .strokeBorder(isSelected ? filter.color.opacity(0.4) : Color.secondary.opacity(0.2), lineWidth: 1.5)
-            )
-            .foregroundStyle(isSelected ? filter.color : .secondary)
-        }
-        .buttonStyle(.plain)
-    }
 }
 
 // MARK: - Events Content View
@@ -559,6 +488,7 @@ struct EventsContentView: View {
     @State private var selectedFilter: EventFilter = .all
     @State private var filterConfig = FilterConfiguration()
     @State private var showFilterSheet = false
+    @State private var showAllPastEvents = false
     
     var body: some View {
         VStack(spacing: 0) {
@@ -594,12 +524,11 @@ struct EventsContentView: View {
         .navigationBarTitleDisplayMode(.large)
         .toolbar {
             ToolbarItem(placement: .topBarTrailing) {
-                Button {
-                    Task { await viewModel.refreshEvents() }
-                } label: {
-                    Label(String(localized: "events.refresh.help"), systemImage: "arrow.clockwise")
-                }
-                .disabled(viewModel.isLoading)
+                StatefulRefreshToolbarButton(
+                    onRefresh: { await viewModel.refreshEvents() },
+                    refreshState: viewModel.refreshState,
+                    isDisabled: viewModel.isLoading
+                )
             }
 
             ToolbarItem(placement: .topBarTrailing) {
@@ -638,13 +567,36 @@ struct EventsContentView: View {
         .padding(.vertical, 8)
         .padding(.horizontal)
         .frame(maxWidth: .infinity)
-        .background(Color.orange)
+        .background(Color.systemOrange)
     }
 
     // MARK: - Header View (macOS only)
 
     private var headerView: some View {
         HStack {
+            // App Header
+            HStack(spacing: 10) {
+                #if os(macOS)
+                Image(nsImage: NSImage(named: "AppIcon") ?? NSImage())
+                    .resizable()
+                    .frame(width: 28, height: 28)
+                    .clipShape(RoundedRectangle(cornerRadius: 6, style: .continuous))
+                    .overlay(
+                        RoundedRectangle(cornerRadius: 6, style: .continuous)
+                            .strokeBorder(.white.opacity(0.2), lineWidth: 0.5)
+                    )
+                #else
+                Image(systemName: "app.badge.fill")
+                    .resizable()
+                    .frame(width: 28, height: 28)
+                    .foregroundStyle(Color.systemBlue)
+                #endif
+
+                Text("app.name")
+                    .font(.system(size: 16, weight: .semibold))
+                    .foregroundStyle(.primary)
+            }
+
             Spacer()
 
             // Filter Button
@@ -653,23 +605,18 @@ struct EventsContentView: View {
             } label: {
                 Image(systemName: "line.3.horizontal.decrease.circle")
                     .font(.system(size: 14, weight: .semibold))
-                    .foregroundStyle(filterConfig.isActive ? .blue : .secondary)
+                    .foregroundStyle(filterConfig.isActive ? Color.systemBlue : .secondary)
             }
             .buttonStyle(.plain)
             .badge(filterConfig.activeFilterCount > 0 ? filterConfig.activeFilterCount : 0)
             .help(String(localized: "events.filter.help"))
 
             // Refresh Button
-            Button {
-                Task { await viewModel.refreshEvents() }
-            } label: {
-                Image(systemName: "arrow.clockwise")
-                    .font(.system(size: 14, weight: .semibold))
-                    .foregroundStyle(viewModel.isLoading ? .tertiary : .secondary)
-            }
-            .buttonStyle(.plain)
-            .disabled(viewModel.isLoading)
-            .help(String(localized: "events.refresh.help"))
+            StatefulRefreshButton(
+                onRefresh: { await viewModel.refreshEvents() },
+                refreshState: viewModel.refreshState,
+                isDisabled: viewModel.isLoading
+            )
         }
         .padding(.horizontal, 20)
         .padding(.vertical, 16)
@@ -766,7 +713,7 @@ struct EventsContentView: View {
                         }
                 }
             } header: {
-                sectionHeader(title: String(localized: "section.live_events"), icon: "circle.fill", color: .green)
+                sectionHeader(title: String(localized: "section.live_events"), icon: "circle.fill", color: Color.systemGreen)
             }
         }
         
@@ -784,7 +731,7 @@ struct EventsContentView: View {
                 sectionHeader(
                     title: String(localized: "section.upcoming_events"),
                     icon: "clock.fill",
-                    color: .orange,
+                    color: Color.systemOrange,
                     topPadding: filteredActiveEvents.isEmpty ? 8 : 20
                 )
             }
@@ -793,15 +740,51 @@ struct EventsContentView: View {
         // Past Events
         if !filteredPastEvents.isEmpty {
             Section {
-                ForEach(filteredPastEvents.prefix(5)) { event in
+                let eventsToShow = showAllPastEvents ? filteredPastEvents : Array(filteredPastEvents.prefix(5))
+
+                ForEach(eventsToShow) { event in
                     EventRow(event: event, isSelected: layout == .split && selectedEvent?.id == event.id, isPast: true)
                         .contentShape(Rectangle())
                         .onTapGesture {
                             onEventSelected(event)
                         }
                 }
+
+                // Show More/Less button
+                if filteredPastEvents.count > 5 {
+                    Button {
+                        withAnimation(.spring(response: 0.4, dampingFraction: 0.8)) {
+                            showAllPastEvents.toggle()
+                        }
+                    } label: {
+                        HStack {
+                            Spacer()
+                            HStack(spacing: 6) {
+                                Text(showAllPastEvents ? String(localized: "events.show_less") : String(localized: "events.show_more"))
+                                    .font(.system(size: 13, weight: .medium))
+                                Image(systemName: showAllPastEvents ? "chevron.up" : "chevron.down")
+                                    .font(.system(size: 11, weight: .semibold))
+                            }
+                            .foregroundStyle(Color.systemBlue)
+                            Spacer()
+                        }
+                        .padding(.vertical, 12)
+                        .padding(.horizontal, 20)
+                        .background(
+                            RoundedRectangle(cornerRadius: 10, style: .continuous)
+                                .fill(.ultraThinMaterial)
+                        )
+                        .overlay(
+                            RoundedRectangle(cornerRadius: 10, style: .continuous)
+                                .strokeBorder(Color.systemBlue.opacity(0.2), lineWidth: 1)
+                        )
+                    }
+                    .buttonStyle(.plain)
+                    .padding(.horizontal, 20)
+                    .padding(.top, 8)
+                }
             } header: {
-                sectionHeader(title: String(localized: "section.past_events"), icon: "checkmark.circle.fill", color: .gray, topPadding: 20)
+                sectionHeader(title: String(localized: "section.past_events"), icon: "checkmark.circle.fill", color: Color.systemGray, topPadding: 20)
             }
         }
     }
@@ -809,7 +792,7 @@ struct EventsContentView: View {
     @ViewBuilder
     private var liveEventsView: some View {
         if filteredActiveEvents.isEmpty {
-            emptyFilterState(icon: "circle.fill", message: String(localized: "filter.none.live"), color: .green)
+            emptyFilterState(icon: "circle.fill", message: String(localized: "filter.none.live"), color: Color.systemGreen)
         } else {
             ForEach(filteredActiveEvents) { event in
                 EventRow(event: event, isSelected: layout == .split && selectedEvent?.id == event.id, isActive: true)
@@ -824,7 +807,7 @@ struct EventsContentView: View {
     @ViewBuilder
     private var upcomingEventsView: some View {
         if filteredUpcomingEvents.isEmpty {
-            emptyFilterState(icon: "clock.fill", message: String(localized: "filter.none.upcoming"), color: .orange)
+            emptyFilterState(icon: "clock.fill", message: String(localized: "filter.none.upcoming"), color: Color.systemOrange)
         } else {
             ForEach(filteredUpcomingEvents) { event in
                 EventRow(event: event, isSelected: layout == .split && selectedEvent?.id == event.id)
@@ -839,7 +822,7 @@ struct EventsContentView: View {
     @ViewBuilder
     private var pastEventsView: some View {
         if filteredPastEvents.isEmpty {
-            emptyFilterState(icon: "checkmark.circle.fill", message: String(localized: "filter.none.past"), color: .gray)
+            emptyFilterState(icon: "checkmark.circle.fill", message: String(localized: "filter.none.past"), color: Color.systemGray)
         } else {
             ForEach(filteredPastEvents) { event in
                 EventRow(event: event, isSelected: layout == .split && selectedEvent?.id == event.id, isPast: true)
@@ -923,127 +906,6 @@ struct EventsContentView: View {
         .padding(.top, 32)
         .padding(.horizontal, 20)
         .padding(.bottom, 24)
-    }
-}
-
-// MARK: - Event Row
-
-private struct EventRow: View {
-    let event: Event
-    let isSelected: Bool
-    var isPast: Bool = false
-    var isActive: Bool = false
-    
-    private static let dateFormatter: DateFormatter = {
-        let formatter = DateFormatter()
-        formatter.dateStyle = .medium
-        formatter.timeStyle = .short
-        // Show UTC time components without timezone conversion
-        formatter.timeZone = TimeZone(secondsFromGMT: 0)
-        formatter.locale = Locale.current
-        return formatter
-    }()
-
-    private func formatEventDate(_ date: Date) -> String {
-        return Self.dateFormatter.string(from: date)
-    }
-    
-    var body: some View {
-        HStack(spacing: 12) {
-            // Event Thumbnail with Liquid Glass frame
-            if let imageURL = event.imageURL, let url = URL(string: imageURL) {
-                AsyncImage(url: url) { phase in
-                    switch phase {
-                    case .success(let image):
-                        image
-                            .resizable()
-                            .aspectRatio(contentMode: .fill)
-                    case .failure, .empty:
-                        Rectangle()
-                            .fill(.quaternary)
-                            .overlay(
-                                ProgressView()
-                                    .controlSize(.small)
-                            )
-                    @unknown default:
-                        Rectangle()
-                            .fill(.quaternary)
-                    }
-                }
-                .frame(width: 60, height: 60)
-                .clipShape(RoundedRectangle(cornerRadius: 10, style: .continuous))
-                .overlay(
-                    RoundedRectangle(cornerRadius: 10, style: .continuous)
-                        .strokeBorder(.white.opacity(0.2), lineWidth: 1)
-                )
-            }
-
-            VStack(alignment: .leading, spacing: 12) {
-                // Event Name & Countdown
-                HStack(alignment: .top) {
-                    VStack(alignment: .leading, spacing: 4) {
-                        Text(event.displayName)
-                            .font(.system(size: 15, weight: .semibold))
-                            .foregroundStyle(isPast ? .secondary : .primary)
-                            .lineLimit(2)
-
-                        Text(event.displayHeading)
-                            .captionStyle()
-                    }
-
-                    Spacer()
-
-                    CompactCountdownBadge(event: event)
-
-                    FavoriteButton(eventID: event.id)
-                        .padding(.leading, 4)
-                }
-
-                // Badges with Liquid Glass effect
-                HStack(spacing: 6) {
-                    ModernBadge(event.displayHeading, icon: "tag.fill", color: eventTypeColor)
-                        .liquidGlassBadge(color: eventTypeColor)
-
-                    if event.hasSpawns {
-                        ModernBadge(String(localized: "badge.spawns"), icon: "location.fill", color: .green)
-                            .liquidGlassBadge(color: .green)
-                    }
-                }
-
-                // Date
-                Text(formatEventDate(event.startTime))
-                    .font(.system(size: 12))
-                    .foregroundStyle(.secondary)
-                    .monospacedDigit()
-            }
-        }
-        .padding(14)
-        .liquidGlassEventCard(
-            isSelected: isSelected,
-            isActive: isActive,
-            accentColor: .accentColor
-        )
-        .padding(.horizontal, 20)
-        .opacity(isPast ? 0.6 : 1.0)
-        .animation(.spring(response: 0.4, dampingFraction: 0.75), value: isSelected)
-        .animation(.spring(response: 0.4, dampingFraction: 0.75), value: isActive)
-    }
-    
-    private var eventTypeColor: Color {
-        switch event.eventType {
-        case "community-day":
-            return .green
-        case "raid-hour", "raid-day", "raid-battles", "raid-weekend":
-            return .red
-        case "pokemon-spotlight-hour":
-            return .yellow
-        case "go-battle-league":
-            return .purple
-        case "research", "ticketed-event":
-            return .blue
-        default:
-            return .gray
-        }
     }
 }
 

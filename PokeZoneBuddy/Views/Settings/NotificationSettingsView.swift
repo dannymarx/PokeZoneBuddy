@@ -13,7 +13,6 @@ struct NotificationSettingsView: View {
 
     // MARK: - Environment
 
-    @Environment(\.dismiss) private var dismiss
     @Environment(\.modelContext) private var modelContext
 
     // MARK: - State
@@ -44,7 +43,7 @@ struct NotificationSettingsView: View {
         .scrollIndicators(.hidden, axes: .vertical)
         .hideScrollIndicatorsCompat()
         .background(Color.appBackground)
-        .navigationTitle("Notifications")
+        .navigationTitle("settings.notifications.title")
         #if os(iOS)
         .navigationBarTitleDisplayMode(.large)
         #endif
@@ -98,14 +97,14 @@ struct NotificationSettingsView: View {
                         }
                     }
                 } label: {
-                    Text("Enable Notifications")
+                    Text("notifications.enable.title")
                         .font(.system(size: 14, weight: .semibold))
                         .foregroundStyle(.white)
                         .frame(maxWidth: .infinity)
                         .padding(.vertical, 12)
                         .background(
                             RoundedRectangle(cornerRadius: 10, style: .continuous)
-                                .fill(.blue)
+                                .fill(Color.systemBlue)
                         )
                 }
                 .buttonStyle(.plain)
@@ -114,18 +113,18 @@ struct NotificationSettingsView: View {
                     openSettings()
                 } label: {
                     HStack {
-                        Text("Open Settings")
+                        Text("action.open_settings")
                             .font(.system(size: 14, weight: .semibold))
                         Spacer()
                         Image(systemName: "arrow.up.right")
                             .font(.system(size: 12))
                     }
-                    .foregroundStyle(.blue)
+                    .foregroundStyle(Color.systemBlue)
                     .padding(.vertical, 12)
                     .padding(.horizontal, 16)
                     .background(
                         RoundedRectangle(cornerRadius: 10, style: .continuous)
-                            .fill(.blue.opacity(0.1))
+                            .fill(Color.systemBlue.opacity(0.1))
                     )
                 }
                 .buttonStyle(.plain)
@@ -152,25 +151,25 @@ struct NotificationSettingsView: View {
         VStack(spacing: 12) {
             HStack {
                 VStack(alignment: .leading, spacing: 4) {
-                    Text("Active Reminders")
+                    Text("reminders.active_title")
                         .font(.system(size: 13))
                         .foregroundStyle(.secondary)
 
                     Text("\(pendingCount)")
                         .font(.system(size: 28, weight: .bold, design: .rounded))
-                        .foregroundStyle(.blue)
+                        .foregroundStyle(Color.systemBlue)
                 }
 
                 Spacer()
 
                 Image(systemName: "bell.badge.fill")
                     .font(.system(size: 24))
-                    .foregroundStyle(.blue.opacity(0.3))
+                    .foregroundStyle(Color.systemBlue.opacity(0.3))
             }
 
             Divider()
 
-            Text("Set reminders for events in their detail view")
+            Text("reminders.help.message")
                 .font(.system(size: 12))
                 .foregroundStyle(.secondary)
                 .frame(maxWidth: .infinity, alignment: .leading)
@@ -183,7 +182,7 @@ struct NotificationSettingsView: View {
         .overlay(
             RoundedRectangle(cornerRadius: 16, style: .continuous)
                 .strokeBorder(
-                    Color.blue.opacity(0.2),
+                    Color.systemBlue.opacity(0.2),
                     lineWidth: 1
                 )
         )
@@ -195,7 +194,7 @@ struct NotificationSettingsView: View {
     private var testingSection: some View {
         VStack(spacing: 12) {
             HStack {
-                Text("Testing")
+                Text("settings.testing.title")
                     .font(.system(size: 14, weight: .semibold))
                     .foregroundStyle(.secondary)
                     .textCase(.uppercase)
@@ -212,10 +211,10 @@ struct NotificationSettingsView: View {
                         .font(.system(size: 16))
 
                     VStack(alignment: .leading, spacing: 2) {
-                        Text("Send Test Notification")
+                        Text("notifications.action.send_test")
                             .font(.system(size: 14, weight: .medium))
 
-                        Text("Arrives in 5 seconds")
+                        Text("countdown.arrives_in_seconds")
                             .font(.system(size: 12))
                             .foregroundStyle(.secondary)
                     }
@@ -253,15 +252,15 @@ struct NotificationSettingsView: View {
     private var permissionColor: Color {
         switch authorizationStatus {
         case .authorized, .provisional:
-            return .green
+            return .systemGreen
         case .denied:
-            return .red
+            return .systemRed
         case .notDetermined:
-            return .blue
+            return .systemBlue
         case .ephemeral:
-            return .blue
+            return .systemBlue
         @unknown default:
-            return .gray
+            return .systemGray
         }
     }
 

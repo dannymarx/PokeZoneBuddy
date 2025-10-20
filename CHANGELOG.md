@@ -5,6 +5,33 @@ This project follows [Semantic Versioning](https://semver.org/).
 
 ---
 
+## [1.5.0] – 2025-10-20
+
+### Added
+- **Multi-City Planning Tool** – Revolutionary new feature for planning sequential event participation across multiple cities.
+  - Sequential timeline view showing event times across all favorite cities in chronological order
+  - Visual timeline with color-coded city entries and playing time indicators
+  - Smart travel gap detection between cities with automatic time calculations
+  - Optimal playing strategy suggestions to maximize multi-city participation
+  - Integrated directly into event detail views for seamless planning
+  - Supports unlimited favorite cities with automatic timezone conversion
+- **Enhanced Event Detail View** with integrated Multi-City Planning Tool access
+- **New App Logo** with refreshed branding and visual identity
+
+### Changed
+- Event detail views now prominently feature the Multi-City Planning Tool for better discoverability
+- Improved countdown overlays with better visual hierarchy
+- Settings view refinements for better organization and usability
+- Window management improvements on macOS for better multi-window workflows
+
+### Fixed
+- API service reliability improvements with better error handling
+- Notification scheduling edge cases for events spanning multiple days
+- Observable pattern refresh issues with event data updates
+- Music service state management on macOS
+
+---
+
 ## [1.4.0] – 2025-10-13
 
 ### Changed

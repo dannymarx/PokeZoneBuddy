@@ -19,6 +19,12 @@ struct EventDetailView: View {
     @Environment(\.dynamicTypeSize) private var dynamicTypeSize
     
     private let timezoneService = TimezoneService.shared
+    @State private var selectedCityIDs: Set<String> = []
+
+    private var eventImageURL: URL? {
+        guard let imageURL = event.imageURL else { return nil }
+        return URL(string: imageURL)
+    }
     
     // MARK: - Body
     
@@ -32,25 +38,35 @@ struct EventDetailView: View {
                         .id("top")
                     
                     // Event Image Header
-                    if let imageURL = event.imageURL, let url = URL(string: imageURL) {
+                    if let url = eventImageURL {
                         eventImageHeader(url: url)
                     }
                     
                     // Event Header
                     eventHeaderSection
                     
-                    // Countdown/Status
-                    EventCountdownView(event: event)
+                    // Countdown/Status (fallback when no image header)
+                    if eventImageURL == nil {
+                        EventCountdownView(event: event)
+                    }
                     
-                    // Event Info Cards
-                    eventInfoSection
+                    // Event Meta & Reminders
+                    eventMetaCard
                     
                     // Pokemon Details (Spotlight/Raid/CD)
                     pokemonDetailsSection
 
-                    // Event Reminder Settings
-                    if event.isUpcoming {
-                        EventReminderDetailView(event: event)
+                    // Multi-city Timeline (single-day events)
+                    if shouldDisplayMultiCitySection {
+                        if shouldShowTimeline(for: selectedTimelineCities) {
+                            EventTimelineView(
+                                event: event,
+                                favoriteCities: selectedTimelineCities
+                            )
+                            .transition(.opacity.combined(with: .scale))
+                        } else {
+                            timelineSelectionPlaceholder
+                        }
                     }
 
                     // Time Zones Section
@@ -74,6 +90,10 @@ struct EventDetailView: View {
             }
             .scrollIndicators(.hidden, axes: .vertical)
             .hideScrollIndicatorsCompat()
+            .onAppear(perform: syncSelectedCities)
+            .onChange(of: selectableCityIdentifiers) { _, _ in
+                syncSelectedCities()
+            }
             .onChange(of: event.id) { _, _ in
                 // Scroll to top when event changes
                 withAnimation(.easeOut(duration: 0.3)) {
@@ -110,8 +130,8 @@ struct EventDetailView: View {
                         .controlSize(.large)
                 }
                 .aspectRatio(16 / 9, contentMode: .fit)
-                .frame(maxWidth: .infinity)
-                .shadow(color: .black.opacity(0.05), radius: 10, y: 4)
+                    .frame(maxWidth: .infinity)
+                    .shadow(color: .black.opacity(0.05), radius: 10, y: 4)
             @unknown default:
                 RoundedRectangle(cornerRadius: 20, style: .continuous)
                     .fill(.quaternary.opacity(0.4))
@@ -119,6 +139,22 @@ struct EventDetailView: View {
                     .frame(maxWidth: .infinity)
                     .shadow(color: .black.opacity(0.05), radius: 10, y: 4)
             }
+        }
+        .overlay { countdownOverlay() }
+    }
+
+    private func countdownOverlay() -> some View {
+        GeometryReader { geometry in
+            VStack {
+                Spacer()
+
+                EventCountdownView(event: event)
+                    .frame(width: min(geometry.size.width * 0.6, 420))
+                    .padding(.bottom, 12)
+                    .shadow(color: Color.black.opacity(0.18), radius: 14, y: 6)
+            }
+            .frame(width: geometry.size.width, height: geometry.size.height, alignment: .bottom)
+            .allowsHitTesting(false)
         }
     }
     
@@ -128,12 +164,12 @@ struct EventDetailView: View {
         VStack(alignment: .leading, spacing: 20) {
             // Event Type Badge with Liquid Glass
             HStack {
-                ModernBadge(event.eventType, icon: "tag.fill", color: .blue)
-                    .liquidGlassBadge(color: .blue)
+                ModernBadge(event.eventType, icon: "tag.fill", color: Color.systemBlue)
+                    .liquidGlassBadge(color: Color.systemBlue)
 
                 if event.isCurrentlyActive {
-                    ModernBadge(String(localized: "badge.live_now"), icon: "circle.fill", color: .green)
-                        .liquidGlassBadge(color: .green)
+                    ModernBadge(String(localized: "badge.live_now"), icon: "circle.fill", color: Color.systemGreen)
+                        .liquidGlassBadge(color: Color.systemGreen)
                         .liquidGlassAnimated()
                 }
 
@@ -185,7 +221,7 @@ struct EventDetailView: View {
                         Text(String(localized: "link.view_on_leekduck"))
                     }
                     .font(.system(size: 13, weight: .medium))
-                    .foregroundStyle(.blue)
+                    .foregroundStyle(Color.systemBlue)
                 }
                 .buttonStyle(.plain)
             }
@@ -213,95 +249,161 @@ struct EventDetailView: View {
         }
     }
     
-    // MARK: - Event Info Section
-    
-    private var eventInfoSection: some View {
-        VStack(spacing: 16) {
-            infoRowLayout {
-                InfoCard(
-                    icon: "timer",
-                    title: String(localized: "info.duration"),
-                    value: event.formattedDuration,
-                    color: .blue
-                )
-                
-                InfoCard(
-                    icon: statusIcon,
-                    title: String(localized: "info.status"),
-                    value: statusText,
-                    color: statusColor
-                )
-            }
-            
-            infoRowLayout {
-                InfoCard(
-                    icon: "play.circle.fill",
-                    title: String(localized: "info.start"),
-                    value: formatEventTime(event.startTime),
-                    color: .green
-                )
-                
-                InfoCard(
-                    icon: "stop.circle.fill",
-                    title: String(localized: "info.end"),
-                    value: formatEventTime(event.endTime),
-                    color: .red
-                )
-            }
-            
-            // Full Date Card
-            VStack(alignment: .leading, spacing: 12) {
-                HStack {
-                    Image(systemName: "calendar")
-                        .font(.system(size: 20))
-                        .foregroundStyle(.secondary)
-                    
-                    Text(String(localized: "info.date"))
-                        .font(.system(size: 13, weight: .semibold))
-                        .foregroundStyle(.secondary)
-                        .textCase(.uppercase)
-                        .kerning(0.5)
+    // MARK: - Event Meta Card
+
+    private var eventMetaCard: some View {
+        VStack(spacing: 0) {
+            LazyVGrid(
+                columns: metaColumns,
+                alignment: .leading,
+                spacing: usesCompactLayout ? 12 : 16
+            ) {
+                ForEach(eventMetaItems) { item in
+                    EventMetaCell(item: item)
                 }
-                
-                Text(formatEventDateTime(event.startTime))
-                    .font(.system(size: 16, weight: .medium))
-                    .foregroundStyle(.primary)
+
+                if event.isUpcoming {
+                    reminderTile
+                        .gridCellColumns(metaColumnCount)
+                        .padding(.top, usesCompactLayout ? 4 : 0)
+                }
             }
-            .padding(16)
-            .frame(maxWidth: .infinity, alignment: .leading)
+            .padding(.horizontal, 16)
+            .padding(.top, 18)
+            .padding(.bottom, 18)
+        }
+        .background(
+            RoundedRectangle(cornerRadius: 16, style: .continuous)
+                .fill(.ultraThinMaterial)
+        )
+        .overlay(
+            RoundedRectangle(cornerRadius: 16, style: .continuous)
+                .strokeBorder(Color.primary.opacity(0.08), lineWidth: 1)
+        )
+        .shadow(color: .black.opacity(0.05), radius: 12, x: 0, y: 4)
+    }
+
+    private var reminderTile: some View {
+        EventReminderDetailView(event: event, layout: .embedded)
+            .padding(.vertical, 10)
+            .padding(.horizontal, 12)
             .background(
-                RoundedRectangle(cornerRadius: 12, style: .continuous)
-                    .fill(.quaternary.opacity(0.3))
+                RoundedRectangle(cornerRadius: 14, style: .continuous)
+                    .fill(Color.primary.opacity(0.035))
             )
+            .overlay(
+                RoundedRectangle(cornerRadius: 14, style: .continuous)
+                    .strokeBorder(Color.primary.opacity(0.08), lineWidth: 1)
+            )
+            .clipShape(RoundedRectangle(cornerRadius: 14, style: .continuous))
+            .padding(.horizontal, usesCompactLayout ? 0 : 4)
+    }
+
+    private var eventMetaItems: [EventMetaItem] {
+        [
+            EventMetaItem(
+                id: "duration",
+                title: String(localized: "info.duration"),
+                value: event.formattedDuration
+            ),
+            EventMetaItem(
+                id: "status",
+                title: String(localized: "info.status"),
+                value: statusText
+            ),
+            EventMetaItem(
+                id: "start",
+                title: String(localized: "info.start"),
+                value: formatEventTime(event.startTime)
+            ),
+            EventMetaItem(
+                id: "end",
+                title: String(localized: "info.end"),
+                value: formatEventTime(event.endTime)
+            ),
+            EventMetaItem(
+                id: "date",
+                title: String(localized: "info.date"),
+                value: formatEventDateTime(event.startTime)
+            )
+        ]
+    }
+
+    private var metaColumns: [GridItem] {
+        if usesCompactLayout {
+            return [GridItem(.flexible())]
+        } else {
+            return [
+                GridItem(.flexible(), spacing: 24),
+                GridItem(.flexible(), spacing: 24)
+            ]
         }
     }
-    
-    @ViewBuilder
-    private func infoRowLayout<Content: View>(@ViewBuilder content: () -> Content) -> some View {
-        if usesCompactLayout {
-            VStack(spacing: 16, content: content)
-        } else {
-            HStack(spacing: 16, content: content)
-        }
+
+    private var metaColumnCount: Int {
+        usesCompactLayout ? 1 : 2
     }
     
     // MARK: - Time Zones Section
-    
+
     private var timeZonesSection: some View {
         VStack(alignment: .leading, spacing: 16) {
-            Text(String(localized: "timezones.title"))
-                .font(.system(size: 20, weight: .semibold, design: .rounded))
-                .foregroundStyle(.primary)
-            
+            HStack(alignment: .firstTextBaseline, spacing: 12) {
+                Text(String(localized: "timezones.title"))
+                    .font(.system(size: 20, weight: .semibold, design: .rounded))
+                    .foregroundStyle(.primary)
+
+                Spacer()
+
+                if shouldDisplayMultiCitySection && !selectedCityIDs.isEmpty {
+                    Button {
+                        withAnimation(.easeInOut(duration: 0.2)) {
+                            selectedCityIDs.removeAll()
+                        }
+                    } label: {
+                        Label(
+                            String(localized: "timeline.selection.deselect_all"),
+                            systemImage: "xmark.circle.fill"
+                        )
+                        .font(.system(size: 13, weight: .semibold))
+                        .labelStyle(.titleAndIcon)
+                    }
+                    .buttonStyle(.plain)
+                    .accessibilityLabel(String(localized: "timeline.selection.deselect_all"))
+                }
+            }
+
             Text(String(localized: "timezones.subtitle"))
                 .secondaryStyle()
-            
-            VStack(spacing: 12) {
+
+            // Adaptive grid layout
+            LazyVGrid(
+                columns: gridColumns,
+                alignment: .leading,
+                spacing: 16
+            ) {
                 ForEach(favoriteCities) { city in
-                    CityTimeCard(event: event, city: city)
+                    CityTimeCard(
+                        event: event,
+                        city: city,
+                        selectionBinding: timelineSelectionBinding(for: city)
+                    )
                 }
             }
         }
+    }
+
+    // Grid column configuration - responsive to window size
+    private var gridColumns: [GridItem] {
+        [GridItem(.adaptive(minimum: cardMinimumWidth, maximum: cardMaximumWidth), spacing: 16)]
+    }
+
+    private var cardMinimumWidth: CGFloat {
+        usesCompactLayout ? 280 : 320
+    }
+
+    private var cardMaximumWidth: CGFloat {
+        usesCompactLayout ? 400 : 480
     }
     
     // MARK: - No Cities Placeholder
@@ -363,13 +465,96 @@ struct EventDetailView: View {
     private var contentAlignment: HorizontalAlignment {
         usesCompactLayout ? .leading : .center
     }
+
+    private var timelineSelectionPlaceholder: some View {
+        VStack(alignment: .leading, spacing: 16) {
+            HStack(spacing: 8) {
+                Image(systemName: "map.fill")
+                    .font(.system(size: 18, weight: .semibold))
+                    .foregroundStyle(Color.systemBlue)
+
+                Text(String(localized: "timeline.planning.title"))
+                    .font(.system(size: 20, weight: .semibold, design: .rounded))
+                    .foregroundStyle(.primary)
+            }
+
+            Text(String(localized: "timeline.planning.subtitle"))
+                .font(.system(size: 14))
+                .foregroundStyle(.secondary)
+
+            VStack(alignment: .leading, spacing: 12) {
+                Label {
+                    Text(String(localized: "timeline.selection.empty"))
+                        .font(.system(size: 13, weight: .semibold))
+                        .foregroundStyle(.primary)
+                        .fixedSize(horizontal: false, vertical: true)
+                } icon: {
+                    Image(systemName: "calendar.badge.plus")
+                        .font(.system(size: 20, weight: .medium))
+                        .foregroundStyle(Color.systemBlue)
+                }
+
+                Text(String(localized: "timeline.selection.empty.helper"))
+                    .font(.system(size: 12))
+                    .foregroundStyle(.secondary)
+                    .fixedSize(horizontal: false, vertical: true)
+            }
+            .padding(18)
+            .frame(maxWidth: .infinity, alignment: .leading)
+            .background(
+                RoundedRectangle(cornerRadius: 14, style: .continuous)
+                    .fill(Color.primary.opacity(0.04))
+            )
+        }
+        .padding(20)
+        .frame(maxWidth: .infinity, alignment: .leading)
+        .background(
+            RoundedRectangle(cornerRadius: 20, style: .continuous)
+                .fill(Color.primary.opacity(0.03))
+        )
+    }
+
+    private func timelineSelectionBinding(for city: FavoriteCity) -> Binding<Bool>? {
+        guard shouldDisplayMultiCitySection, city.timeZone != nil else { return nil }
+        let identifier = city.timeZoneIdentifier
+        return Binding(
+            get: { selectedCityIDs.contains(identifier) },
+            set: { isSelected in
+                setCitySelection(city, isSelected: isSelected)
+            }
+        )
+    }
+
+    private func setCitySelection(_ city: FavoriteCity, isSelected: Bool) {
+        guard city.timeZone != nil else { return }
+        let identifier = city.timeZoneIdentifier
+        if isSelected {
+            selectedCityIDs.insert(identifier)
+        } else {
+            guard selectedCityIDs.contains(identifier) else { return }
+            var newSelection = selectedCityIDs
+            newSelection.remove(identifier)
+            selectedCityIDs = newSelection
+        }
+    }
+
+    private var maxContentWidth: CGFloat? { nil }
+
+    private var selectableCities: [FavoriteCity] {
+        favoriteCities.filter { $0.timeZone != nil }
+    }
     
-    private var maxContentWidth: CGFloat? {
-#if os(macOS)
-        return usesCompactLayout ? nil : 800
-#else
-        return nil
-#endif
+    private var selectableCityIdentifiers: [String] {
+        selectableCities.map { $0.timeZoneIdentifier }.sorted()
+    }
+    
+    private var selectedTimelineCities: [FavoriteCity] {
+        let ids = selectedCityIDs
+        return selectableCities.filter { ids.contains($0.timeZoneIdentifier) }
+    }
+
+    private var shouldDisplayMultiCitySection: Bool {
+        isSingleDayEvent && !selectableCities.isEmpty
     }
     
     private var chipMinimumWidth: CGFloat {
@@ -385,7 +570,7 @@ struct EventDetailView: View {
                     id: "spawns",
                     icon: "location.fill",
                     text: String(localized: "badge.spawns"),
-                    color: .green
+                    color: Color.systemGreen
                 )
             )
         }
@@ -396,17 +581,17 @@ struct EventDetailView: View {
                     id: "research",
                     icon: "doc.text.fill",
                     text: String(localized: "badge.research_tasks"),
-                    color: .purple
+                    color: Color.systemPurple
                 )
             )
         }
         
         items.append(
             FeatureChipItem(
-                id: event.isGlobalTime ? "global_event" : "local_event",
-                icon: event.isGlobalTime ? "globe" : "location.circle",
-                text: event.isGlobalTime ? String(localized: "badge.global_event") : String(localized: "badge.local_event"),
-                color: .orange
+                id: event.isGlobalTime ? "local_event" : "global_event",
+                icon: event.isGlobalTime ? "location.circle" : "globe",
+                text: event.isGlobalTime ? String(localized: "badge.local_event") : String(localized: "badge.global_event"),
+                color: Color.systemOrange
             )
         )
         
@@ -435,9 +620,9 @@ struct EventDetailView: View {
     
     private var statusColor: Color {
         if event.isCurrentlyActive {
-            return .green
+            return .systemGreen
         } else if event.isUpcoming {
-            return .orange
+            return .systemOrange
         } else {
             return .secondary
         }
@@ -474,6 +659,68 @@ struct EventDetailView: View {
         let tz = TimeZone(secondsFromGMT: 0) ?? .gmt
         return TimezoneService.shared.format(date, style: .dateTime, in: tz)
     }
+    
+    private func shouldShowTimeline(for cities: [FavoriteCity]) -> Bool {
+        guard isSingleDayEvent else { return false }
+        return !cities.isEmpty
+    }
+    
+    private var isSingleDayEvent: Bool {
+        guard event.endTime > event.startTime else { return false }
+        
+        let utc = TimeZone(secondsFromGMT: 0) ?? .gmt
+        var calendar = Calendar(identifier: .gregorian)
+        calendar.timeZone = utc
+        
+        guard calendar.isDate(event.startTime, inSameDayAs: event.endTime) else {
+            return false
+        }
+        
+        let duration = event.endTime.timeIntervalSince(event.startTime)
+        return duration <= 86_400
+    }
+
+    private func syncSelectedCities() {
+        guard shouldDisplayMultiCitySection else {
+            selectedCityIDs = []
+            return
+        }
+        let validIDs = Set(selectableCities.map { $0.timeZoneIdentifier })
+        if validIDs.isEmpty {
+            selectedCityIDs = []
+        } else {
+            selectedCityIDs = selectedCityIDs.intersection(validIDs)
+        }
+    }
+}
+
+// MARK: - Event Meta
+
+private struct EventMetaItem: Identifiable {
+    let id: String
+    let title: String
+    let value: String
+}
+
+private struct EventMetaCell: View {
+    let item: EventMetaItem
+
+    var body: some View {
+        VStack(alignment: .leading, spacing: 4) {
+            Text(item.title)
+                .font(.system(size: 12, weight: .semibold))
+                .foregroundStyle(.secondary)
+                .textCase(.uppercase)
+                .kerning(0.5)
+
+            Text(item.value)
+                .font(.system(size: 16, weight: .semibold))
+                .foregroundStyle(.primary)
+                .monospacedDigit()
+                .fixedSize(horizontal: false, vertical: true)
+        }
+        .frame(maxWidth: .infinity, alignment: .leading)
+    }
 }
 
 // MARK: - Feature Chip
@@ -485,112 +732,88 @@ private struct FeatureChipItem: Identifiable {
     let color: Color
 }
 
-private struct FeatureChip: View {
-    let icon: String
-    let text: String
-    let color: Color
-    
-    var body: some View {
-        HStack(spacing: 6) {
-            Image(systemName: icon)
-                .font(.system(size: 12, weight: .semibold))
-            Text(text)
-                .font(.system(size: 12, weight: .medium))
-        }
-        .padding(.horizontal, 12)
-        .padding(.vertical, 6)
-        .background(
-            Capsule()
-                .fill(color.opacity(0.15))
-        )
-        .foregroundStyle(color)
-    }
-}
-
-// MARK: - Info Card
-
-private struct InfoCard: View {
-    let icon: String
-    let title: String
-    let value: String
-    let color: Color
-    
-    var body: some View {
-        VStack(alignment: .leading, spacing: 12) {
-            HStack {
-                Image(systemName: icon)
-                    .font(.system(size: 20))
-                    .foregroundStyle(color)
-                    .symbolRenderingMode(.hierarchical)
-
-                Text(title)
-                    .font(.system(size: 13, weight: .semibold))
-                    .foregroundStyle(.secondary)
-                    .textCase(.uppercase)
-                    .kerning(0.5)
-            }
-
-            Text(value)
-                .font(.system(size: 18, weight: .semibold))
-                .foregroundStyle(.primary)
-                .monospacedDigit()
-        }
-        .padding(16)
-        .frame(maxWidth: .infinity, alignment: .leading)
-        .background(
-            RoundedRectangle(cornerRadius: 12, style: .continuous)
-                .fill(.ultraThinMaterial)
-        )
-        .overlay(
-            RoundedRectangle(cornerRadius: 12, style: .continuous)
-                .strokeBorder(
-                    LinearGradient(
-                        colors: [
-                            .white.opacity(0.25),
-                            color.opacity(0.15),
-                            .clear
-                        ],
-                        startPoint: .topLeading,
-                        endPoint: .bottomTrailing
-                    ),
-                    lineWidth: 1
-                )
-        )
-        .shadow(color: color.opacity(0.1), radius: 8, x: 0, y: 2)
-    }
-}
-
-// MARK: - City Time Card
+// MARK: - City Time Card (Compact Grid Version)
 
 private struct CityTimeCard: View {
     let event: Event
     let city: FavoriteCity
-    
+    let selectionBinding: Binding<Bool>?
+
     private let timezoneService = TimezoneService.shared
-    
+
+    init(event: Event, city: FavoriteCity, selectionBinding: Binding<Bool>? = nil) {
+        self.event = event
+        self.city = city
+        self.selectionBinding = selectionBinding
+    }
+
+    private var isSelected: Bool {
+        selectionBinding?.wrappedValue ?? false
+    }
+
+    private var selectionStrokeStyle: AnyShapeStyle {
+        if isSelected {
+            return AnyShapeStyle(Color.systemBlue.opacity(0.45))
+        }
+        return AnyShapeStyle(Color.primary.opacity(0.1))
+    }
+
+    private var selectionShadow: Color {
+        isSelected ? Color.systemBlue.opacity(0.15) : Color.black.opacity(0.05)
+    }
+
     var body: some View {
-        VStack(alignment: .leading, spacing: 16) {
-            // City Header
-            HStack(spacing: 12) {
+        VStack(alignment: .leading, spacing: 12) {
+            // Compact Header
+            HStack(spacing: 8) {
+                Image(systemName: "mappin.circle.fill")
+                    .font(.system(size: 14))
+                    .foregroundStyle(isSelected ? Color.systemBlue : .secondary)
+
                 Text(city.name)
-                    .font(.system(size: 16, weight: .semibold))
-                Spacer()
+                    .font(.system(size: 15, weight: .semibold))
+                    .lineLimit(1)
+                    .foregroundStyle(.primary)
+
+                Spacer(minLength: 4)
+
+                if let selectionBinding {
+                    Button {
+                        withAnimation(.easeInOut(duration: 0.2)) {
+                            selectionBinding.wrappedValue.toggle()
+                        }
+                    } label: {
+                        Image(systemName: isSelected ? "checkmark.circle.fill" : "circle")
+                            .font(.system(size: 16, weight: .semibold))
+                            .foregroundStyle(isSelected ? Color.systemBlue : Color.secondary.opacity(0.5))
+                    }
+                    .buttonStyle(.plain)
+                    .accessibilityLabel(
+                        String(
+                            format: String(
+                                localized: isSelected
+                                ? "timeline.selection.accessibility.selected"
+                                : "timeline.selection.accessibility.unselected"
+                            ),
+                            city.displayName
+                        )
+                    )
+                }
             }
-            
+
             Divider()
-            
-            // Time Information - Only show "Your Local Time"
+                .padding(.vertical, 2)
+
+            // Compact Time Display
             if let cityTimezone = city.timeZone {
-                VStack(alignment: .leading, spacing: 12) {
+                VStack(alignment: .leading, spacing: 10) {
                     if event.isGlobalTime {
-                        // Global event: Convert normally
-                        ImprovedTimeDisplay(
+                        CompactTimeDisplay(
                             startDate: event.startTime,
                             endDate: event.endTime,
                             timezone: timezoneService.userTimezone
                         )
                     } else {
-                        // Local event: Convert from city timezone to user timezone
                         let absoluteStart = timezoneService.convertLocalEventTime(
                             event.startTime,
                             from: cityTimezone,
@@ -601,62 +824,125 @@ private struct CityTimeCard: View {
                             from: cityTimezone,
                             to: timezoneService.userTimezone
                         )
-                        
-                        ImprovedTimeDisplay(
+
+                        CompactTimeDisplay(
                             startDate: absoluteStart,
                             endDate: absoluteEnd,
                             timezone: timezoneService.userTimezone
                         )
                     }
-                    
-                    // Time Difference
-                    HStack(spacing: 8) {
+
+                    // Compact Time Difference
+                    HStack(spacing: 6) {
                         Image(systemName: "info.circle.fill")
-                            .font(.system(size: 12))
+                            .font(.system(size: 11))
                             .foregroundStyle(.tertiary)
-                        
+
                         Text(timezoneService.timeDifferenceDescription(
-                            from: cityTimezone,
-                            to: timezoneService.userTimezone,
+                            from: timezoneService.userTimezone,
+                            to: cityTimezone,
                             at: event.startTime
                         ))
-                        .font(.system(size: 12))
+                        .font(.system(size: 11))
                         .foregroundStyle(.secondary)
+                        .lineLimit(1)
                     }
-                    .padding(.top, 4)
-                    
+
                     // Add to Calendar Button (macOS only)
                     #if os(macOS)
                     Divider()
-                        .padding(.vertical, 8)
-                    
+                        .padding(.vertical, 4)
+
                     AddToCalendarButton(event: event, city: city)
+                        .font(.system(size: 12))
                         .frame(maxWidth: .infinity)
                     #endif
                 }
             }
         }
-        .padding(20)
+        .padding(14)
+        .frame(maxWidth: .infinity, alignment: .leading)
         .background(
-            RoundedRectangle(cornerRadius: 16, style: .continuous)
-                .fill(.ultraThinMaterial)
+            ZStack {
+                RoundedRectangle(cornerRadius: 14, style: .continuous)
+                    .fill(.ultraThinMaterial)
+
+                if isSelected {
+                    RoundedRectangle(cornerRadius: 14, style: .continuous)
+                        .fill(Color.systemBlue.opacity(0.08))
+                }
+            }
         )
         .overlay(
-            RoundedRectangle(cornerRadius: 16, style: .continuous)
-                .strokeBorder(
-                    LinearGradient(
-                        colors: [
-                            .white.opacity(0.3),
-                            .blue.opacity(0.2),
-                            .clear
-                        ],
-                        startPoint: .topLeading,
-                        endPoint: .bottomTrailing
-                    ),
-                    lineWidth: 1.5
-                )
+            RoundedRectangle(cornerRadius: 14, style: .continuous)
+                .strokeBorder(selectionStrokeStyle, lineWidth: 1.5)
         )
-        .shadow(color: .blue.opacity(0.12), radius: 12, x: 0, y: 4)
+        .shadow(color: selectionShadow, radius: 8, x: 0, y: 3)
+    }
+}
+
+// MARK: - Compact Time Display
+
+private struct CompactTimeDisplay: View {
+    let startDate: Date
+    let endDate: Date
+    let timezone: TimeZone
+
+    private var timeFormatter: DateFormatter {
+        let formatter = DateFormatter()
+        formatter.dateStyle = .none
+        formatter.timeStyle = .short
+        formatter.timeZone = timezone
+        formatter.locale = Locale.autoupdatingCurrent
+        return formatter
+    }
+
+    private var dateFormatter: DateFormatter {
+        let formatter = DateFormatter()
+        formatter.dateStyle = .medium
+        formatter.timeStyle = .none
+        formatter.timeZone = timezone
+        formatter.locale = Locale.autoupdatingCurrent
+        return formatter
+    }
+
+    private var timeString: String {
+        let start = timeFormatter.string(from: startDate)
+        let end = timeFormatter.string(from: endDate)
+        return "\(start) - \(end)"
+    }
+
+    private var dateString: String {
+        dateFormatter.string(from: startDate)
+    }
+
+    private var timezoneString: String {
+        timezone.abbreviation() ?? timezone.identifier
+    }
+
+    var body: some View {
+        VStack(alignment: .leading, spacing: 6) {
+            // TIME - Most prominent
+            Text(timeString)
+                .font(.system(size: 18, weight: .bold, design: .rounded))
+                .foregroundStyle(Color.systemBlue)
+                .monospacedDigit()
+
+            // DATE - Secondary
+            HStack(spacing: 4) {
+                Text(dateString)
+                    .font(.system(size: 12))
+                    .foregroundStyle(.secondary)
+
+                Text("•")
+                    .foregroundStyle(.tertiary)
+                    .font(.system(size: 10))
+
+                Text(timezoneString)
+                    .font(.system(size: 12))
+                    .foregroundStyle(.tertiary)
+            }
+        }
     }
 }
 
@@ -672,7 +958,7 @@ private struct TimeInfoRow: View {
         HStack(spacing: 12) {
             Image(systemName: icon)
                 .font(.system(size: 16))
-                .foregroundStyle(highlighted ? .blue : .secondary)
+                .foregroundStyle(highlighted ? Color.systemBlue : .secondary)
                 .frame(width: 24)
             
             VStack(alignment: .leading, spacing: 4) {
@@ -682,7 +968,7 @@ private struct TimeInfoRow: View {
                 
                 Text(time)
                     .font(.system(size: 15, weight: highlighted ? .semibold : .medium))
-                    .foregroundStyle(highlighted ? .blue : .primary)
+                    .foregroundStyle(highlighted ? Color.systemBlue : .primary)
                     .monospacedDigit()
             }
         }
@@ -690,88 +976,11 @@ private struct TimeInfoRow: View {
         .frame(maxWidth: .infinity, alignment: .leading)
         .background(
             RoundedRectangle(cornerRadius: 10, style: .continuous)
-                .fill(highlighted ? Color.blue.opacity(0.08) : Color.clear)
+                .fill(highlighted ? Color.systemBlue.opacity(0.08) : Color.clear)
         )
     }
 }
 
-// MARK: - Improved Time Display
-
-private struct ImprovedTimeDisplay: View {
-    let startDate: Date
-    let endDate: Date
-    let timezone: TimeZone
-    
-    private var timeFormatter: DateFormatter {
-        let formatter = DateFormatter()
-        formatter.dateStyle = .none
-        formatter.timeStyle = .short
-        formatter.timeZone = timezone
-        formatter.locale = Locale.autoupdatingCurrent
-        return formatter
-    }
-    
-    private var dateFormatter: DateFormatter {
-        let formatter = DateFormatter()
-        formatter.dateStyle = .long
-        formatter.timeStyle = .none
-        formatter.timeZone = timezone
-        formatter.locale = Locale.autoupdatingCurrent
-        return formatter
-    }
-    
-    private var timeString: String {
-        let start = timeFormatter.string(from: startDate)
-        let end = timeFormatter.string(from: endDate)
-        return "\(start) - \(end)"
-    }
-    
-    private var dateString: String {
-        dateFormatter.string(from: startDate)
-    }
-    
-    private var timezoneString: String {
-        timezone.abbreviation() ?? timezone.identifier
-    }
-    
-    var body: some View {
-        VStack(alignment: .leading, spacing: 8) {
-            // Header
-            HStack {
-                Image(systemName: "person.fill")
-                    .foregroundStyle(.blue)
-                    .imageScale(.small)
-                Text(String(localized: "city_time.your_local_time"))
-                    .font(.subheadline)
-                    .foregroundStyle(.secondary)
-            }
-            
-            // TIME - Most prominent
-            Text(timeString)
-                .font(.system(size: 34, weight: .bold, design: .rounded))
-                .foregroundStyle(.blue)
-                .monospacedDigit()
-            
-            // DATE - Secondary
-            HStack(spacing: 4) {
-                Text(dateString)
-                    .font(.body)
-                    .foregroundStyle(.secondary)
-                
-                Text("•")
-                    .foregroundStyle(.tertiary)
-                
-                Text(timezoneString)
-                    .font(.subheadline)
-                    .foregroundStyle(.tertiary)
-            }
-        }
-        .padding()
-        .frame(maxWidth: .infinity, alignment: .leading)
-        .background(Color.blue.opacity(0.1))
-        .clipShape(RoundedRectangle(cornerRadius: 12))
-    }
-}
 
 // MARK: - Preview
 
