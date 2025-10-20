@@ -11,7 +11,7 @@
 
 ## ✨ Features
 
-### 🗺️ Multi-City Planning Tool (NEW in 1.5.0!)
+### 🗺️ Multi-City Planr (NEW in 1.5.0!)
 - **Sequential Timeline**: Plan event participation across multiple cities with a visual chronological timeline
 - **Smart Travel Gaps**: Automatic detection of playable windows between cities
 - **Optimal Strategy**: See the best path to maximize multi-city event participation
