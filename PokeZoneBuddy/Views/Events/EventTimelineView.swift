@@ -11,15 +11,23 @@ import SwiftUI
 struct EventTimelineView: View {
     let event: Event
     let favoriteCities: [FavoriteCity]
+    let plannerMenu: AnyView?
 
     private let timezoneService = TimezoneService.shared
+
+    init(event: Event, favoriteCities: [FavoriteCity], plannerMenu: AnyView? = nil) {
+        self.event = event
+        self.favoriteCities = favoriteCities
+        self.plannerMenu = plannerMenu
+    }
 
     var body: some View {
         if let timeline = buildSequentialTimeline() {
             SequentialTimelineView(
                 timeline: timeline,
                 event: event,
-                cities: favoriteCities
+                cities: favoriteCities,
+                plannerMenu: plannerMenu
             )
         } else {
             TimelineEmptyState()
@@ -106,6 +114,7 @@ private struct SequentialTimelineView: View {
     let timeline: SequentialTimeline
     let event: Event
     let cities: [FavoriteCity]
+    let plannerMenu: AnyView?
 
     private var totalInterval: TimeInterval {
         timeline.totalEnd.timeIntervalSince(timeline.totalStart)
@@ -123,7 +132,7 @@ private struct SequentialTimelineView: View {
     var body: some View {
         VStack(alignment: .leading, spacing: 16) {
             // Header
-            HStack {
+            HStack(spacing: 12) {
                 Image(systemName: "map.fill")
                     .font(.system(size: 18, weight: .semibold))
                     .foregroundStyle(Color.systemBlue)
@@ -134,7 +143,10 @@ private struct SequentialTimelineView: View {
 
                 Spacer()
 
-                // Total duration badge
+                if let plannerMenu {
+                    plannerMenu
+                }
+
                 DurationBadge(
                     totalInterval: totalInterval,
                     playInterval: playInterval

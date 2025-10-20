@@ -154,17 +154,12 @@ struct EventDetailView: View {
                         // Multi-city Timeline (single-day events)
                         if shouldDisplayMultiCitySection {
                             VStack(spacing: 16) {
-                                HStack {
-                                    Spacer()
-                                    plannerSettingsButton
-                                }
-                                .padding(.horizontal, 6)
-
                                 // Timeline view or placeholder
                                 if shouldShowTimeline(for: selectedTimelineCities) {
                                     EventTimelineView(
                                         event: event,
-                                        favoriteCities: selectedTimelineCities
+                                        favoriteCities: selectedTimelineCities,
+                                        plannerMenu: AnyView(plannerSettingsButton)
                                     )
                                     .transition(.opacity.combined(with: .scale))
                                 } else {
@@ -928,18 +923,19 @@ struct EventDetailView: View {
 #endif
         } label: {
             Image(systemName: "gearshape.fill")
-                .font(.system(size: 17, weight: .semibold))
-                .foregroundStyle(Color.primary.opacity(0.9))
-                .padding(14)
+                .font(.system(size: 14, weight: .semibold))
+                .foregroundStyle(Color.primary.opacity(0.85))
+                .padding(.horizontal, 14)
+                .padding(.vertical, 10)
                 .background(
-                    Circle()
-                        .fill(.ultraThinMaterial)
+                    Capsule()
+                        .fill(Color.primary.opacity(0.08))
                         .overlay(
-                            Circle()
-                                .stroke(Color.primary.opacity(0.12), lineWidth: 1.2)
+                            Capsule()
+                                .stroke(Color.primary.opacity(0.12), lineWidth: 1)
                         )
                 )
-                .shadow(color: Color.black.opacity(0.18), radius: 14, y: 8)
+                .shadow(color: Color.black.opacity(0.12), radius: 10, y: 5)
                 .accessibilityLabel(Text(String(localized: "timeline.plans.options")))
         }
         .menuStyle(.borderlessButton)
