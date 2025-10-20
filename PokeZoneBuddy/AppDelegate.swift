@@ -81,9 +81,6 @@ class AppDelegate: NSObject, NSApplicationDelegate {
         window.isMovable = true
         window.isMovableByWindowBackground = false
 
-        // Allow window to resize in all directions
-        window.showsResizeIndicator = true
-
         // Disable any automatic positioning that might stick to top
         window.setFrameAutosaveName("")
 

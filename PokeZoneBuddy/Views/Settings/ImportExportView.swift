@@ -113,7 +113,7 @@ struct ImportExportView: View {
         } message: {
             if let result = importResult {
                 Text(result.summary)
-            } else if let error = importError {
+            } else if importError != nil {
                 Text(String(localized: "import.failed.message"))
             }
         }
