@@ -97,11 +97,11 @@ final class EventsViewModel {
         defer { isLoading = false }
 
         do {
-            // Fetch from API (with cache fallback)
-            let apiEvents = try await apiService.fetchEvents()
+            // Fetch from API (with cache fallback) - returns DTOs
+            let eventDTOs = try await apiService.fetchEvents()
 
             // OFFLINE: Save to SwiftData for offline access
-            await saveEventsToLocalStorage(apiEvents)
+            await saveEventsToLocalStorage(eventDTOs)
 
             lastSyncDate = Date()
 
@@ -140,9 +140,9 @@ final class EventsViewModel {
         }
 
         do {
-            let apiEvents = try await apiService.fetchEvents(forceRefresh: true)
-            let eventCount = apiEvents.count  // Capture count before async boundary
-            await saveEventsToLocalStorage(apiEvents)
+            let eventDTOs = try await apiService.fetchEvents(forceRefresh: true)
+            let eventCount = eventDTOs.count  // Capture count before async boundary
+            await saveEventsToLocalStorage(eventDTOs)
             lastSyncDate = Date()
             isOffline = false
             lastRefreshEventCount = eventCount
@@ -193,22 +193,24 @@ final class EventsViewModel {
     
     /// OFFLINE: Save API events to SwiftData
     /// Uses @Attribute(.unique) on Event.id for automatic upsert behavior
-    private func saveEventsToLocalStorage(_ apiEvents: [Event]) async {
+    private func saveEventsToLocalStorage(_ eventDTOs: [EventDTO]) async {
         // Use background context for heavy operation
         let container = modelContext.container
 
         await Task.detached {
             let context = ModelContext(container)
 
-            // Insert events - @Attribute(.unique) on Event.id handles upserts automatically
+            // Convert DTOs to Event models and insert
+            // @Attribute(.unique) on Event.id handles upserts automatically
             // SwiftData will update existing events or insert new ones based on the unique ID
-            for apiEvent in apiEvents {
-                context.insert(apiEvent)
+            for eventDTO in eventDTOs {
+                let event = eventDTO.toEvent()
+                context.insert(event)
             }
 
             // Clean up old events that are no longer in the API response
             // This is more efficient than delete-all-then-insert
-            let apiEventIDs = Set(apiEvents.map { $0.id })
+            let apiEventIDs = Set(eventDTOs.map { $0.id })
             let descriptor = FetchDescriptor<Event>()
             if let existingEvents = try? context.fetch(descriptor) {
                 for event in existingEvents where !apiEventIDs.contains(event.id) {
@@ -218,7 +220,7 @@ final class EventsViewModel {
 
             try? context.save()
 
-            await AppLogger.viewModel.info("Saved \(apiEvents.count) events to local storage")
+            await AppLogger.viewModel.info("Saved \(eventDTOs.count) events to local storage")
         }.value
 
         // Reload from storage
