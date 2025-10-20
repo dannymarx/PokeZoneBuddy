@@ -25,7 +25,7 @@ struct EventDetailView: View {
 
     // Timeline Plans & Templates (v1.6.0)
     @State private var availablePlans: [TimelinePlan] = []
-    @State private var showSavePlanDialog = false
+    @State private var savePlanDialogContext: SavePlanDialogContext?
     @State private var showLoadPlanMenu = false
     @State private var showShareMenu = false
     @State private var showShareSheet = false
@@ -39,101 +39,25 @@ struct EventDetailView: View {
         guard let imageURL = event.imageURL else { return nil }
         return URL(string: imageURL)
     }
+
+    private struct SavePlanDialogContext: Identifiable, Equatable {
+        let id = UUID()
+        let cityIdentifiers: [String]
+    }
     
     // MARK: - Body
-    
+
     var body: some View {
-        ScrollViewReader { proxy in
-            ScrollView(.vertical, showsIndicators: false) {
-                VStack(alignment: contentAlignment, spacing: contentSpacing) {
-                    // Anchor for scrolling to top
-                    Color.clear
-                        .frame(height: 0)
-                        .id("top")
-                    
-                    // Event Image Header
-                    if let url = eventImageURL {
-                        eventImageHeader(url: url)
-                    }
-                    
-                    // Event Header
-                    eventHeaderSection
-                    
-                    // Countdown/Status (fallback when no image header)
-                    if eventImageURL == nil {
-                        EventCountdownView(event: event)
-                    }
-                    
-                    // Event Meta & Reminders
-                    eventMetaCard
-                    
-                    // Pokemon Details (Spotlight/Raid/CD)
-                    pokemonDetailsSection
-
-                    // Multi-city Timeline (single-day events)
-                    if shouldDisplayMultiCitySection {
-                        VStack(spacing: 16) {
-                            // Timeline action buttons (Save/Load/Share)
-                            if shouldShowTimeline(for: selectedTimelineCities) {
-                                timelineActionButtons
-                            }
-
-                            // Timeline view or placeholder
-                            if shouldShowTimeline(for: selectedTimelineCities) {
-                                EventTimelineView(
-                                    event: event,
-                                    favoriteCities: selectedTimelineCities
-                                )
-                                .transition(.opacity.combined(with: .scale))
-                            } else {
-                                timelineSelectionPlaceholder
-                            }
-                        }
-                    }
-
-                    // Time Zones Section
-                    if !favoriteCities.isEmpty {
-                        timeZonesSection
-                    } else {
-                        noCitiesPlaceholder
-                    }
-                    
-                    // Copyright Footer
-                    copyrightFooter
-                    
-                    Spacer(minLength: usesCompactLayout ? 24 : 40)
-                }
-                .padding(.horizontal, horizontalPadding)
-                .padding(.vertical, verticalPadding)
-                .frame(
-                    maxWidth: maxContentWidth ?? .infinity,
-                    alignment: usesCompactLayout ? .leading : .center
-                )
-            }
-            .scrollIndicators(.hidden, axes: .vertical)
-            .hideScrollIndicatorsCompat()
-            .onAppear {
-                syncSelectedCities()
-                loadTimelinePlansAndTemplates()
-            }
-            .onChange(of: selectableCityIdentifiers) { _, _ in
-                syncSelectedCities()
-            }
-            .onChange(of: event.id) { _, _ in
-                // Scroll to top when event changes
-                withAnimation(.easeOut(duration: 0.3)) {
-                    proxy.scrollTo("top", anchor: .top)
-                }
-                // Load plans for new event
-                loadTimelinePlansAndTemplates()
-            }
+        contentView
+        .onChange(of: savePlanDialogContext) { _, newValue in
+            print("EventDetailView savePlanDialogContext -> \(newValue?.id.uuidString ?? "nil")")
         }
-        .frame(maxWidth: .infinity, maxHeight: .infinity)
-        .background(Color.appBackground)
-        .sheet(isPresented: $showSavePlanDialog) {
+        .sheet(item: $savePlanDialogContext, onDismiss: {
+            savePlanDialogContext = nil
+        }) { context in
             SavePlanDialog(
                 event: event,
-                cityIdentifiers: Array(selectedCityIDs),
+                cityIdentifiers: context.cityIdentifiers,
                 onSave: { planName in
                     Task {
                         await savePlan(name: planName)
@@ -154,6 +78,102 @@ struct EventDetailView: View {
             if let exportError = exportError {
                 Text(exportError)
             }
+        }
+    }
+
+    // MARK: - Layout
+
+    private var contentView: some View {
+        ZStack {
+            Color.appBackground
+                .ignoresSafeArea()
+
+            ScrollViewReader { proxy in
+                ScrollView(.vertical, showsIndicators: false) {
+                    VStack(alignment: contentAlignment, spacing: contentSpacing) {
+                        // Anchor for scrolling to top
+                        Color.clear
+                            .frame(height: 0)
+                            .id("top")
+
+                        // Event Image Header
+                        if let url = eventImageURL {
+                            eventImageHeader(url: url)
+                        }
+
+                        // Event Header
+                        eventHeaderSection
+
+                        // Countdown/Status (fallback when no image header)
+                        if eventImageURL == nil {
+                            EventCountdownView(event: event)
+                        }
+
+                        // Event Meta & Reminders
+                        eventMetaCard
+
+                        // Pokemon Details (Spotlight/Raid/CD)
+                        pokemonDetailsSection
+
+                        // Multi-city Timeline (single-day events)
+                        if shouldDisplayMultiCitySection {
+                            VStack(spacing: 16) {
+                                // Timeline action buttons (Save/Load/Share)
+                                if shouldShowTimeline(for: selectedTimelineCities) {
+                                    timelineActionButtons
+                                }
+
+                                // Timeline view or placeholder
+                                if shouldShowTimeline(for: selectedTimelineCities) {
+                                    EventTimelineView(
+                                        event: event,
+                                        favoriteCities: selectedTimelineCities
+                                    )
+                                    .transition(.opacity.combined(with: .scale))
+                                } else {
+                                    timelineSelectionPlaceholder
+                                }
+                            }
+                        }
+
+                        // Time Zones Section
+                        if !favoriteCities.isEmpty {
+                            timeZonesSection
+                        } else {
+                            noCitiesPlaceholder
+                        }
+
+                        // Copyright Footer
+                        copyrightFooter
+
+                        Spacer(minLength: usesCompactLayout ? 24 : 40)
+                    }
+                    .padding(.horizontal, horizontalPadding)
+                    .padding(.vertical, verticalPadding)
+                    .frame(
+                        maxWidth: maxContentWidth ?? .infinity,
+                        alignment: usesCompactLayout ? .leading : .center
+                    )
+                }
+                .scrollIndicators(.hidden, axes: .vertical)
+                .hideScrollIndicatorsCompat()
+                .onAppear {
+                    syncSelectedCities()
+                    loadTimelinePlansAndTemplates()
+                }
+                .onChange(of: selectableCityIdentifiers) { _, _ in
+                    syncSelectedCities()
+                }
+                .onChange(of: event.id) { _, _ in
+                    // Scroll to top when event changes
+                    withAnimation(.easeOut(duration: 0.3)) {
+                        proxy.scrollTo("top", anchor: .top)
+                    }
+                    // Load plans for new event
+                    loadTimelinePlansAndTemplates()
+                }
+            }
+            .frame(maxWidth: .infinity, maxHeight: .infinity)
         }
     }
     
@@ -739,7 +759,9 @@ struct EventDetailView: View {
         HStack(spacing: 12) {
             // Save Plan button
             Button {
-                showSavePlanDialog = true
+                savePlanDialogContext = SavePlanDialogContext(
+                    cityIdentifiers: Array(selectedCityIDs)
+                )
             } label: {
                 Label(String(localized: "timeline.plans.save"), systemImage: "square.and.arrow.down")
                     .font(.system(size: 13, weight: .semibold))

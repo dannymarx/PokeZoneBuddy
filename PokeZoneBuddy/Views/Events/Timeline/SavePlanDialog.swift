@@ -16,75 +16,138 @@ struct SavePlanDialog: View {
     @Environment(\.dismiss) private var dismiss
     @State private var planName: String = ""
     @FocusState private var isNameFieldFocused: Bool
+    private let debugID = UUID()
 
     var body: some View {
-        NavigationStack {
-            Form {
-                Section {
-                    TextField(
-                        String(localized: "timeline.plans.name_placeholder"),
-                        text: $planName
-                    )
-                    .focused($isNameFieldFocused)
-                    .onSubmit(savePlan)
+#if os(macOS)
+        macOSDialog
+#else
+        iOSDialog
+#endif
+    }
 
-                    Text(suggestedName)
-                        .font(.caption)
-                        .foregroundStyle(.secondary)
-                        .onTapGesture {
-                            planName = suggestedName
-                        }
-                } header: {
-                    Text(String(localized: "timeline.plans.dialog.header"))
-                } footer: {
-                    Text(String(localized: "timeline.plans.dialog.footer"))
-                }
-
-                Section {
-                    HStack {
-                        Image(systemName: "calendar")
-                            .foregroundStyle(.secondary)
-                        Text(event.name)
-                            .font(.subheadline)
-                    }
-
-                    HStack {
-                        Image(systemName: "mappin.and.ellipse")
-                            .foregroundStyle(.secondary)
-                        Text("\(cityIdentifiers.count) \(cityIdentifiers.count == 1 ? String(localized: "timeline.plans.city") : String(localized: "timeline.plans.cities"))")
-                            .font(.subheadline)
-                    }
-                } header: {
-                    Text(String(localized: "timeline.plans.dialog.details"))
-                }
+#if os(macOS)
+    private var macOSDialog: some View {
+        VStack(spacing: 0) {
+            VStack(spacing: 8) {
+                Text(String(localized: "timeline.plans.save"))
+                    .font(.system(size: 20, weight: .semibold))
+                    .frame(maxWidth: .infinity, alignment: .leading)
             }
-            .navigationTitle(String(localized: "timeline.plans.save"))
-            #if os(iOS)
-            .navigationBarTitleDisplayMode(.inline)
-            #endif
-            .toolbar {
-                ToolbarItem(placement: .cancellationAction) {
-                    Button(String(localized: "common.cancel")) {
-                        dismiss()
-                    }
-                }
+            .padding(.horizontal, 24)
+            .padding(.top, 24)
 
-                ToolbarItem(placement: .confirmationAction) {
-                    Button(String(localized: "common.save")) {
-                        savePlan()
-                    }
-                    .disabled(planName.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty)
+            formContent
+                .padding(.horizontal, 12)
+                .padding(.top, 8)
+
+            Divider()
+
+            HStack {
+                Spacer()
+                Button(String(localized: "common.cancel")) {
+                    dismiss()
                 }
+                .keyboardShortcut(.cancelAction)
+
+                Button(String(localized: "common.save")) {
+                    savePlan()
+                }
+                .keyboardShortcut(.defaultAction)
+                .disabled(planName.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty)
             }
-            .onAppear {
-                planName = suggestedName
-                isNameFieldFocused = true
-            }
+            .padding(.horizontal, 24)
+            .padding(.vertical, 16)
         }
-        #if os(iOS)
+        .frame(minWidth: 420, idealWidth: 460)
+        .background {
+            RoundedRectangle(cornerRadius: 12, style: .continuous)
+                .fill(Color(nsColor: .windowBackgroundColor))
+                .ignoresSafeArea()
+        }
+        .onAppear {
+            planName = suggestedName
+            isNameFieldFocused = true
+            print("SavePlanDialog[\(debugID)] appear (macOS)")
+        }
+        .onDisappear {
+            print("SavePlanDialog[\(debugID)] disappear (macOS)")
+        }
+    }
+#else
+    private var iOSDialog: some View {
+        NavigationStack {
+            formContent
+                .navigationTitle(String(localized: "timeline.plans.save"))
+                .navigationBarTitleDisplayMode(.inline)
+                .toolbar {
+                    ToolbarItem(placement: .cancellationAction) {
+                        Button(String(localized: "common.cancel")) {
+                            dismiss()
+                        }
+                    }
+
+                    ToolbarItem(placement: .confirmationAction) {
+                        Button(String(localized: "common.save")) {
+                            savePlan()
+                        }
+                        .disabled(planName.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty)
+                    }
+                }
+        }
         .presentationDetents([.medium])
         .presentationDragIndicator(.visible)
-        #endif
+        .onAppear {
+            planName = suggestedName
+            isNameFieldFocused = true
+            print("SavePlanDialog[\(debugID)] appear (iOS)")
+        }
+        .onDisappear {
+            print("SavePlanDialog[\(debugID)] disappear (iOS)")
+        }
+    }
+#endif
+
+    private var formContent: some View {
+        Form {
+            Section {
+                TextField(
+                    String(localized: "timeline.plans.name_placeholder"),
+                    text: $planName
+                )
+                .focused($isNameFieldFocused)
+                .onSubmit(savePlan)
+
+                Text(suggestedName)
+                    .font(.caption)
+                    .foregroundStyle(.secondary)
+                    .onTapGesture {
+                        planName = suggestedName
+                    }
+            } header: {
+                Text(String(localized: "timeline.plans.dialog.header"))
+            } footer: {
+                Text(String(localized: "timeline.plans.dialog.footer"))
+            }
+
+            Section {
+                HStack {
+                    Image(systemName: "calendar")
+                        .foregroundStyle(.secondary)
+                    Text(event.name)
+                        .font(.subheadline)
+                }
+
+                HStack {
+                    Image(systemName: "mappin.and.ellipse")
+                        .foregroundStyle(.secondary)
+                    Text("\(cityIdentifiers.count) \(cityIdentifiers.count == 1 ? String(localized: "timeline.plans.city") : String(localized: "timeline.plans.cities"))")
+                        .font(.subheadline)
+                }
+            } header: {
+                Text(String(localized: "timeline.plans.dialog.details"))
+            }
+        }
     }
 
     // MARK: - Helper Methods
