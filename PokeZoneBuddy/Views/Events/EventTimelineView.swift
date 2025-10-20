@@ -141,19 +141,10 @@ private struct SequentialTimelineView: View {
                 )
             }
 
-            HStack {
-                Text(String(localized: "timeline.planning.subtitle"))
-                    .font(.system(size: 14))
-                    .foregroundStyle(.secondary)
-
-                Spacer()
-
-                // Add to Calendar button (macOS only)
-                #if os(macOS)
-                MultiCityCalendarButton(event: event, cities: cities)
-                    .font(.system(size: 13))
-                #endif
-            }
+            Text(String(localized: "timeline.planning.subtitle"))
+                .font(.system(size: 14))
+                .foregroundStyle(.secondary)
+                .frame(maxWidth: .infinity, alignment: .leading)
 
             // Timeline graph
             VStack(spacing: 0) {
@@ -584,62 +575,6 @@ private struct TimeGap: Identifiable {
     let timezone: TimeZone
 }
 
-// MARK: - Multi-City Calendar Button (macOS only)
-
-#if os(macOS)
-
-private struct MultiCityCalendarButton: View {
-    let event: Event
-    let cities: [FavoriteCity]
-
-    @Environment(CalendarService.self) private var calendarService
-    @State private var showError = false
-    @State private var errorMessage = ""
-    @State private var showSuccess = false
-    @State private var isAdding = false
-
-    var body: some View {
-        Button {
-            Task {
-                await addToCalendar()
-            }
-        } label: {
-            Label(
-                String(localized: "calendar.action.add_multi_city"),
-                systemImage: "calendar.badge.plus"
-            )
-        }
-        .disabled(isAdding || cities.isEmpty)
-        .buttonStyle(.bordered)
-        .controlSize(.small)
-        .alert(String(localized: "alert.error.title"), isPresented: $showError) {
-            Button(String(localized: "common.ok")) { }
-        } message: {
-            Text(errorMessage)
-        }
-        .alert(String(localized: "alert.success.title"), isPresented: $showSuccess) {
-            Button(String(localized: "common.ok")) { }
-        } message: {
-            Text(String(localized: "calendar.success.multi_city"))
-        }
-        .help(String(localized: "calendar.action.add_multi_city.help"))
-    }
-
-    private func addToCalendar() async {
-        isAdding = true
-        defer { isAdding = false }
-
-        do {
-            try await calendarService.addMultiCityEventToCalendar(event: event, cities: cities)
-            showSuccess = true
-        } catch {
-            errorMessage = error.localizedDescription
-            showError = true
-        }
-    }
-}
-
-#endif
 
 // MARK: - Color Extension
 
