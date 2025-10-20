@@ -84,6 +84,7 @@ private struct MacOSContentView: View {
     @State private var selectedSpot: CitySpot?
     @State private var editingSpot: CitySpot?
     @State private var columnVisibility: NavigationSplitViewVisibility = .all
+    @State private var showNotificationSettings = false
 
     // MARK: - Body
 
@@ -138,9 +139,13 @@ private struct MacOSContentView: View {
             EditSpotSheet(spot: spot, viewModel: citiesViewModel)
                 .presentationSizing(.fitted)
         }
-        .onChange(of: selectedSidebarItem) { _, newValue in
+        .onChange(of: selectedSidebarItem) { oldValue, newValue in
             if newValue == .settings {
                 columnVisibility = .all
+            }
+            // Clear notification settings when leaving settings
+            if oldValue == .settings && newValue != .settings {
+                showNotificationSettings = false
             }
         }
         .onReceive(NotificationCenter.default.publisher(for: .refreshEvents)) { _ in
@@ -195,7 +200,12 @@ private struct MacOSContentView: View {
             )
 
         case .settings:
-            SettingsView(displayMode: .primaryOnly, showsDismissButton: false, citiesViewModel: citiesViewModel)
+            SettingsView(
+                displayMode: .primaryOnly,
+                showsDismissButton: false,
+                citiesViewModel: citiesViewModel,
+                showNotificationSettings: $showNotificationSettings
+            )
         }
     }
 
@@ -235,7 +245,11 @@ private struct MacOSContentView: View {
             }
 
         case .settings:
-            SettingsSupplementaryPane()
+            if showNotificationSettings {
+                NotificationSettingsView()
+            } else {
+                SettingsSupplementaryPane()
+            }
         }
     }
 

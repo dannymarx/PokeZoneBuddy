@@ -83,13 +83,23 @@ struct SettingsView: View {
     private let displayMode: DisplayMode
     private let showsDismissButton: Bool
     private let citiesViewModel: CitiesViewModel?
+    @Binding private var externalShowNotificationSettings: Bool?
 
     // MARK: - Init
 
-    init(displayMode: DisplayMode = .full, showsDismissButton: Bool = true, citiesViewModel: CitiesViewModel? = nil) {
+    init(
+        displayMode: DisplayMode = .full,
+        showsDismissButton: Bool = true,
+        citiesViewModel: CitiesViewModel? = nil,
+        showNotificationSettings: Binding<Bool>? = nil
+    ) {
         self.displayMode = displayMode
         self.showsDismissButton = showsDismissButton
         self.citiesViewModel = citiesViewModel
+        self._externalShowNotificationSettings = Binding(
+            get: { showNotificationSettings?.wrappedValue },
+            set: { newValue in showNotificationSettings?.wrappedValue = newValue ?? false }
+        )
     }
 
     // MARK: - State
@@ -105,7 +115,6 @@ struct SettingsView: View {
     @State private var showDeleteAllDataConfirmation = false
     @State private var isRefreshing = false
     @State private var navigationPath = NavigationPath()
-    @State private var showNotificationSettings = false
     @State private var localCitiesViewModel: CitiesViewModel?
 
     // MARK: - Body
@@ -148,9 +157,6 @@ struct SettingsView: View {
                 }
             }
 #endif
-            .sheet(isPresented: $showNotificationSettings) {
-                NotificationSettingsView()
-            }
             .onAppear {
                 // Use injected viewModel if available, otherwise create a local one
                 if localCitiesViewModel == nil && citiesViewModel == nil {
@@ -278,60 +284,74 @@ struct SettingsView: View {
                 Spacer()
             }
 
-            Button {
-                guard !showNotificationSettings else { return }
-                showNotificationSettings = true
-            } label: {
-                HStack(spacing: 12) {
-                    Image(systemName: "bell.fill")
-                        .font(.system(size: 20))
-                        .foregroundStyle(Color.systemBlue)
-                        .frame(width: 40, height: 40)
-                        .background(
-                            Circle()
-                                .fill(Color.systemBlue.opacity(0.1))
-                        )
-
-                    VStack(alignment: .leading, spacing: 4) {
-                        Text(String(localized: "reminders.event.title"))
-                            .font(.system(size: 14, weight: .medium))
-                            .foregroundStyle(.primary)
-
-                        Text(String(localized: "notifications.help.message"))
-                            .font(.system(size: 12))
-                            .foregroundStyle(.secondary)
+            Group {
+                if let _ = externalShowNotificationSettings {
+                    // macOS with explicit detail column control
+                    Button {
+                        externalShowNotificationSettings = true
+                    } label: {
+                        notificationSettingsLabel
                     }
-
-                    Spacer()
-
-                    Image(systemName: "chevron.right")
-                        .font(.system(size: 12, weight: .semibold))
-                        .foregroundStyle(.tertiary)
+                    .buttonStyle(.plain)
+                } else {
+                    // iOS or macOS without external control - use NavigationLink
+                    NavigationLink {
+                        NotificationSettingsView()
+                    } label: {
+                        notificationSettingsLabel
+                    }
                 }
-                .contentShape(Rectangle())
-                .padding(16)
-                .background(
-                    RoundedRectangle(cornerRadius: 12, style: .continuous)
-                        .fill(.ultraThinMaterial)
-                )
-                .overlay(
-                    RoundedRectangle(cornerRadius: 12, style: .continuous)
-                        .strokeBorder(
-                            LinearGradient(
-                                colors: [
-                                    .white.opacity(0.25),
-                                    .systemBlue.opacity(0.15)
-                                ],
-                                startPoint: .topLeading,
-                                endPoint: .bottomTrailing
-                            ),
-                            lineWidth: 1
-                        )
-                )
-                .shadow(color: .black.opacity(0.05), radius: 8, x: 0, y: 2)
             }
-            .buttonStyle(.plain)
         }
+    }
+
+    private var notificationSettingsLabel: some View {
+        HStack(spacing: 12) {
+            Image(systemName: "bell.fill")
+                .font(.system(size: 20))
+                .foregroundStyle(Color.systemBlue)
+                .frame(width: 40, height: 40)
+                .background(
+                    Circle()
+                        .fill(Color.systemBlue.opacity(0.1))
+                )
+
+            VStack(alignment: .leading, spacing: 4) {
+                Text(String(localized: "reminders.event.title"))
+                    .font(.system(size: 14, weight: .medium))
+                    .foregroundStyle(.primary)
+
+                Text(String(localized: "notifications.help.message"))
+                    .font(.system(size: 12))
+                    .foregroundStyle(.secondary)
+            }
+
+            Spacer()
+
+            Image(systemName: "chevron.right")
+                .font(.system(size: 12, weight: .semibold))
+                .foregroundStyle(.tertiary)
+        }
+        .padding(16)
+        .background(
+            RoundedRectangle(cornerRadius: 12, style: .continuous)
+                .fill(.ultraThinMaterial)
+        )
+        .overlay(
+            RoundedRectangle(cornerRadius: 12, style: .continuous)
+                .strokeBorder(
+                    LinearGradient(
+                        colors: [
+                            .white.opacity(0.25),
+                            .systemBlue.opacity(0.15)
+                        ],
+                        startPoint: .topLeading,
+                        endPoint: .bottomTrailing
+                    ),
+                    lineWidth: 1
+                )
+        )
+        .shadow(color: .black.opacity(0.05), radius: 8, x: 0, y: 2)
     }
 
     // MARK: - Data Management Section
