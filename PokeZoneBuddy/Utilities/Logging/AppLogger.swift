@@ -8,6 +8,7 @@ enum AppLogger {
     static let network = Logger(subsystem: subsystem, category: "Network")
     static let background = Logger(subsystem: subsystem, category: "Background")
     static let viewModel = Logger(subsystem: subsystem, category: "ViewModel")
+    static let service = Logger(subsystem: subsystem, category: "Service")
     static let calendar = Logger(subsystem: subsystem, category: "Calendar")
     static let cache = Logger(subsystem: subsystem, category: "Cache")
     static let notifications = Logger(subsystem: subsystem, category: "settings.notifications.title")
