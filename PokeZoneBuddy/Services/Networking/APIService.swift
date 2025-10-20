@@ -10,16 +10,16 @@ import Foundation
 
 /// Actor to manage concurrent request deduplication
 private actor RequestCoordinator {
-    private var ongoingTask: Task<[Event], Error>?
+    private var ongoingTask: Task<[EventDTO], Error>?
 
-    func getOrCreateTask(forceRefresh: Bool, performFetch: @escaping (Bool) async throws -> [Event]) async throws -> [Event] {
+    func getOrCreateTask(forceRefresh: Bool, performFetch: @escaping (Bool) async throws -> [EventDTO]) async throws -> [EventDTO] {
         // If there's an existing task, reuse it
         if let existingTask = ongoingTask {
             return try await existingTask.value
         }
 
         // Create new task
-        let task = Task<[Event], Error> {
+        let task = Task<[EventDTO], Error> {
             try await performFetch(forceRefresh)
         }
         ongoingTask = task
@@ -83,9 +83,9 @@ final class APIService {
     /// Lädt alle verfügbaren Pokemon GO Events von der API
     /// OFFLINE: Falls Netzwerk nicht verfügbar, wird auf gecachte Daten zurückgegriffen
     /// - Parameter forceRefresh: Wenn true, ignoriert Cache und lädt von Server
-    /// - Returns: Array von Event-Objekten
+    /// - Returns: Array von EventDTO-Objekten (Sendable data transfer objects)
     /// - Throws: APIError bei Fehlern
-    func fetchEvents(forceRefresh: Bool = false) async throws -> [Event] {
+    func fetchEvents(forceRefresh: Bool = false) async throws -> [EventDTO] {
         return try await requestCoordinator.getOrCreateTask(forceRefresh: forceRefresh) { [weak self] forceRefresh in
             guard let self = self else {
                 throw APIError.invalidResponse
@@ -95,7 +95,7 @@ final class APIService {
     }
 
     /// Internal method to perform the actual network fetch
-    private func performFetch(forceRefresh: Bool) async throws -> [Event] {
+    private func performFetch(forceRefresh: Bool) async throws -> [EventDTO] {
         guard let url = URL(string: baseURL) else {
             throw APIError.invalidURL
         }
@@ -146,7 +146,7 @@ final class APIService {
     // MARK: - Private Methods
     
     /// Dekodiert Event-Daten von JSON
-    private func decodeEvents(from data: Data) throws -> [Event] {
+    private func decodeEvents(from data: Data) throws -> [EventDTO] {
         let decoder = JSONDecoder()
         decoder.dateDecodingStrategy = .custom { decoder in
             let container = try decoder.singleValueContainer()
@@ -177,30 +177,30 @@ final class APIService {
         }
         
         let apiEvents = try decoder.decode([APIEvent].self, from: data)
-        
-        // Convert to Event models
-        return apiEvents.compactMap { apiEvent -> Event? in
+
+        // Convert to EventDTO models (Sendable)
+        return apiEvents.compactMap { apiEvent -> EventDTO? in
             let startHasZ = apiEvent.rawStartTime?.hasSuffix("Z") ?? false
             let endHasZ = apiEvent.rawEndTime?.hasSuffix("Z") ?? false
             let isGlobal = startHasZ || endHasZ
-            
+
             // Parse extraData for detailed info
-            var spotlightDetails: SpotlightDetails?
-            var raidDetails: RaidDetails?
-            var communityDayDetails: CommunityDayDetails?
-            
+            var spotlightDetails: SpotlightDetailsDTO?
+            var raidDetails: RaidDetailsDTO?
+            var communityDayDetails: CommunityDayDetailsDTO?
+
             if let extraData = apiEvent.extraData {
                 // Spotlight Hour
                 if let spotlight = extraData.spotlight {
                     let pokemonList = spotlight.list.map { pokemon in
-                        PokemonInfo(
+                        PokemonInfoDTO(
                             name: pokemon.name,
                             imageURL: pokemon.image,
                             canBeShiny: pokemon.canBeShiny
                         )
                     }
-                    
-                    spotlightDetails = SpotlightDetails(
+
+                    spotlightDetails = SpotlightDetailsDTO(
                         featuredPokemonName: spotlight.name,
                         featuredPokemonImage: spotlight.image,
                         canBeShiny: spotlight.canBeShiny,
@@ -208,35 +208,35 @@ final class APIService {
                         allFeaturedPokemon: pokemonList
                     )
                 }
-                
+
                 // Raid Battles
                 if let raidBattles = extraData.raidbattles {
                     let bosses = raidBattles.bosses.map { boss in
-                        PokemonInfo(
+                        PokemonInfoDTO(
                             name: boss.name,
                             imageURL: boss.image,
                             canBeShiny: boss.canBeShiny
                         )
                     }
-                    
+
                     let shinies = raidBattles.shinies.map { shiny in
-                        PokemonInfo(
+                        PokemonInfoDTO(
                             name: shiny.name,
                             imageURL: shiny.image,
                             canBeShiny: true
                         )
                     }
-                    
-                    raidDetails = RaidDetails(
+
+                    raidDetails = RaidDetailsDTO(
                         bosses: bosses,
                         availableShinies: shinies
                     )
                 }
-                
+
                 // Community Day
                 if let cd = extraData.communityday {
                     let spawns = cd.spawns.map { spawn in
-                        PokemonInfo(
+                        PokemonInfoDTO(
                             name: spawn.name,
                             imageURL: spawn.image,
                             canBeShiny: true
@@ -244,7 +244,7 @@ final class APIService {
                     }
 
                     let shinies = cd.shinies.map { shiny in
-                        PokemonInfo(
+                        PokemonInfoDTO(
                             name: shiny.name,
                             imageURL: shiny.image,
                             canBeShiny: true
@@ -252,14 +252,14 @@ final class APIService {
                     }
 
                     let bonuses = cd.bonuses.map { bonus in
-                        CommunityDayBonus(
+                        CommunityDayBonusDTO(
                             text: bonus.text,
                             iconURL: bonus.image
                         )
                     }
 
                     // Parse special research steps
-                    var specialResearch: [SpecialResearchStep] = []
+                    var specialResearch: [SpecialResearchStepDTO] = []
                     if let researchData = cd.specialresearch {
                         specialResearch = researchData.compactMap { research in
                             guard let tasks = research.tasks, let rewards = research.rewards else {
@@ -267,18 +267,18 @@ final class APIService {
                             }
 
                             let researchTasks = tasks.map { task in
-                                let taskReward = ResearchReward(
+                                let taskReward = ResearchRewardDTO(
                                     text: task.reward.text,
                                     imageURL: task.reward.image
                                 )
-                                return ResearchTask(text: task.text, reward: taskReward)
+                                return ResearchTaskDTO(text: task.text, reward: taskReward)
                             }
 
                             let researchRewards = rewards.map { reward in
-                                ResearchReward(text: reward.text, imageURL: reward.image)
+                                ResearchRewardDTO(text: reward.text, imageURL: reward.image)
                             }
 
-                            return SpecialResearchStep(
+                            return SpecialResearchStepDTO(
                                 name: research.name,
                                 stepNumber: research.step,
                                 tasks: researchTasks,
@@ -287,7 +287,7 @@ final class APIService {
                         }
                     }
 
-                    communityDayDetails = CommunityDayDetails(
+                    communityDayDetails = CommunityDayDetailsDTO(
                         featuredPokemon: spawns,
                         shinies: shinies,
                         bonuses: bonuses,
@@ -296,8 +296,8 @@ final class APIService {
                     )
                 }
             }
-            
-            return Event(
+
+            return EventDTO(
                 id: apiEvent.eventID,
                 name: apiEvent.name,
                 eventType: apiEvent.eventType,
