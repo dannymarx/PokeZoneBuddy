@@ -35,7 +35,13 @@ final class EventsViewModel {
     
     /// OFFLINE: Indicates if app is in offline mode
     private(set) var isOffline = false
-    
+
+    /// Refresh button state for UI feedback
+    private(set) var refreshState: RefreshState = .idle
+
+    /// Count of events from last successful refresh
+    private(set) var lastRefreshEventCount: Int = 0
+
     // MARK: - Dependencies
     
     private let modelContext: ModelContext
@@ -82,28 +88,37 @@ final class EventsViewModel {
             isOffline = true
             return
         }
-        
+
         isLoading = true
         isOffline = false
         errorMessage = nil
         showError = false
-        
+
         defer { isLoading = false }
-        
+
         do {
-            // Fetch from API (with cache fallback)
-            let apiEvents = try await apiService.fetchEvents()
-            
+            // Fetch from API (with cache fallback) - returns DTOs
+            let eventDTOs = try await apiService.fetchEvents()
+
             // OFFLINE: Save to SwiftData for offline access
-            await saveEventsToLocalStorage(apiEvents)
-            
+            await saveEventsToLocalStorage(eventDTOs)
+
             lastSyncDate = Date()
-            
+
         } catch {
+            // Don't show cancellation errors to the user
+            let nsError = error as NSError
+            if nsError.domain == NSURLErrorDomain && nsError.code == NSURLErrorCancelled {
+                AppLogger.viewModel.debug("Sync was cancelled (likely due to concurrent request)")
+                // OFFLINE: We still have local data, so it's okay
+                isOffline = true
+                return
+            }
+
             self.errorMessage = error.localizedDescription
             self.showError = true
             AppLogger.viewModel.error("Sync error: \(error)")
-            
+
             // OFFLINE: We still have local data, so it's okay
             isOffline = true
         }
@@ -113,51 +128,89 @@ final class EventsViewModel {
     func forceRefresh() async {
         guard networkMonitor.isConnected else {
             AppLogger.viewModel.warn("Cannot refresh: no network connection")
-            errorMessage = "No internet connection"
-            showError = true
+            refreshState = .error
+            self.errorMessage = String(localized: "toast.no_connection.title", defaultValue: "No internet connection")
             return
         }
-        
+
         isLoading = true
-        defer { isLoading = false }
-        
+        refreshState = .loading
+        defer {
+            isLoading = false
+        }
+
         do {
-            let apiEvents = try await apiService.fetchEvents(forceRefresh: true)
-            await saveEventsToLocalStorage(apiEvents)
+            let eventDTOs = try await apiService.fetchEvents(forceRefresh: true)
+            let eventCount = eventDTOs.count  // Capture count before async boundary
+            await saveEventsToLocalStorage(eventDTOs)
             lastSyncDate = Date()
             isOffline = false
+            lastRefreshEventCount = eventCount
+
+            // Success state
+            refreshState = .success
+            AppLogger.viewModel.info("Successfully refreshed \(eventCount) events")
+
+            // Auto-reset to idle after 2.5 seconds
+            Task {
+                try? await Task.sleep(nanoseconds: 2_500_000_000)
+                if refreshState == .success {
+                    refreshState = .idle
+                }
+            }
+
         } catch {
+            // Don't show cancellation errors to the user
+            let nsError = error as NSError
+            if nsError.domain == NSURLErrorDomain && nsError.code == NSURLErrorCancelled {
+                AppLogger.viewModel.debug("Force refresh was cancelled (likely due to concurrent request)")
+                refreshState = .idle
+                return
+            }
+
+            // Error state
             self.errorMessage = error.localizedDescription
-            self.showError = true
+            refreshState = .error
             AppLogger.viewModel.error("Force refresh error: \(error)")
+
+            // Auto-reset to idle after 3 seconds
+            Task {
+                try? await Task.sleep(nanoseconds: 3_000_000_000)
+                if refreshState == .error {
+                    refreshState = .idle
+                }
+            }
         }
     }
     
     /// Aktualisiert die Event-Liste (convenience method)
+    /// This is called by toolbar buttons and Cmd+R, should use forceRefresh for user feedback
     func refreshEvents() async {
-        await syncEvents()
+        await forceRefresh()
     }
     
     // MARK: - Private Methods
     
     /// OFFLINE: Save API events to SwiftData
     /// Uses @Attribute(.unique) on Event.id for automatic upsert behavior
-    private func saveEventsToLocalStorage(_ apiEvents: [Event]) async {
+    private func saveEventsToLocalStorage(_ eventDTOs: [EventDTO]) async {
         // Use background context for heavy operation
         let container = modelContext.container
 
         await Task.detached {
             let context = ModelContext(container)
 
-            // Insert events - @Attribute(.unique) on Event.id handles upserts automatically
+            // Convert DTOs to Event models and insert
+            // @Attribute(.unique) on Event.id handles upserts automatically
             // SwiftData will update existing events or insert new ones based on the unique ID
-            for apiEvent in apiEvents {
-                context.insert(apiEvent)
+            for eventDTO in eventDTOs {
+                let event = eventDTO.toEvent()
+                context.insert(event)
             }
 
             // Clean up old events that are no longer in the API response
             // This is more efficient than delete-all-then-insert
-            let apiEventIDs = Set(apiEvents.map { $0.id })
+            let apiEventIDs = Set(eventDTOs.map { $0.id })
             let descriptor = FetchDescriptor<Event>()
             if let existingEvents = try? context.fetch(descriptor) {
                 for event in existingEvents where !apiEventIDs.contains(event.id) {
@@ -167,7 +220,7 @@ final class EventsViewModel {
 
             try? context.save()
 
-            await AppLogger.viewModel.info("Saved \(apiEvents.count) events to local storage")
+            await AppLogger.viewModel.info("Saved \(eventDTOs.count) events to local storage")
         }.value
 
         // Reload from storage

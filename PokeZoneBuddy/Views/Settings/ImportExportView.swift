@@ -41,7 +41,7 @@ struct ImportExportView: View {
                 title: "Export Data",
                 subtitle: "Save all cities and spots to a JSON file",
                 buttonText: "Export",
-                buttonColor: .blue
+                buttonColor: .systemBlue
             ) {
                 handleExport()
             }
@@ -54,7 +54,7 @@ struct ImportExportView: View {
                 title: "Import Data",
                 subtitle: "Load cities and spots from a JSON file",
                 buttonText: "Import",
-                buttonColor: .green
+                buttonColor: .systemGreen
             ) {
                 showImportPicker = true
             }
@@ -79,42 +79,42 @@ struct ImportExportView: View {
         ) { result in
             handleFileSelection(result)
         }
-        .alert("Import Preview", isPresented: $showImportPreview) {
-            Button("Cancel", role: .cancel) {
+        .alert(String(localized: "import.preview.title"), isPresented: $showImportPreview) {
+            Button(String(localized: "common.cancel"), role: .cancel) {
                 selectedFileURL = nil
             }
-            Button("Merge with Existing") {
+            Button(String(localized: "import.merge_with_existing")) {
                 importData(mode: .merge)
             }
-            Button("Replace All Data", role: .destructive) {
+            Button(String(localized: "import.replace_all_data"), role: .destructive) {
                 showImportModeSelection = true
             }
         } message: {
-            Text("Found \(previewCityCount) \(previewCityCount == 1 ? "city" : "cities") with \(previewSpotCount) \(previewSpotCount == 1 ? "spot" : "spots").\n\nMerge: Add new cities, skip duplicates.\nReplace: Delete all existing data first.")
+            Text(String(localized: "import.preview.message"))
         }
         .confirmationDialog(
-            "Confirm Replace",
+            String(localized: "import.confirm_replace"),
             isPresented: $showImportModeSelection
         ) {
-            Button("Replace All Data", role: .destructive) {
+            Button(String(localized: "import.replace_all_data"), role: .destructive) {
                 importData(mode: .replace)
             }
-            Button("Cancel", role: .cancel) {
+            Button(String(localized: "common.cancel"), role: .cancel) {
                 selectedFileURL = nil
             }
         } message: {
-            Text("This will permanently delete all your existing cities and spots before importing. This action cannot be undone.")
+            Text(String(localized: "import.replace_warning.message"))
         }
-        .alert("Import Complete", isPresented: $showImportResult) {
-            Button("OK") {
+        .alert(String(localized: "import.complete.title"), isPresented: $showImportResult) {
+            Button(String(localized: "common.ok")) {
                 importResult = nil
                 selectedFileURL = nil
             }
         } message: {
             if let result = importResult {
                 Text(result.summary)
-            } else if let error = importError {
-                Text("Import failed: \(error.localizedDescription)")
+            } else if importError != nil {
+                Text(String(localized: "import.failed.message"))
             }
         }
     }

@@ -63,7 +63,7 @@ struct CitiesManagementView: View {
                 }
 #endif
                 .alert(String(localized: "alert.error.title"), isPresented: $viewModel.showError) {
-                    Button("OK") {
+                    Button(String(localized: "common.ok")) {
                         viewModel.showError = false
                     }
                 } message: {
@@ -97,9 +97,6 @@ struct CitiesManagementView: View {
                 activeSpotForSpots = nil
             }
         }
-#if os(macOS)
-        .frame(minWidth: 600, minHeight: 700)
-#endif
     }
     
     // MARK: - Content Section
@@ -130,6 +127,7 @@ struct CitiesManagementView: View {
                         viewModel.removeCities(at: offsets)
                     }
                 }
+                .id(viewModel.dataVersion) // Force list recreation when data changes
 #if os(macOS)
                 .listStyle(.inset)
 #else
@@ -158,8 +156,8 @@ private struct FavoriteCityRowContent: View {
     let viewModel: CitiesViewModel
 
     private var spotCount: Int {
-        // Force recomputation when favoriteCities changes
-        _ = viewModel.favoriteCities.count
+        // Force recomputation when dataVersion changes
+        _ = viewModel.dataVersion
         return viewModel.getSpots(for: city).count
     }
 
@@ -195,7 +193,7 @@ private struct FavoriteCityRowContent: View {
                             .font(.system(size: 20))
                             .foregroundStyle(.white)
                     )
-                    .shadow(color: .blue.opacity(0.2), radius: 3, x: 0, y: 1)
+                    .shadow(color: Color.systemBlue.opacity(0.2), radius: 3, x: 0, y: 1)
             }
 
             // Info - Compact layout
@@ -237,7 +235,7 @@ private struct FavoriteCityRowContent: View {
 
                     Text(city.formattedUTCOffset)
                         .font(.system(size: 11, weight: .semibold))
-                        .foregroundStyle(.blue)
+                        .foregroundStyle(Color.systemBlue)
                         .lineLimit(1)
                 }
                 .lineLimit(1)
@@ -255,7 +253,7 @@ private struct FavoriteCityRowContent: View {
                     Text("\(spotCount)")
                         .font(.system(size: 10, weight: .semibold))
                 }
-                .foregroundStyle(.blue)
+                .foregroundStyle(Color.systemBlue)
                 .padding(.horizontal, 7)
                 .padding(.vertical, 4)
                 .background(
@@ -264,9 +262,9 @@ private struct FavoriteCityRowContent: View {
                 )
                 .overlay(
                     Capsule()
-                        .strokeBorder(.blue.opacity(0.3), lineWidth: 0.5)
+                        .strokeBorder(Color.systemBlue.opacity(0.3), lineWidth: 0.5)
                 )
-                .shadow(color: .blue.opacity(0.12), radius: 2, x: 0, y: 1)
+                .shadow(color: Color.systemBlue.opacity(0.12), radius: 2, x: 0, y: 1)
             }
         }
         .frame(maxWidth: .infinity, alignment: .leading)

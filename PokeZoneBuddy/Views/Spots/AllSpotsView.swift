@@ -128,13 +128,14 @@ struct AllSpotsView: View {
                         HStack {
                             Image(systemName: "mappin.circle.fill")
                                 .font(.system(size: 12))
-                                .foregroundStyle(.blue)
+                                .foregroundStyle(Color.systemBlue)
                             Text(city.name)
                         }
                     }
                 }
             }
         }
+        .id(citiesViewModel.dataVersion) // Force list recreation when data changes
 #if os(macOS)
         .listStyle(.inset)
 #else
@@ -163,8 +164,8 @@ struct AllSpotsView: View {
     // MARK: - Computed Properties
 
     private var allSpots: [CitySpot] {
-        // Force recomputation when favoriteCities changes
-        _ = citiesViewModel.favoriteCities.count
+        // Force recomputation when dataVersion changes
+        _ = citiesViewModel.dataVersion
         return citiesViewModel.favoriteCities.flatMap { city in
             citiesViewModel.getSpots(for: city)
         }
@@ -191,9 +192,9 @@ private struct SpotRowContent: View {
                 if spot.isFavorite {
                     Image(systemName: "star.fill")
                         .font(.system(size: 12))
-                        .foregroundStyle(.yellow)
+                        .foregroundStyle(Color.systemYellow)
                         .symbolRenderingMode(.hierarchical)
-                        .shadow(color: .yellow.opacity(0.3), radius: 2, x: 0, y: 1)
+                        .shadow(color: Color.systemYellow.opacity(0.3), radius: 2, x: 0, y: 1)
                 }
 
                 // Category badge - Right aligned
@@ -203,18 +204,18 @@ private struct SpotRowContent: View {
                     Text(spot.category.localizedName)
                         .font(.system(size: 12, weight: .semibold))
                 }
-                .foregroundStyle(categoryColor)
+                .foregroundStyle(spot.category.color)
                 .padding(.horizontal, 8)
                 .padding(.vertical, 4)
                 .background(
                     Capsule()
-                        .fill(categoryColor.opacity(0.15))
+                        .fill(spot.category.color.opacity(0.15))
                 )
                 .overlay(
                     Capsule()
-                        .strokeBorder(categoryColor.opacity(0.4), lineWidth: 1)
+                        .strokeBorder(spot.category.color.opacity(0.4), lineWidth: 1)
                 )
-                .shadow(color: categoryColor.opacity(0.2), radius: 2, x: 0, y: 1)
+                .shadow(color: spot.category.color.opacity(0.2), radius: 2, x: 0, y: 1)
             }
 
             // Notes
@@ -239,15 +240,6 @@ private struct SpotRowContent: View {
         case .gym: return "dumbbell.fill"
         case .meetingPoint: return "person.2.fill"
         case .other: return "mappin.and.ellipse"
-        }
-    }
-
-    private var categoryColor: Color {
-        switch spot.category {
-        case .pokestop: return .blue
-        case .gym: return .red
-        case .meetingPoint: return .purple
-        case .other: return .gray
         }
     }
 }

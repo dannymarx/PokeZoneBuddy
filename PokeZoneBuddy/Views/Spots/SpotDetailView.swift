@@ -115,7 +115,7 @@ struct SpotDetailView: View {
                     HStack(spacing: 8) {
                         Image(systemName: "building.2.fill")
                             .font(.system(size: 14))
-                            .foregroundStyle(.blue)
+                            .foregroundStyle(Color.systemBlue)
                         Text(city.name)
                             .font(.system(size: 16, weight: .medium))
                     }
@@ -143,18 +143,18 @@ struct SpotDetailView: View {
                         Text(spot.category.localizedName)
                             .font(.system(size: 13, weight: .semibold))
                     }
-                    .foregroundStyle(categoryColor)
+                    .foregroundStyle(spot.category.color)
                     .padding(.horizontal, 12)
                     .padding(.vertical, 6)
                     .background(
                         Capsule()
-                            .fill(categoryColor.opacity(0.15))
+                            .fill(spot.category.color.opacity(0.15))
                     )
                     .overlay(
                         Capsule()
-                            .strokeBorder(categoryColor.opacity(0.4), lineWidth: 1)
+                            .strokeBorder(spot.category.color.opacity(0.4), lineWidth: 1)
                     )
-                    .shadow(color: categoryColor.opacity(0.2), radius: 3, x: 0, y: 2)
+                    .shadow(color: spot.category.color.opacity(0.2), radius: 3, x: 0, y: 2)
                 }
             }
         }
@@ -188,7 +188,7 @@ struct SpotDetailView: View {
             Button {
                 copyCoordinates()
             } label: {
-                Label(String(localized: "spots.action.copyCoordinates"), systemImage: "doc.on.doc")
+                Label(String(localized: "spots.action.copy_coordinates"), systemImage: "doc.on.doc")
                     .frame(maxWidth: .infinity)
                     .padding(.vertical, 12)
             }
@@ -203,13 +203,13 @@ struct SpotDetailView: View {
     @ViewBuilder
     private var mapSection: some View {
         VStack(alignment: .leading, spacing: 12) {
-            Text("Location")
+            Text("label.location")
                 .font(.system(size: 18, weight: .semibold))
                 .padding(.horizontal, 20)
 
             Map(position: $cameraPosition) {
                 Marker(spot.name, coordinate: spotCoordinate)
-                    .tint(categoryColor)
+                    .tint(spot.category.color)
             }
             .mapStyle(.standard(elevation: .realistic))
             .frame(height: 300)
@@ -252,13 +252,13 @@ struct SpotDetailView: View {
     @ViewBuilder
     private var metadataSection: some View {
         VStack(alignment: .leading, spacing: 12) {
-            Text("Information")
+            Text("section.information")
                 .font(.system(size: 18, weight: .semibold))
 
             VStack(spacing: 0) {
                 metadataRow(
                     icon: "calendar",
-                    title: String(localized: "spots.detail.createdAt"),
+                    title: String(localized: "spots.detail.created_at"),
                     value: spot.createdAt.formatted(date: .long, time: .omitted)
                 )
             }
@@ -280,7 +280,7 @@ struct SpotDetailView: View {
         HStack(spacing: 12) {
             Image(systemName: icon)
                 .font(.system(size: 16))
-                .foregroundStyle(.blue)
+                .foregroundStyle(Color.systemBlue)
                 .frame(width: 24)
 
             Text(title)
@@ -369,15 +369,6 @@ struct SpotDetailView: View {
         case .gym: return "dumbbell.fill"
         case .meetingPoint: return "person.2.fill"
         case .other: return "mappin.and.ellipse"
-        }
-    }
-
-    private var categoryColor: Color {
-        switch spot.category {
-        case .pokestop: return .blue
-        case .gym: return .red
-        case .meetingPoint: return .purple
-        case .other: return .gray
         }
     }
 
