@@ -11,15 +11,29 @@ import SwiftUI
 struct EventDetailView: View {
     
     // MARK: - Properties
-    
+
     let event: Event
     let favoriteCities: [FavoriteCity]
-    
+
     @Environment(\.horizontalSizeClass) private var horizontalSizeClass
     @Environment(\.dynamicTypeSize) private var dynamicTypeSize
-    
+    @Environment(TimelineService.self) private var timelineService
+    @Environment(\.colorScheme) private var colorScheme
+
     private let timezoneService = TimezoneService.shared
     @State private var selectedCityIDs: Set<String> = []
+
+    // Timeline Plans & Templates (v1.6.0)
+    @State private var availablePlans: [TimelinePlan] = []
+    @State private var showSavePlanDialog = false
+    @State private var showLoadPlanMenu = false
+    @State private var showShareMenu = false
+    @State private var showShareSheet = false
+    @State private var shareItem: ShareableItem?
+    @State private var isExportingImage = false
+    @State private var isExportingData = false
+    @State private var exportError: String?
+    @State private var showExportError = false
 
     private var eventImageURL: URL? {
         guard let imageURL = event.imageURL else { return nil }
@@ -58,14 +72,22 @@ struct EventDetailView: View {
 
                     // Multi-city Timeline (single-day events)
                     if shouldDisplayMultiCitySection {
-                        if shouldShowTimeline(for: selectedTimelineCities) {
-                            EventTimelineView(
-                                event: event,
-                                favoriteCities: selectedTimelineCities
-                            )
-                            .transition(.opacity.combined(with: .scale))
-                        } else {
-                            timelineSelectionPlaceholder
+                        VStack(spacing: 16) {
+                            // Timeline action buttons (Save/Load/Share)
+                            if shouldShowTimeline(for: selectedTimelineCities) {
+                                timelineActionButtons
+                            }
+
+                            // Timeline view or placeholder
+                            if shouldShowTimeline(for: selectedTimelineCities) {
+                                EventTimelineView(
+                                    event: event,
+                                    favoriteCities: selectedTimelineCities
+                                )
+                                .transition(.opacity.combined(with: .scale))
+                            } else {
+                                timelineSelectionPlaceholder
+                            }
                         }
                     }
 
@@ -90,7 +112,10 @@ struct EventDetailView: View {
             }
             .scrollIndicators(.hidden, axes: .vertical)
             .hideScrollIndicatorsCompat()
-            .onAppear(perform: syncSelectedCities)
+            .onAppear {
+                syncSelectedCities()
+                loadTimelinePlansAndTemplates()
+            }
             .onChange(of: selectableCityIdentifiers) { _, _ in
                 syncSelectedCities()
             }
@@ -99,10 +124,37 @@ struct EventDetailView: View {
                 withAnimation(.easeOut(duration: 0.3)) {
                     proxy.scrollTo("top", anchor: .top)
                 }
+                // Load plans for new event
+                loadTimelinePlansAndTemplates()
             }
         }
         .frame(maxWidth: .infinity, maxHeight: .infinity)
         .background(Color.appBackground)
+        .sheet(isPresented: $showSavePlanDialog) {
+            SavePlanDialog(
+                event: event,
+                cityIdentifiers: Array(selectedCityIDs),
+                onSave: { planName in
+                    Task {
+                        await savePlan(name: planName)
+                    }
+                }
+            )
+        }
+        .sheet(isPresented: $showShareSheet) {
+            if let shareItem = shareItem {
+                ShareSheet(item: shareItem)
+            }
+        }
+        .alert(String(localized: "alert.error.title"), isPresented: $showExportError) {
+            Button(String(localized: "common.ok")) {
+                exportError = nil
+            }
+        } message: {
+            if let exportError = exportError {
+                Text(exportError)
+            }
+        }
     }
     
     // MARK: - Event Image Header
@@ -678,6 +730,196 @@ struct EventDetailView: View {
         
         let duration = event.endTime.timeIntervalSince(event.startTime)
         return duration <= 86_400
+    }
+
+    // MARK: - Timeline Plans & Templates (v1.6.0)
+
+    /// Timeline action buttons (Save/Load/Share)
+    private var timelineActionButtons: some View {
+        HStack(spacing: 12) {
+            // Save Plan button
+            Button {
+                showSavePlanDialog = true
+            } label: {
+                Label(String(localized: "timeline.plans.save"), systemImage: "square.and.arrow.down")
+                    .font(.system(size: 13, weight: .semibold))
+            }
+            .buttonStyle(.bordered)
+            .tint(.systemBlue)
+            .disabled(selectedCityIDs.isEmpty)
+
+            // Load Plan menu
+            Menu {
+                // Show available plans
+                if !availablePlans.isEmpty {
+                    ForEach(availablePlans) { plan in
+                        Button {
+                            loadPlan(plan)
+                        } label: {
+                            VStack(alignment: .leading) {
+                                Text(plan.name)
+                                Text("\(plan.cityIdentifiers.count) \(plan.cityIdentifiers.count == 1 ? String(localized: "timeline.plans.city") : String(localized: "timeline.plans.cities"))")
+                                    .font(.caption)
+                                    .foregroundStyle(.secondary)
+                            }
+                        }
+                    }
+                } else {
+                    Text(String(localized: "timeline.plans.no_plans"))
+                        .foregroundStyle(.secondary)
+                }
+            } label: {
+                Label(String(localized: "timeline.plans.load"), systemImage: "tray.and.arrow.down")
+                    .font(.system(size: 13, weight: .semibold))
+            }
+            .buttonStyle(.bordered)
+            .tint(.systemIndigo)
+
+            // Share menu
+            Menu {
+                Button {
+                    Task {
+                        await exportAsImage()
+                    }
+                } label: {
+                    Label(String(localized: "timeline.plans.export_image"), systemImage: "photo")
+                }
+
+                Button {
+                    Task {
+                        await exportPlanData()
+                    }
+                } label: {
+                    Label(String(localized: "timeline.plans.export_data"), systemImage: "doc.badge.arrow.up")
+                }
+            } label: {
+                Label(String(localized: "timeline.plans.share"), systemImage: "square.and.arrow.up")
+                    .font(.system(size: 13, weight: .semibold))
+            }
+            .buttonStyle(.bordered)
+            .tint(.systemGreen)
+            .disabled(selectedCityIDs.isEmpty)
+
+            Spacer()
+        }
+        .padding(.horizontal, 20)
+    }
+
+    /// Load timeline plans and apply default template
+    private func loadTimelinePlansAndTemplates() {
+        Task {
+            do {
+                // Load plans for this event
+                try await timelineService.loadPlans(for: event.id)
+                availablePlans = timelineService.plans
+
+                // Auto-apply default template if no cities selected
+                if selectedCityIDs.isEmpty, shouldDisplayMultiCitySection {
+                    if let template = try await timelineService.loadDefaultTemplate(for: event.eventType) {
+                        withAnimation(.easeInOut(duration: 0.2)) {
+                            selectedCityIDs = Set(template.cityIdentifiers)
+                        }
+                        AppLogger.viewModel.info("Auto-applied default template: \(template.name)")
+                    }
+                }
+            } catch {
+                AppLogger.viewModel.error("Failed to load timeline plans: \(error)")
+            }
+        }
+    }
+
+    /// Save a new plan
+    private func savePlan(name: String) async {
+        do {
+            try await timelineService.savePlan(
+                name: name,
+                eventID: event.id,
+                eventName: event.name,
+                eventType: event.eventType,
+                cityIdentifiers: Array(selectedCityIDs)
+            )
+
+            // Reload plans
+            try await timelineService.loadPlans(for: event.id)
+            availablePlans = timelineService.plans
+
+            AppLogger.viewModel.info("Saved timeline plan: \(name)")
+        } catch {
+            exportError = error.localizedDescription
+            showExportError = true
+            AppLogger.viewModel.error("Failed to save plan: \(error)")
+        }
+    }
+
+    /// Load a saved plan
+    private func loadPlan(_ plan: TimelinePlan) {
+        withAnimation(.easeInOut(duration: 0.2)) {
+            selectedCityIDs = Set(plan.cityIdentifiers)
+        }
+        AppLogger.viewModel.info("Loaded timeline plan: \(plan.name)")
+    }
+
+    /// Export timeline as image
+    private func exportAsImage() async {
+        guard !isExportingImage else { return }
+        isExportingImage = true
+        defer { isExportingImage = false }
+
+        do {
+            let renderer = TimelineImageRenderer()
+            let planName = "Timeline_\(event.eventType)"
+
+            guard let image = await renderer.render(
+                event: event,
+                cities: selectedTimelineCities,
+                planName: planName,
+                colorScheme: colorScheme
+            ) else {
+                throw TimelineImageError.failedToRender
+            }
+
+            #if os(iOS)
+            shareItem = .image(image, filename: "\(planName).png")
+            #elseif os(macOS)
+            shareItem = .image(image, filename: "\(planName).png")
+            #endif
+
+            showShareSheet = true
+            AppLogger.viewModel.info("Exported timeline as image")
+        } catch {
+            exportError = error.localizedDescription
+            showExportError = true
+            AppLogger.viewModel.error("Failed to export image: \(error)")
+        }
+    }
+
+    /// Export plan data as JSON
+    private func exportPlanData() async {
+        guard !isExportingData else { return }
+        isExportingData = true
+        defer { isExportingData = false }
+
+        do {
+            // Create a temporary plan for export
+            let tempPlan = TimelinePlan(
+                name: "Timeline_\(event.eventType)",
+                eventID: event.id,
+                eventName: event.name,
+                eventType: event.eventType,
+                cityIdentifiers: Array(selectedCityIDs)
+            )
+
+            let data = try await timelineService.exportPlan(tempPlan)
+            let filename = "\(tempPlan.name.replacingOccurrences(of: " ", with: "_")).pzb"
+
+            shareItem = try ShareableItem.temporaryFile(data: data, filename: filename)
+            showShareSheet = true
+            AppLogger.viewModel.info("Exported plan data: \(filename)")
+        } catch {
+            exportError = error.localizedDescription
+            showExportError = true
+            AppLogger.viewModel.error("Failed to export plan data: \(error)")
+        }
     }
 
     private func syncSelectedCities() {
