@@ -1,7 +1,7 @@
 {
-  "version": "1.4.0",
-  "date": "2025-10-14T10:49:53Z",
+  "version": "1.5.0",
+  "date": "2025-10-20T00:00:00Z",
   "platform": "macOS",
-  "asset": "https://github.com/dannymarx/PokeZoneBuddy/releases/download/v1.4.0/PokeZoneBuddy-1.4.0.dmg",
+  "asset": "https://github.com/dannymarx/PokeZoneBuddy/releases/download/v1.5.0/PokeZoneBuddy-1.5.0.dmg",
   "signed": false
 }
