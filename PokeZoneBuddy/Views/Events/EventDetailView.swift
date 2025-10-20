@@ -19,6 +19,9 @@ struct EventDetailView: View {
     @Environment(\.dynamicTypeSize) private var dynamicTypeSize
     @Environment(TimelineService.self) private var timelineService
     @Environment(\.colorScheme) private var colorScheme
+#if os(macOS)
+    @Environment(CalendarService.self) private var calendarService
+#endif
 
     private let timezoneService = TimezoneService.shared
     @State private var selectedCityIDs: Set<String> = []
@@ -26,14 +29,17 @@ struct EventDetailView: View {
     // Timeline Plans & Templates (v1.6.0)
     @State private var availablePlans: [TimelinePlan] = []
     @State private var savePlanDialogContext: SavePlanDialogContext?
-    @State private var showLoadPlanMenu = false
-    @State private var showShareMenu = false
     @State private var showShareSheet = false
     @State private var shareItem: ShareableItem?
     @State private var isExportingImage = false
     @State private var isExportingData = false
     @State private var exportError: String?
     @State private var showExportError = false
+#if os(macOS)
+    @State private var calendarSuccessCityName: String?
+    @State private var calendarErrorMessage: String?
+    @State private var addingCalendarCityID: String?
+#endif
 
     private var eventImageURL: URL? {
         guard let imageURL = event.imageURL else { return nil }
@@ -49,9 +55,6 @@ struct EventDetailView: View {
 
     var body: some View {
         contentView
-        .onChange(of: savePlanDialogContext) { _, newValue in
-            print("EventDetailView savePlanDialogContext -> \(newValue?.id.uuidString ?? "nil")")
-        }
         .sheet(item: $savePlanDialogContext, onDismiss: {
             savePlanDialogContext = nil
         }) { context in
@@ -79,6 +82,30 @@ struct EventDetailView: View {
                 Text(exportError)
             }
         }
+#if os(macOS)
+        .alert(String(localized: "alert.success.title"), isPresented: Binding(
+            get: { calendarSuccessCityName != nil },
+            set: { if !$0 { calendarSuccessCityName = nil } }
+        )) {
+            Button(String(localized: "common.ok")) {
+                calendarSuccessCityName = nil
+            }
+        } message: {
+            Text(String(localized: "calendar.success"))
+        }
+        .alert(String(localized: "alert.error.title"), isPresented: Binding(
+            get: { calendarErrorMessage != nil },
+            set: { if !$0 { calendarErrorMessage = nil } }
+        )) {
+            Button(String(localized: "common.ok")) {
+                calendarErrorMessage = nil
+            }
+        } message: {
+            if let calendarErrorMessage = calendarErrorMessage {
+                Text(calendarErrorMessage)
+            }
+        }
+#endif
     }
 
     // MARK: - Layout
@@ -118,10 +145,11 @@ struct EventDetailView: View {
                         // Multi-city Timeline (single-day events)
                         if shouldDisplayMultiCitySection {
                             VStack(spacing: 16) {
-                                // Timeline action buttons (Save/Load/Share)
-                                if shouldShowTimeline(for: selectedTimelineCities) {
-                                    timelineActionButtons
+                                HStack {
+                                    Spacer()
+                                    plannerSettingsButton
                                 }
+                                .padding(.horizontal, 6)
 
                                 // Timeline view or placeholder
                                 if shouldShowTimeline(for: selectedTimelineCities) {
@@ -754,31 +782,28 @@ struct EventDetailView: View {
 
     // MARK: - Timeline Plans & Templates (v1.6.0)
 
-    /// Timeline action buttons (Save/Load/Share)
-    private var timelineActionButtons: some View {
-        HStack(spacing: 12) {
-            // Save Plan button
-            Button {
-                savePlanDialogContext = SavePlanDialogContext(
-                    cityIdentifiers: Array(selectedCityIDs)
-                )
-            } label: {
-                Label(String(localized: "timeline.plans.save"), systemImage: "square.and.arrow.down")
-                    .font(.system(size: 13, weight: .semibold))
-            }
-            .buttonStyle(.bordered)
-            .tint(.systemBlue)
-            .disabled(selectedCityIDs.isEmpty)
+    /// Planner actions (Save / Load / Share / Calendar)
+    private var plannerSettingsButton: some View {
+        Menu {
+            Section {
+                Button {
+                    savePlanDialogContext = SavePlanDialogContext(
+                        cityIdentifiers: Array(selectedCityIDs)
+                    )
+                } label: {
+                    Label(String(localized: "timeline.plans.save"), systemImage: "square.and.arrow.down")
+                }
+                .disabled(selectedCityIDs.isEmpty)
 
-            // Load Plan menu
-            Menu {
-                // Show available plans
-                if !availablePlans.isEmpty {
+                if availablePlans.isEmpty {
+                    Text(String(localized: "timeline.plans.no_plans"))
+                        .foregroundStyle(.secondary)
+                } else {
                     ForEach(availablePlans) { plan in
                         Button {
                             loadPlan(plan)
                         } label: {
-                            VStack(alignment: .leading) {
+                            VStack(alignment: .leading, spacing: 2) {
                                 Text(plan.name)
                                 Text("\(plan.cityIdentifiers.count) \(plan.cityIdentifiers.count == 1 ? String(localized: "timeline.plans.city") : String(localized: "timeline.plans.cities"))")
                                     .font(.caption)
@@ -786,45 +811,63 @@ struct EventDetailView: View {
                             }
                         }
                     }
-                } else {
-                    Text(String(localized: "timeline.plans.no_plans"))
-                        .foregroundStyle(.secondary)
                 }
-            } label: {
-                Label(String(localized: "timeline.plans.load"), systemImage: "tray.and.arrow.down")
-                    .font(.system(size: 13, weight: .semibold))
             }
-            .buttonStyle(.bordered)
-            .tint(.systemIndigo)
 
-            // Share menu
-            Menu {
+            Section {
                 Button {
-                    Task {
-                        await exportAsImage()
-                    }
+                    Task { await exportAsImage() }
                 } label: {
                     Label(String(localized: "timeline.plans.export_image"), systemImage: "photo")
                 }
+                .disabled(selectedCityIDs.isEmpty)
 
                 Button {
-                    Task {
-                        await exportPlanData()
-                    }
+                    Task { await exportPlanData() }
                 } label: {
                     Label(String(localized: "timeline.plans.export_data"), systemImage: "doc.badge.arrow.up")
                 }
-            } label: {
-                Label(String(localized: "timeline.plans.share"), systemImage: "square.and.arrow.up")
-                    .font(.system(size: 13, weight: .semibold))
+                .disabled(selectedCityIDs.isEmpty)
             }
-            .buttonStyle(.bordered)
-            .tint(.systemGreen)
-            .disabled(selectedCityIDs.isEmpty)
-
-            Spacer()
+#if os(macOS)
+            Section(String(localized: "calendar.action.add")) {
+                let cities = selectedTimelineCities
+                if cities.isEmpty {
+                    Text(String(localized: "calendar.action.add.empty", defaultValue: "Select at least one city to add it to Calendar."))
+                        .foregroundStyle(.secondary)
+                } else {
+                    ForEach(cities) { city in
+                        Button {
+                            handleAddToCalendar(for: city)
+                        } label: {
+                            Label(
+                                city.name,
+                                systemImage: addingCalendarCityID == city.timeZoneIdentifier ? "hourglass" : "calendar.badge.plus"
+                            )
+                        }
+                        .disabled(addingCalendarCityID != nil && addingCalendarCityID != city.timeZoneIdentifier)
+                    }
+                }
+            }
+#endif
+        } label: {
+            Image(systemName: "gearshape.fill")
+                .font(.system(size: 17, weight: .semibold))
+                .foregroundStyle(Color.primary.opacity(0.9))
+                .padding(14)
+                .background(
+                    Circle()
+                        .fill(.ultraThinMaterial)
+                        .overlay(
+                            Circle()
+                                .stroke(Color.primary.opacity(0.12), lineWidth: 1.2)
+                        )
+                )
+                .shadow(color: Color.black.opacity(0.18), radius: 14, y: 8)
+                .accessibilityLabel(Text(String(localized: "timeline.plans.options")))
         }
-        .padding(.horizontal, 20)
+        .menuStyle(.borderlessButton)
+        .buttonStyle(.plain)
     }
 
     /// Load timeline plans and apply default template
@@ -943,6 +986,32 @@ struct EventDetailView: View {
             AppLogger.viewModel.error("Failed to export plan data: \(error)")
         }
     }
+
+#if os(macOS)
+    private func handleAddToCalendar(for city: FavoriteCity) {
+        guard addingCalendarCityID == nil else { return }
+        let cityID = city.timeZoneIdentifier
+        addingCalendarCityID = cityID
+
+        Task {
+            do {
+                try await calendarService.addEventToCalendar(event: event, city: city)
+                await MainActor.run {
+                    calendarSuccessCityName = city.name
+                }
+            } catch {
+                await MainActor.run {
+                    calendarErrorMessage = error.localizedDescription
+                }
+            }
+            await MainActor.run {
+                if addingCalendarCityID == cityID {
+                    addingCalendarCityID = nil
+                }
+            }
+        }
+    }
+#endif
 
     private func syncSelectedCities() {
         guard shouldDisplayMultiCitySection else {
@@ -1112,15 +1181,6 @@ private struct CityTimeCard: View {
                         .lineLimit(1)
                     }
 
-                    // Add to Calendar Button (macOS only)
-                    #if os(macOS)
-                    Divider()
-                        .padding(.vertical, 4)
-
-                    AddToCalendarButton(event: event, city: city)
-                        .font(.system(size: 12))
-                        .frame(maxWidth: .infinity)
-                    #endif
                 }
             }
         }

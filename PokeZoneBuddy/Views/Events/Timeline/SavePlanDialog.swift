@@ -16,7 +16,6 @@ struct SavePlanDialog: View {
     @Environment(\.dismiss) private var dismiss
     @State private var planName: String = ""
     @FocusState private var isNameFieldFocused: Bool
-    private let debugID = UUID()
 
     var body: some View {
 #if os(macOS)
@@ -68,10 +67,6 @@ struct SavePlanDialog: View {
         .onAppear {
             planName = suggestedName
             isNameFieldFocused = true
-            print("SavePlanDialog[\(debugID)] appear (macOS)")
-        }
-        .onDisappear {
-            print("SavePlanDialog[\(debugID)] disappear (macOS)")
         }
     }
 #else
@@ -100,10 +95,6 @@ struct SavePlanDialog: View {
         .onAppear {
             planName = suggestedName
             isNameFieldFocused = true
-            print("SavePlanDialog[\(debugID)] appear (iOS)")
-        }
-        .onDisappear {
-            print("SavePlanDialog[\(debugID)] disappear (iOS)")
         }
     }
 #endif
