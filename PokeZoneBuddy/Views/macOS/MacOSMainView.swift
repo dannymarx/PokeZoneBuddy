@@ -195,7 +195,7 @@ private struct MacOSContentView: View {
             )
 
         case .settings:
-            SettingsView(displayMode: .primaryOnly, showsDismissButton: false)
+            SettingsView(displayMode: .primaryOnly, showsDismissButton: false, citiesViewModel: citiesViewModel)
         }
     }
 

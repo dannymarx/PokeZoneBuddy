@@ -82,12 +82,14 @@ struct SettingsView: View {
 
     private let displayMode: DisplayMode
     private let showsDismissButton: Bool
+    private let citiesViewModel: CitiesViewModel?
 
     // MARK: - Init
 
-    init(displayMode: DisplayMode = .full, showsDismissButton: Bool = true) {
+    init(displayMode: DisplayMode = .full, showsDismissButton: Bool = true, citiesViewModel: CitiesViewModel? = nil) {
         self.displayMode = displayMode
         self.showsDismissButton = showsDismissButton
+        self.citiesViewModel = citiesViewModel
     }
 
     // MARK: - State
@@ -104,7 +106,7 @@ struct SettingsView: View {
     @State private var isRefreshing = false
     @State private var navigationPath = NavigationPath()
     @State private var showNotificationSettings = false
-    @State private var citiesViewModel: CitiesViewModel?
+    @State private var localCitiesViewModel: CitiesViewModel?
 
     // MARK: - Body
 
@@ -150,9 +152,14 @@ struct SettingsView: View {
                 NotificationSettingsView()
             }
             .onAppear {
-                if citiesViewModel == nil {
-                    citiesViewModel = CitiesViewModel(modelContext: modelContext)
+                // Use injected viewModel if available, otherwise create a local one
+                if localCitiesViewModel == nil && citiesViewModel == nil {
+                    localCitiesViewModel = CitiesViewModel(modelContext: modelContext)
                 }
+                updateStats()
+            }
+            .onChange(of: citiesViewModel?.dataVersion ?? localCitiesViewModel?.dataVersion ?? 0) { _, _ in
+                // Update stats whenever cities data changes (import/export, etc.)
                 updateStats()
             }
             .confirmationDialog(
@@ -336,7 +343,7 @@ struct SettingsView: View {
                 Spacer()
             }
 
-            if let viewModel = citiesViewModel {
+            if let viewModel = citiesViewModel ?? localCitiesViewModel {
                 ImportExportView(viewModel: viewModel)
             } else {
                 Text("loading.generic")

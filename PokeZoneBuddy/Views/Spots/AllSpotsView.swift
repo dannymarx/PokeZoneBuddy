@@ -135,6 +135,7 @@ struct AllSpotsView: View {
                 }
             }
         }
+        .id(citiesViewModel.dataVersion) // Force list recreation when data changes
 #if os(macOS)
         .listStyle(.inset)
 #else
