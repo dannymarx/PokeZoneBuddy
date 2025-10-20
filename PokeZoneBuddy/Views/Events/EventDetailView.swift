@@ -91,7 +91,7 @@ struct EventDetailView: View {
             .scrollIndicators(.hidden, axes: .vertical)
             .hideScrollIndicatorsCompat()
             .onAppear(perform: syncSelectedCities)
-            .onChange(of: selectableCityIdentifiers) { _ in
+            .onChange(of: selectableCityIdentifiers) { _, _ in
                 syncSelectedCities()
             }
             .onChange(of: event.id) { _, _ in
