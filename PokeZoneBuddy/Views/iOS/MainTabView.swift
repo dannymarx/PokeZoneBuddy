@@ -66,7 +66,7 @@ struct MainTabView: View {
             }
 
             Tab(String(localized: "settings.title"), systemImage: "gearshape") {
-                SettingsView()
+                SettingsView(citiesViewModel: citiesVM)
             }
         }
         .tint(.accentColor)
