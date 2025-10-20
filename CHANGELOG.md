@@ -8,7 +8,7 @@ This project follows [Semantic Versioning](https://semver.org/).
 ## [1.5.0] – 2025-10-20
 
 ### Added
-- **Multi-City Planning Tool** – Revolutionary new feature for planning sequential event participation across multiple cities.
+- **Multi-City Planner** – Revolutionary new feature for planning sequential event participation across multiple cities.
   - Sequential timeline view showing event times across all favorite cities in chronological order
   - Visual timeline with color-coded city entries and playing time indicators
   - Smart travel gap detection between cities with automatic time calculations
