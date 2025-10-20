@@ -279,6 +279,7 @@ struct SettingsView: View {
             }
 
             Button {
+                guard !showNotificationSettings else { return }
                 showNotificationSettings = true
             } label: {
                 HStack(spacing: 12) {
@@ -307,6 +308,7 @@ struct SettingsView: View {
                         .font(.system(size: 12, weight: .semibold))
                         .foregroundStyle(.tertiary)
                 }
+                .contentShape(Rectangle())
                 .padding(16)
                 .background(
                     RoundedRectangle(cornerRadius: 12, style: .continuous)
