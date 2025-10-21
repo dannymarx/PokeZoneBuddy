@@ -44,8 +44,13 @@ class AppDelegate: NSObject, NSApplicationDelegate {
     }
 
     private func configureWindow(_ window: NSWindow) {
-        // Skip if this is a sheet or panel
+        // Only adjust primary SwiftUI application windows
         guard window.className.contains("SwiftUI") else { return }
+
+        // Sheets/modal panels should keep the default macOS behaviour
+        if window.sheetParent != nil || window is NSPanel || window.level != .normal {
+            return
+        }
 
         print("🪟 Configuring window: \(window.title)")
         print("📏 Before - minSize: \(window.minSize), maxSize: \(window.maxSize)")

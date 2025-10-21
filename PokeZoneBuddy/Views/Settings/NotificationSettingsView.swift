@@ -113,7 +113,7 @@ struct NotificationSettingsView: View {
                     openSettings()
                 } label: {
                     HStack {
-                        Text("action.open_settings")
+                        Text("action.open_system_settings")
                             .font(.system(size: 14, weight: .semibold))
                         Spacer()
                         Image(systemName: "arrow.up.right")
