@@ -371,7 +371,8 @@ final class CitiesViewModel {
 
         do {
             try modelContext.save()
-            loadFavoriteCitiesFromDatabase() // Reload to update spot counts
+            // Incremental update instead of full reload
+            dataVersion += 1
             AppLogger.viewModel.info(
                 "Spot hinzugefügt: \(name) in \(city.name) (\(category.localizedName))"
             )
@@ -396,7 +397,8 @@ final class CitiesViewModel {
 
         do {
             try modelContext.save()
-            loadFavoriteCitiesFromDatabase() // Reload to update spot counts
+            // Incremental update instead of full reload
+            dataVersion += 1
             AppLogger.viewModel.info("Spot gelöscht: \(spotName) aus \(cityName)")
         } catch {
             AppLogger.viewModel.error(
@@ -420,7 +422,8 @@ final class CitiesViewModel {
 
         do {
             try modelContext.save()
-            loadFavoriteCitiesFromDatabase() // Reload to update spot counts
+            // Incremental update instead of full reload
+            dataVersion += 1
             AppLogger.viewModel.logSuccess("Deleted spots from \(city.name)", count: offsets.count, itemName: "spot")
         } catch {
             AppLogger.viewModel.logError("Delete multiple spots", error: error, context: city.name)
@@ -447,7 +450,8 @@ final class CitiesViewModel {
 
         do {
             try modelContext.save()
-            loadFavoriteCitiesFromDatabase() // Reload to trigger view updates
+            // Incremental update instead of full reload
+            dataVersion += 1
             AppLogger.viewModel.info(
                 "Spot aktualisiert: \(name) (\(category.localizedName))"
             )
@@ -468,7 +472,8 @@ final class CitiesViewModel {
 
         do {
             try modelContext.save()
-            loadFavoriteCitiesFromDatabase() // Reload to trigger view updates
+            // Incremental update instead of full reload
+            dataVersion += 1
             AppLogger.viewModel.info(
                 "Spot Favoriten-Status geändert: \(spot.name) -> \(newStatus)"
             )
