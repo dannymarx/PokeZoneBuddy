@@ -66,14 +66,9 @@ class AppDelegate: NSObject, NSApplicationDelegate {
         AppLogger.app.debug("Configuring window: \(window.title)")
         #endif
 
-        // Store the current frame so we can restore it
-        let currentFrame = window.frame
-
         // Batch all configuration to minimize layout passes
-        // Use disableScreenUpdatesUntilFlush to prevent intermediate redraws
         NSAnimationContext.beginGrouping()
         NSAnimationContext.current.duration = 0
-        window.disableScreenUpdatesUntilFlush()
 
         // Set full resizability with complete style mask
         window.styleMask = [
