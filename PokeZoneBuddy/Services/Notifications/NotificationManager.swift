@@ -223,17 +223,14 @@ class NotificationManager: ObservableObject {
 
     /// Create a unique notification identifier
     private func notificationIdentifier(eventID: String, offset: ReminderOffset) -> String {
-        return "event-\(eventID)-\(offset.rawValue)"
+        return "event::\(eventID)::\(offset.rawValue)"
     }
 
     /// Extract event ID from notification identifier
     private func extractEventID(from identifier: String) -> String? {
-        let components = identifier.split(separator: "-")
-        guard components.count >= 2, components[0] == "event" else { return nil }
-
-        // Reconstruct event ID (might contain dashes)
-        let eventIDComponents = components.dropFirst().dropLast()
-        return eventIDComponents.isEmpty ? nil : eventIDComponents.joined(separator: "-")
+        let components = identifier.split(separator: "::")
+        guard components.count == 3, components[0] == "event" else { return nil }
+        return String(components[1])
     }
 
     /// Create a calendar trigger for a specific date
