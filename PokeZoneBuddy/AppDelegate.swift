@@ -53,14 +53,9 @@ class AppDelegate: NSObject, NSApplicationDelegate {
             return
         }
 
-        // Don't configure if window is currently in a layout pass
-        guard !window.inLiveResize else { return }
-
-        print("🪟 Configuring window: \(window.title)")
-        print("📏 Before - minSize: \(window.minSize), maxSize: \(window.maxSize)")
-        print("🎨 Before - styleMask: \(window.styleMask.rawValue)")
-        print("📍 Before - frame: \(window.frame)")
-        print("🔒 Before - contentLayoutRect: \(window.contentLayoutRect)")
+        #if DEBUG
+        AppLogger.app.debug("Configuring window: \(window.title)")
+        #endif
 
         // Store the current frame so we can restore it
         let currentFrame = window.frame
@@ -99,19 +94,9 @@ class AppDelegate: NSObject, NSApplicationDelegate {
         // Allow window to be positioned anywhere
         window.collectionBehavior = [.fullScreenPrimary, .managed]
 
-        NSAnimationContext.endGrouping()
-
-        // Restore the frame AFTER all other configuration is complete
-        // This minimizes the chance of triggering layout during the frame change
-        DispatchQueue.main.async {
-            window.setFrame(currentFrame, display: true, animate: false)
-        }
-
-        print("✅ After - minSize: \(window.minSize), maxSize: \(window.maxSize)")
-        print("✅ After - contentMinSize: \(window.contentMinSize), contentMaxSize: \(window.contentMaxSize)")
-        print("✅ After - styleMask: \(window.styleMask.rawValue)")
-        print("✅ Window is resizable: \(window.styleMask.contains(.resizable))")
-        print("📍 After - frame: \(window.frame)")
+        #if DEBUG
+        AppLogger.app.debug("Window configured with resizability enabled")
+        #endif
     }
 }
 #endif
