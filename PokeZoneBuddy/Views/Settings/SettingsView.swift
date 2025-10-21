@@ -120,6 +120,8 @@ struct SettingsView: View {
     @State private var showImportPicker = false
     @State private var timelineService: TimelineService?
     @State private var importResult: ImportResult?
+    @State private var showPlansView = false
+    @State private var showTemplatesView = false
     @State private var showImportSuccess = false
     @State private var importError: String?
     @State private var showExportAllPlans = false
@@ -241,6 +243,32 @@ struct SettingsView: View {
             } message: { message in
                 Text(message)
             }
+#if os(macOS)
+            .sheet(isPresented: $showPlansView) {
+                NavigationStack {
+                    TimelinePlansListView()
+                        .toolbar {
+                            ToolbarItem(placement: .cancellationAction) {
+                                Button(String(localized: "common.done")) {
+                                    showPlansView = false
+                                }
+                            }
+                        }
+                }
+            }
+            .sheet(isPresented: $showTemplatesView) {
+                NavigationStack {
+                    TimelineTemplatesView()
+                        .toolbar {
+                            ToolbarItem(placement: .cancellationAction) {
+                                Button(String(localized: "common.done")) {
+                                    showTemplatesView = false
+                                }
+                            }
+                        }
+                }
+            }
+#endif
         }
     }
 
@@ -250,6 +278,7 @@ struct SettingsView: View {
         VStack(spacing: 32) {
             appearanceSection
             notificationsNavigationSection
+            timelinePlansSection
             statisticsSection
             dataManagementSection
             actionsSection
@@ -259,7 +288,6 @@ struct SettingsView: View {
     @ViewBuilder
     private var supplementarySectionGroup: some View {
         VStack(spacing: 32) {
-            timelinePlansSection
             SettingsSupplementaryContent()
         }
     }
@@ -278,6 +306,7 @@ struct SettingsView: View {
             }
 
             VStack(spacing: 0) {
+#if os(iOS)
                 NavigationLink {
                     TimelinePlansListView()
                 } label: {
@@ -288,10 +317,23 @@ struct SettingsView: View {
                     )
                 }
                 .buttonStyle(.plain)
+#else
+                Button {
+                    showPlansView = true
+                } label: {
+                    timelineNavigationLabel(
+                        icon: "list.bullet.rectangle",
+                        title: String(localized: "settings.timeline.my_plans"),
+                        subtitle: String(localized: "settings.timeline.my_plans_subtitle")
+                    )
+                }
+                .buttonStyle(.plain)
+#endif
 
                 Divider()
                     .padding(.leading, 56)
 
+#if os(iOS)
                 NavigationLink {
                     TimelineTemplatesView()
                 } label: {
@@ -302,6 +344,18 @@ struct SettingsView: View {
                     )
                 }
                 .buttonStyle(.plain)
+#else
+                Button {
+                    showTemplatesView = true
+                } label: {
+                    timelineNavigationLabel(
+                        icon: "square.stack",
+                        title: String(localized: "settings.timeline.templates"),
+                        subtitle: String(localized: "settings.timeline.templates_subtitle")
+                    )
+                }
+                .buttonStyle(.plain)
+#endif
 
                 Divider()
                     .padding(.leading, 56)

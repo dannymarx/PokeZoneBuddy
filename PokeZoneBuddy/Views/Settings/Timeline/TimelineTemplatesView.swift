@@ -20,7 +20,8 @@ struct TimelineTemplatesView: View {
 
     @State private var timelineService: TimelineService?
     @State private var showCreateTemplate = false
-    @State private var selectedTemplate: TimelineTemplate?
+    @State private var showEditTemplate = false
+    @State private var templateToEdit: TimelineTemplate?
     @State private var showDeleteConfirmation = false
     @State private var templateToDelete: TimelineTemplate?
 
@@ -68,6 +69,11 @@ struct TimelineTemplatesView: View {
         }
         .sheet(isPresented: $showCreateTemplate) {
             CreateTemplateView()
+        }
+        .sheet(isPresented: $showEditTemplate) {
+            if let template = templateToEdit {
+                CreateTemplateView(templateToEdit: template)
+            }
         }
         .confirmationDialog(
             String(localized: "timeline.templates.delete_confirm"),
@@ -143,6 +149,9 @@ struct TimelineTemplatesView: View {
                             ForEach(templates) { template in
                                 TemplateRowView(template: template) {
                                     toggleDefaultStatus(template)
+                                } onEdit: {
+                                    templateToEdit = template
+                                    showEditTemplate = true
                                 } onDelete: {
                                     templateToDelete = template
                                     showDeleteConfirmation = true
@@ -239,6 +248,7 @@ struct TimelineTemplatesView: View {
 private struct TemplateRowView: View {
     let template: TimelineTemplate
     let onToggleDefault: () -> Void
+    let onEdit: () -> Void
     let onDelete: () -> Void
 
     var body: some View {
@@ -298,6 +308,15 @@ private struct TemplateRowView: View {
                 Spacer()
 
                 Menu {
+                    Button {
+                        onEdit()
+                    } label: {
+                        Label(
+                            String(localized: "timeline.templates.edit"),
+                            systemImage: "pencil"
+                        )
+                    }
+
                     Button {
                         onToggleDefault()
                     } label: {
