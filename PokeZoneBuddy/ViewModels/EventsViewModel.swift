@@ -224,8 +224,11 @@ final class EventsViewModel {
             let apiEventIDs = Set(eventDTOs.map { $0.id })
             let descriptor = FetchDescriptor<Event>()
 
-            guard let existingEvents = try? context.fetch(descriptor) else {
-                await AppLogger.viewModel.error("Failed to fetch existing events for cleanup")
+            let existingEvents: [Event]
+            do {
+                existingEvents = try context.fetch(descriptor)
+            } catch {
+                await AppLogger.viewModel.error("Failed to fetch existing events for cleanup: \(error)")
                 // Still try to save new events
                 do {
                     try context.save()
