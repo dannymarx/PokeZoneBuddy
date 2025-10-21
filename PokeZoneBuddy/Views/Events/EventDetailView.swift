@@ -554,7 +554,7 @@ struct EventDetailView: View {
 
     private var timelineSelectionPlaceholder: some View {
         VStack(alignment: .leading, spacing: 16) {
-            HStack(spacing: 8) {
+            HStack(spacing: 12) {
                 Image(systemName: "map.fill")
                     .font(.system(size: 18, weight: .semibold))
                     .foregroundStyle(Color.systemBlue)
@@ -566,6 +566,8 @@ struct EventDetailView: View {
                 Spacer()
 
                 plannerSettingsButton
+                    .font(.system(size: 18, weight: .semibold))
+                    .frame(width: 40, height: 40)
             }
 
             Text(String(localized: "timeline.planning.subtitle"))

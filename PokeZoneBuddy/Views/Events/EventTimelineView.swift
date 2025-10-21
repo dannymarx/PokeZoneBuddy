@@ -143,14 +143,16 @@ private struct SequentialTimelineView: View {
 
                 Spacer()
 
-                if let plannerMenu {
-                    plannerMenu
-                }
-
                 DurationBadge(
                     totalInterval: totalInterval,
                     playInterval: playInterval
                 )
+
+                if let plannerMenu {
+                    plannerMenu
+                        .font(.system(size: 18, weight: .semibold))
+                        .frame(width: 40, height: 40)
+                }
             }
 
             Text(String(localized: "timeline.planning.subtitle"))
