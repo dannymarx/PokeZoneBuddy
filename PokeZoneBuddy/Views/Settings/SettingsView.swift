@@ -7,6 +7,7 @@
 //
 import SwiftUI
 import SwiftData
+import UniformTypeIdentifiers
 
 enum ThemePreference: String, CaseIterable, Identifiable {
     static let storageKey = "settings.themePreference"
@@ -116,6 +117,17 @@ struct SettingsView: View {
     @State private var isRefreshing = false
     @State private var navigationPath = NavigationPath()
     @State private var localCitiesViewModel: CitiesViewModel?
+    @State private var showImportPicker = false
+    @State private var timelineService: TimelineService?
+    @State private var importResult: ImportResult?
+    @State private var showPlansView = false
+    @State private var showTemplatesView = false
+    @State private var showImportSuccess = false
+    @State private var importError: String?
+    @State private var showExportAllPlans = false
+    @State private var exportData: Data?
+    @State private var planCount = 0
+    @State private var templateCount = 0
 
     // MARK: - Body
 
@@ -162,6 +174,7 @@ struct SettingsView: View {
                 if localCitiesViewModel == nil && citiesViewModel == nil {
                     localCitiesViewModel = CitiesViewModel(modelContext: modelContext)
                 }
+                setupTimelineService()
                 updateStats()
             }
             .onChange(of: citiesViewModel?.dataVersion ?? localCitiesViewModel?.dataVersion ?? 0) { _, _ in
@@ -203,6 +216,59 @@ struct SettingsView: View {
             } message: {
                 Text(String(localized: "data.delete_all.warning"))
             }
+            .fileImporter(
+                isPresented: $showImportPicker,
+                allowedContentTypes: [.json],
+                allowsMultipleSelection: false
+            ) { result in
+                handleImport(result)
+            }
+            .alert(
+                String(localized: "timeline.import.success"),
+                isPresented: $showImportSuccess,
+                presenting: importResult
+            ) { _ in
+                Button(String(localized: "common.ok")) { }
+            } message: { result in
+                Text(result.summary)
+            }
+            .alert(
+                String(localized: "common.error"),
+                isPresented: .constant(importError != nil),
+                presenting: importError
+            ) { _ in
+                Button(String(localized: "common.ok")) {
+                    importError = nil
+                }
+            } message: { message in
+                Text(message)
+            }
+#if os(macOS)
+            .sheet(isPresented: $showPlansView) {
+                NavigationStack {
+                    TimelinePlansListView()
+                        .toolbar {
+                            ToolbarItem(placement: .cancellationAction) {
+                                Button(String(localized: "common.done")) {
+                                    showPlansView = false
+                                }
+                            }
+                        }
+                }
+            }
+            .sheet(isPresented: $showTemplatesView) {
+                NavigationStack {
+                    TimelineTemplatesView()
+                        .toolbar {
+                            ToolbarItem(placement: .cancellationAction) {
+                                Button(String(localized: "common.done")) {
+                                    showTemplatesView = false
+                                }
+                            }
+                        }
+                }
+            }
+#endif
         }
     }
 
@@ -212,6 +278,7 @@ struct SettingsView: View {
         VStack(spacing: 32) {
             appearanceSection
             notificationsNavigationSection
+            timelinePlansSection
             statisticsSection
             dataManagementSection
             actionsSection
@@ -220,10 +287,172 @@ struct SettingsView: View {
 
     @ViewBuilder
     private var supplementarySectionGroup: some View {
-        SettingsSupplementaryContent()
+        VStack(spacing: 32) {
+            SettingsSupplementaryContent()
+        }
     }
 
 
+
+    // MARK: - Timeline Plans Section
+
+    private var timelinePlansSection: some View {
+        VStack(spacing: 16) {
+            HStack {
+                Text(String(localized: "settings.timeline_management"))
+                    .font(.system(size: 18, weight: .semibold))
+                    .foregroundStyle(.primary)
+                Spacer()
+            }
+
+            VStack(spacing: 0) {
+#if os(iOS)
+                NavigationLink {
+                    TimelinePlansListView()
+                } label: {
+                    timelineNavigationLabel(
+                        icon: "list.bullet.rectangle",
+                        title: String(localized: "settings.timeline.my_plans"),
+                        subtitle: String(localized: "settings.timeline.my_plans_subtitle")
+                    )
+                }
+                .buttonStyle(.plain)
+#else
+                Button {
+                    showPlansView = true
+                } label: {
+                    timelineNavigationLabel(
+                        icon: "list.bullet.rectangle",
+                        title: String(localized: "settings.timeline.my_plans"),
+                        subtitle: String(localized: "settings.timeline.my_plans_subtitle")
+                    )
+                }
+                .buttonStyle(.plain)
+#endif
+
+                Divider()
+                    .padding(.leading, 56)
+
+#if os(iOS)
+                NavigationLink {
+                    TimelineTemplatesView()
+                } label: {
+                    timelineNavigationLabel(
+                        icon: "square.stack",
+                        title: String(localized: "settings.timeline.templates"),
+                        subtitle: String(localized: "settings.timeline.templates_subtitle")
+                    )
+                }
+                .buttonStyle(.plain)
+#else
+                Button {
+                    showTemplatesView = true
+                } label: {
+                    timelineNavigationLabel(
+                        icon: "square.stack",
+                        title: String(localized: "settings.timeline.templates"),
+                        subtitle: String(localized: "settings.timeline.templates_subtitle")
+                    )
+                }
+                .buttonStyle(.plain)
+#endif
+
+                Divider()
+                    .padding(.leading, 56)
+
+                Button {
+                    showImportPicker = true
+                } label: {
+                    timelineNavigationLabel(
+                        icon: "square.and.arrow.down",
+                        title: String(localized: "timeline.import.title"),
+                        subtitle: String(localized: "timeline.import.subtitle"),
+                        showChevron: false
+                    )
+                }
+                .buttonStyle(.plain)
+            }
+            .background(
+                RoundedRectangle(cornerRadius: 12, style: .continuous)
+                    .fill(.ultraThinMaterial)
+            )
+            .overlay(
+                RoundedRectangle(cornerRadius: 12, style: .continuous)
+                    .strokeBorder(
+                        LinearGradient(
+                            colors: [
+                                .white.opacity(0.25),
+                                .systemPurple.opacity(0.15)
+                            ],
+                            startPoint: .topLeading,
+                            endPoint: .bottomTrailing
+                        ),
+                        lineWidth: 1
+                    )
+            )
+            .shadow(color: .black.opacity(0.05), radius: 8, x: 0, y: 2)
+
+            // Statistics
+            HStack(spacing: 16) {
+                TimelineStatBox(
+                    count: planCount,
+                    label: String(localized: "timeline.stats.plans"),
+                    icon: "map"
+                )
+
+                Divider()
+                    .frame(height: 40)
+
+                TimelineStatBox(
+                    count: templateCount,
+                    label: String(localized: "timeline.stats.templates"),
+                    icon: "square.stack"
+                )
+            }
+            .padding(16)
+            .background(
+                RoundedRectangle(cornerRadius: 12, style: .continuous)
+                    .fill(Color.systemPurple.opacity(0.05))
+            )
+        }
+    }
+
+    private func timelineNavigationLabel(
+        icon: String,
+        title: String,
+        subtitle: String,
+        showChevron: Bool = true
+    ) -> some View {
+        HStack(spacing: 12) {
+            Image(systemName: icon)
+                .font(.system(size: 20))
+                .foregroundStyle(Color.systemPurple)
+                .frame(width: 40, height: 40)
+                .background(
+                    Circle()
+                        .fill(Color.systemPurple.opacity(0.1))
+                )
+
+            VStack(alignment: .leading, spacing: 4) {
+                Text(title)
+                    .font(.system(size: 14, weight: .medium))
+                    .foregroundStyle(.primary)
+
+                Text(subtitle)
+                    .font(.system(size: 12))
+                    .foregroundStyle(.secondary)
+            }
+
+            Spacer()
+
+            if showChevron {
+                Image(systemName: "chevron.right")
+                    .font(.system(size: 12, weight: .semibold))
+                    .foregroundStyle(.tertiary)
+            }
+        }
+        .padding(16)
+    }
 
     // MARK: - Appearance Section
 
@@ -525,6 +754,14 @@ struct SettingsView: View {
         let favoriteDescriptor = FetchDescriptor<FavoriteEvent>()
         favoriteEventCount = (try? modelContext.fetchCount(favoriteDescriptor)) ?? 0
 
+        // Count timeline plans
+        let planDescriptor = FetchDescriptor<TimelinePlan>()
+        planCount = (try? modelContext.fetchCount(planDescriptor)) ?? 0
+
+        // Count timeline templates
+        let templateDescriptor = FetchDescriptor<TimelineTemplate>()
+        templateCount = (try? modelContext.fetchCount(templateDescriptor)) ?? 0
+
         isRefreshing = false
     }
 
@@ -594,6 +831,58 @@ struct SettingsView: View {
             get: { ThemePreference(rawValue: themePreferenceRaw) ?? .system },
             set: { themePreferenceRaw = $0.rawValue }
         )
+    }
+
+    private func setupTimelineService() {
+        guard timelineService == nil else { return }
+
+        let timelineRepo = TimelineRepository(modelContext: modelContext)
+        let cityRepo = CityRepository(modelContext: modelContext)
+        timelineService = TimelineService(
+            timelineRepository: timelineRepo,
+            cityRepository: cityRepo
+        )
+    }
+
+    private func handleImport(_ result: Result<[URL], Error>) {
+        switch result {
+        case .success(let urls):
+            guard let url = urls.first else { return }
+            importPlanFile(from: url)
+        case .failure(let error):
+            importError = error.localizedDescription
+        }
+    }
+
+    private func importPlanFile(from url: URL) {
+        guard let service = timelineService else {
+            importError = String(localized: "timeline.error.service_unavailable")
+            return
+        }
+
+        Task {
+            do {
+                // Read file data
+                let data = try Data(contentsOf: url)
+
+                // Import using service
+                let result = try await service.importPlan(from: data)
+
+                await MainActor.run {
+                    importResult = result
+                    showImportSuccess = true
+                }
+            } catch {
+                await MainActor.run {
+                    if let timelineError = error as? TimelineError {
+                        importError = timelineError.errorDescription
+                    } else {
+                        importError = String(localized: "timeline.import.failed")
+                    }
+                }
+                AppLogger.service.error("Failed to import plan: \(error)")
+            }
+        }
     }
 
 }
@@ -1006,6 +1295,25 @@ private func applicationIcon() -> NSImage? {
     NSImage(named: NSImage.applicationIconName)
 }
 #endif
+
+// MARK: - Timeline Stat Box
+
+private struct TimelineStatBox: View {
+    let count: Int
+    let label: String
+    let icon: String
+
+    var body: some View {
+        VStack(spacing: 8) {
+            Image(systemName: icon)
+                .font(.system(size: 20))
+                .foregroundStyle(Color.systemPurple)
+
+            AnimatedCounter(value: count, label: label)
+        }
+        .frame(maxWidth: .infinity)
+    }
+}
 
 // MARK: - Preview
 
