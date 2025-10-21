@@ -11,14 +11,25 @@ import Foundation
 /// Actor to manage concurrent request deduplication
 private actor RequestCoordinator {
     private var ongoingTask: Task<[EventDTO], Error>?
+    private var isForceRefresh: Bool = false
 
     func getOrCreateTask(forceRefresh: Bool, performFetch: @escaping (Bool) async throws -> [EventDTO]) async throws -> [EventDTO] {
-        // If there's an existing task, reuse it
+        // If existing task is ongoing but caller wants forceRefresh, upgrade it
         if let existingTask = ongoingTask {
-            return try await existingTask.value
+            if forceRefresh && !isForceRefresh {
+                // Cancel existing task and create new one with forceRefresh
+                existingTask.cancel()
+                ongoingTask = nil
+                await AppLogger.network.info("Upgrading ongoing request to forceRefresh")
+            } else {
+                // Reuse existing task
+                await AppLogger.network.debug("Reusing ongoing API request")
+                return try await existingTask.value
+            }
         }
 
         // Create new task
+        isForceRefresh = forceRefresh
         let task = Task<[EventDTO], Error> {
             try await performFetch(forceRefresh)
         }
@@ -28,9 +39,11 @@ private actor RequestCoordinator {
         do {
             let result = try await task.value
             ongoingTask = nil
+            isForceRefresh = false
             return result
         } catch {
             ongoingTask = nil
+            isForceRefresh = false
             throw error
         }
     }
