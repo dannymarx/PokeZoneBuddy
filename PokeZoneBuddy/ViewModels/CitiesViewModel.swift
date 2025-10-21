@@ -121,8 +121,9 @@ final class CitiesViewModel {
             favoriteCities = try modelContext.fetch(descriptor)
             sortCities()
             dataVersion += 1  // Increment to trigger view updates
+            AppLogger.viewModel.debug("Loaded \(favoriteCities.count) cities from database")
         } catch {
-            AppLogger.viewModel.error("Fehler beim Laden der Städte: \(String(describing: error))")
+            AppLogger.viewModel.logError("Load cities from database", error: error)
             errorMessage = "Failed to load saved cities"
             showError = true
         }
@@ -251,18 +252,18 @@ final class CitiesViewModel {
             
             // Liste neu laden
             loadFavoriteCitiesFromDatabase()
-            
+
             // Suche zurücksetzen
             searchText = ""
             searchResults = []
-            
-            AppLogger.viewModel.info("Stadt hinzugefügt: \(cityName)")
+
+            AppLogger.viewModel.infoPrivate("Added city: \(cityName)")
         } catch let error as CityError {
-            AppLogger.viewModel.error("Fehler beim Hinzufügen: \(error.localizedDescription)")
+            AppLogger.viewModel.logError("Add city", error: error, context: completion.title)
             errorMessage = error.localizedDescription
             showError = true
         } catch {
-            AppLogger.viewModel.error("Unbekannter Fehler: \(String(describing: error))")
+            AppLogger.viewModel.logError("Add city (unknown error)", error: error, context: completion.title)
             errorMessage = "Failed to add the city"
             showError = true
         }
@@ -278,9 +279,9 @@ final class CitiesViewModel {
         do {
             try modelContext.save()
             loadFavoriteCitiesFromDatabase()
-            AppLogger.viewModel.info("Stadt entfernt: \(city.name)")
+            AppLogger.viewModel.infoPrivate("Removed city: \(city.name)")
         } catch {
-            AppLogger.viewModel.error("Fehler beim Entfernen: \(String(describing: error))")
+            AppLogger.viewModel.logError("Remove city", error: error, context: city.name)
             errorMessage = "Failed to remove the city"
             showError = true
         }
@@ -297,9 +298,9 @@ final class CitiesViewModel {
         do {
             try modelContext.save()
             loadFavoriteCitiesFromDatabase()
-            AppLogger.viewModel.info("Städte entfernt: \(offsets.count) Stadt(e)")
+            AppLogger.viewModel.logSuccess("Removed cities", count: offsets.count, itemName: "city")
         } catch {
-            AppLogger.viewModel.error("Fehler beim Entfernen: \(String(describing: error))")
+            AppLogger.viewModel.logError("Remove multiple cities", error: error)
             errorMessage = "Failed to remove cities"
             showError = true
         }
@@ -413,9 +414,9 @@ final class CitiesViewModel {
         do {
             try modelContext.save()
             loadFavoriteCitiesFromDatabase() // Reload to update spot counts
-            AppLogger.viewModel.info("Spots gelöscht: \(offsets.count) Spot(s) aus \(city.name)")
+            AppLogger.viewModel.logSuccess("Deleted spots from \(city.name)", count: offsets.count, itemName: "spot")
         } catch {
-            AppLogger.viewModel.error("Fehler beim Löschen: \(String(describing: error))")
+            AppLogger.viewModel.logError("Delete multiple spots", error: error, context: city.name)
             errorMessage = "Failed to delete spots"
             showError = true
         }

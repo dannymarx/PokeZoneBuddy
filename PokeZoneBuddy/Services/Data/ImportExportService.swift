@@ -24,11 +24,21 @@ final class ImportExportService {
         let exportCities = cities.map { ExportCity(from: $0) }
         let exportData = ExportData(cities: exportCities)
 
+        let spotCount = cities.reduce(0) { $0 + $1.spots.count }
+        AppLogger.service.info("Starting export of \(cities.count) cities with \(spotCount) spots")
+
         let encoder = JSONEncoder()
         encoder.dateEncodingStrategy = .iso8601
         encoder.outputFormatting = [.prettyPrinted, .sortedKeys]
 
-        return try encoder.encode(exportData)
+        do {
+            let data = try encoder.encode(exportData)
+            AppLogger.service.logSuccess("Export completed", count: cities.count, itemName: "city")
+            return data
+        } catch {
+            AppLogger.service.logError("Export data", error: error)
+            throw error
+        }
     }
 
     /// Generates a filename for the export with current date
@@ -94,19 +104,31 @@ final class ImportExportService {
         modelContext: ModelContext,
         existingCities: [FavoriteCity]
     ) throws -> ImportResult {
+        AppLogger.service.info("Starting import in \(mode == .merge ? "merge" : "replace") mode")
+
         // Decode JSON
         let decoder = JSONDecoder()
         decoder.dateDecodingStrategy = .iso8601
 
-        let exportData = try decoder.decode(ExportData.self, from: data)
+        let exportData: ExportData
+        do {
+            exportData = try decoder.decode(ExportData.self, from: data)
+        } catch {
+            AppLogger.service.logError("Decode import data", error: error)
+            throw error
+        }
 
         // Validate version (for future compatibility)
         guard !exportData.version.isEmpty else {
+            AppLogger.service.error("Import validation failed: Missing version information")
             throw ImportError.invalidFormat("Missing version information")
         }
 
+        AppLogger.service.info("Import file contains \(exportData.cities.count) cities (version: \(exportData.version))")
+
         // Handle replace mode
         if mode == .replace {
+            AppLogger.service.info("Deleting \(existingCities.count) existing cities (replace mode)")
             for city in existingCities {
                 modelContext.delete(city)
             }
@@ -198,14 +220,28 @@ final class ImportExportService {
         }
 
         // Save all changes
-        try modelContext.save()
+        do {
+            try modelContext.save()
+        } catch {
+            AppLogger.service.logError("Save imported data", error: error)
+            throw error
+        }
 
-        return ImportResult(
+        let result = ImportResult(
             citiesImported: citiesImported,
             spotsImported: spotsImported,
             citiesSkipped: citiesSkipped,
             errors: errors
         )
+
+        // Log summary
+        if result.hasErrors {
+            AppLogger.service.warn("Import completed with errors: \(citiesImported) cities, \(spotsImported) spots, \(citiesSkipped) skipped, \(errors.count) errors")
+        } else {
+            AppLogger.service.info("Import completed successfully: \(citiesImported) cities, \(spotsImported) spots, \(citiesSkipped) skipped")
+        }
+
+        return result
     }
 
     // MARK: - Validation
@@ -252,10 +288,16 @@ final class ImportExportService {
         let decoder = JSONDecoder()
         decoder.dateDecodingStrategy = .iso8601
 
-        let exportData = try decoder.decode(ExportData.self, from: data)
-        let spotCount = exportData.cities.reduce(0) { $0 + $1.spots.count }
+        do {
+            let exportData = try decoder.decode(ExportData.self, from: data)
+            let spotCount = exportData.cities.reduce(0) { $0 + $1.spots.count }
 
-        return (cities: exportData.cities.count, spots: spotCount)
+            AppLogger.service.debug("Preview import: \(exportData.cities.count) cities, \(spotCount) spots")
+            return (cities: exportData.cities.count, spots: spotCount)
+        } catch {
+            AppLogger.service.logError("Preview import data", error: error)
+            throw error
+        }
     }
 }
 

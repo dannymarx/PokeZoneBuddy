@@ -90,7 +90,7 @@ extension EmptyStateView {
         title: "No Cities Yet",
         subtitle: "Add your favorite cities to track event times in different time zones",
         action: .init(title: "Add City", systemImage: "plus.circle") {
-            print("Add city tapped")
+            AppLogger.app.debug("Preview: Add city tapped")
         }
     )
 }
