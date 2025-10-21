@@ -52,11 +52,9 @@ class AppDelegate: NSObject, NSApplicationDelegate {
             return
         }
 
-        print("🪟 Configuring window: \(window.title)")
-        print("📏 Before - minSize: \(window.minSize), maxSize: \(window.maxSize)")
-        print("🎨 Before - styleMask: \(window.styleMask.rawValue)")
-        print("📍 Before - frame: \(window.frame)")
-        print("🔒 Before - contentLayoutRect: \(window.contentLayoutRect)")
+        #if DEBUG
+        AppLogger.app.debug("Configuring window: \(window.title)")
+        #endif
 
         // Set full resizability with complete style mask
         window.styleMask = [
@@ -92,11 +90,9 @@ class AppDelegate: NSObject, NSApplicationDelegate {
         // Allow window to be positioned anywhere
         window.collectionBehavior = [.fullScreenPrimary, .managed]
 
-        print("✅ After - minSize: \(window.minSize), maxSize: \(window.maxSize)")
-        print("✅ After - contentMinSize: \(window.contentMinSize), contentMaxSize: \(window.contentMaxSize)")
-        print("✅ After - styleMask: \(window.styleMask.rawValue)")
-        print("✅ Window is resizable: \(window.styleMask.contains(.resizable))")
-        print("📍 After - frame: \(window.frame)")
+        #if DEBUG
+        AppLogger.app.debug("Window configured with resizability enabled")
+        #endif
     }
 }
 #endif
