@@ -342,9 +342,10 @@ final class CitiesViewModel {
         }
 
         // Prüfe auf Duplikate (gleiche Koordinaten in gleicher Stadt)
+        // Uses Haversine distance with 10 meter threshold for realistic duplicate detection
         let isDuplicate = city.spots.contains { spot in
-            abs(spot.latitude - latitude) < 0.000001 &&
-            abs(spot.longitude - longitude) < 0.000001
+            coordinatesAreDuplicate(lat1: spot.latitude, lon1: spot.longitude,
+                                  lat2: latitude, lon2: longitude)
         }
 
         if isDuplicate {
@@ -604,6 +605,37 @@ final class CitiesViewModel {
         // Cities typically have comma-separated subtitle with region/country
         // Streets typically have the full address in subtitle
         return true
+    }
+
+    // MARK: - Coordinate Helper
+
+    /// Check if two coordinates are duplicates using Haversine distance
+    /// - Parameters:
+    ///   - lat1: Latitude of first coordinate
+    ///   - lon1: Longitude of first coordinate
+    ///   - lat2: Latitude of second coordinate
+    ///   - lon2: Longitude of second coordinate
+    /// - Returns: True if coordinates are within 10 meters of each other
+    private func coordinatesAreDuplicate(lat1: Double, lon1: Double, lat2: Double, lon2: Double) -> Bool {
+        let threshold: Double = 10.0 // meters
+
+        // Quick check for exact matches (within floating-point precision)
+        if abs(lat1 - lat2) < 0.0000001 && abs(lon1 - lon2) < 0.0000001 {
+            return true
+        }
+
+        // Haversine distance for nearby coordinates
+        let R = 6371000.0 // Earth radius in meters
+        let dLat = (lat2 - lat1) * .pi / 180.0
+        let dLon = (lon2 - lon1) * .pi / 180.0
+
+        let a = sin(dLat / 2) * sin(dLat / 2) +
+                cos(lat1 * .pi / 180.0) * cos(lat2 * .pi / 180.0) *
+                sin(dLon / 2) * sin(dLon / 2)
+        let c = 2 * atan2(sqrt(a), sqrt(1 - a))
+        let distance = R * c
+
+        return distance < threshold
     }
 }
 
