@@ -42,8 +42,11 @@ final class EventsViewModel {
     /// Count of events from last successful refresh
     private(set) var lastRefreshEventCount: Int = 0
 
+    /// Task for auto-resetting refresh state
+    private var autoResetTask: Task<Void, Never>?
+
     // MARK: - Dependencies
-    
+
     private let modelContext: ModelContext
     private let networkMonitor: NetworkMonitor
     private let apiService: APIService
@@ -151,11 +154,15 @@ final class EventsViewModel {
             refreshState = .success
             AppLogger.viewModel.info("Successfully refreshed \(eventCount) events")
 
+            // Cancel any pending auto-reset
+            autoResetTask?.cancel()
+
             // Auto-reset to idle after 2.5 seconds
-            Task {
+            autoResetTask = Task { @MainActor [weak self] in
                 try? await Task.sleep(nanoseconds: 2_500_000_000)
-                if refreshState == .success {
-                    refreshState = .idle
+                guard !Task.isCancelled else { return }
+                if self?.refreshState == .success {
+                    self?.refreshState = .idle
                 }
             }
 
@@ -173,11 +180,15 @@ final class EventsViewModel {
             refreshState = .error
             AppLogger.viewModel.error("Force refresh error: \(error)")
 
+            // Cancel any pending auto-reset
+            autoResetTask?.cancel()
+
             // Auto-reset to idle after 3 seconds
-            Task {
+            autoResetTask = Task { @MainActor [weak self] in
                 try? await Task.sleep(nanoseconds: 3_000_000_000)
-                if refreshState == .error {
-                    refreshState = .idle
+                guard !Task.isCancelled else { return }
+                if self?.refreshState == .error {
+                    self?.refreshState = .idle
                 }
             }
         }
@@ -321,5 +332,12 @@ final class EventsViewModel {
                 return event.isUpcoming || event.isCurrentlyActive
             }
             .sorted { $0.startTime < $1.startTime }
+    }
+
+    // MARK: - Deinitialization
+
+    deinit {
+        // Cancel any pending auto-reset task to prevent memory leaks
+        autoResetTask?.cancel()
     }
 }
