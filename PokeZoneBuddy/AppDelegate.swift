@@ -13,35 +13,44 @@ class AppDelegate: NSObject, NSApplicationDelegate {
     private var configuredWindows = Set<String>()
 
     func applicationDidFinishLaunching(_ notification: Notification) {
-        // Configure all windows immediately
-        configureWindows()
+        // Temporarily disabled to fix layout recursion issue
+        // TODO: Re-enable window configuration after fixing the deadlock
 
-        // Observe window creation
-        NotificationCenter.default.addObserver(
-            self,
-            selector: #selector(windowDidBecomeKey(_:)),
-            name: NSWindow.didBecomeKeyNotification,
-            object: nil
-        )
+        // // Delay window configuration to avoid layout recursion
+        // DispatchQueue.main.asyncAfter(deadline: .now() + 1.0) { [weak self] in
+        //     self?.configureWindows()
+        // }
+        //
+        // // Observe window creation
+        // NotificationCenter.default.addObserver(
+        //     self,
+        //     selector: #selector(windowDidBecomeKey(_:)),
+        //     name: NSWindow.didBecomeKeyNotification,
+        //     object: nil
+        // )
     }
 
-    @objc private func windowDidBecomeKey(_ notification: Notification) {
-        configureWindows()
-    }
+    // @objc private func windowDidBecomeKey(_ notification: Notification) {
+    //     // Delay to avoid interfering with ongoing layout
+    //     DispatchQueue.main.asyncAfter(deadline: .now() + 0.1) { [weak self] in
+    //         self?.configureWindows()
+    //     }
+    // }
 
     private func configureWindows() {
-        for window in NSApplication.shared.windows {
-            let windowID = "\(ObjectIdentifier(window).hashValue)"
-            // Only configure each window once
-            if !configuredWindows.contains(windowID) {
-                configuredWindows.insert(windowID)
-                // Delay configuration to let SwiftUI finish initial layout
-                // Use longer delay to ensure all layout passes are complete
-                DispatchQueue.main.asyncAfter(deadline: .now() + 0.5) { [weak self] in
-                    self?.configureWindow(window)
-                }
-            }
-        }
+        // Temporarily disabled
+        // for window in NSApplication.shared.windows {
+        //     let windowID = "\(ObjectIdentifier(window).hashValue)"
+        //     // Only configure each window once
+        //     if !configuredWindows.contains(windowID) {
+        //         configuredWindows.insert(windowID)
+        //         // Delay configuration to let SwiftUI finish initial layout
+        //         // Use longer delay to ensure all layout passes are complete
+        //         DispatchQueue.main.asyncAfter(deadline: .now() + 0.5) { [weak self] in
+        //             self?.configureWindow(window)
+        //         }
+        //     }
+        // }
     }
 
     private func configureWindow(_ window: NSWindow) {

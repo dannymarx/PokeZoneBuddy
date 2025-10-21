@@ -65,7 +65,7 @@ struct PokeZoneBuddyApp: App {
     #endif
 
     /// Timeline service for plan and template management (v1.6.0)
-    @State private var timelineService: TimelineService!
+    @State private var timelineService: TimelineService?
 
     /// Theme preference with proper reactive binding
     @AppStorage(ThemePreference.storageKey) private var themePreferenceRaw = ThemePreference.system.rawValue
@@ -79,24 +79,36 @@ struct PokeZoneBuddyApp: App {
     var body: some Scene {
         WindowGroup {
             #if os(iOS)
-            MainTabView()
-                .environment(networkMonitor)
-                .environment(timelineService)
-                .preferredColorScheme(currentTheme)
-                .onAppear {
-                    setupServices()
-                    setupBackgroundRefresh()
+            Group {
+                if let timelineService {
+                    MainTabView()
+                        .environment(networkMonitor)
+                        .environment(timelineService)
+                        .preferredColorScheme(currentTheme)
+                } else {
+                    ProgressView()
+                        .onAppear {
+                            setupServices()
+                            setupBackgroundRefresh()
+                        }
                 }
+            }
             #else
-            MacOSMainView()
-                .environment(networkMonitor)
-                .environment(calendarService)
-                .environment(timelineService)
-                .preferredColorScheme(currentTheme)
-                .onAppear {
-                    setupServices()
-                    setupBackgroundRefresh()
+            Group {
+                if let timelineService {
+                    MacOSMainView()
+                        .environment(networkMonitor)
+                        .environment(calendarService)
+                        .environment(timelineService)
+                        .preferredColorScheme(currentTheme)
+                } else {
+                    ProgressView()
+                        .onAppear {
+                            setupServices()
+                            setupBackgroundRefresh()
+                        }
                 }
+            }
             #endif
         }
         .modelContainer(sharedModelContainer)
