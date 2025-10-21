@@ -212,15 +212,52 @@ final class EventsViewModel {
             // This is more efficient than delete-all-then-insert
             let apiEventIDs = Set(eventDTOs.map { $0.id })
             let descriptor = FetchDescriptor<Event>()
-            if let existingEvents = try? context.fetch(descriptor) {
-                for event in existingEvents where !apiEventIDs.contains(event.id) {
-                    context.delete(event)
+
+            guard let existingEvents = try? context.fetch(descriptor) else {
+                await AppLogger.viewModel.error("Failed to fetch existing events for cleanup")
+                // Still try to save new events
+                do {
+                    try context.save()
+                    await AppLogger.viewModel.info("Saved \(eventDTOs.count) events to local storage")
+                } catch {
+                    await AppLogger.viewModel.error("Failed to save events: \(error)")
                 }
+                return
             }
 
-            try? context.save()
+            // Validate: Don't delete everything if API returns suspiciously few events
+            if eventDTOs.count < 5 && existingEvents.count > 10 {
+                await AppLogger.viewModel.warn("API returned only \(eventDTOs.count) events but we have \(existingEvents.count) cached. Skipping cleanup to prevent data loss.")
+                // Still save new events, but don't delete old ones
+                do {
+                    try context.save()
+                    await AppLogger.viewModel.info("Saved \(eventDTOs.count) events to local storage (cleanup skipped)")
+                } catch {
+                    await AppLogger.viewModel.error("Failed to save events: \(error)")
+                }
+                return
+            }
 
-            await AppLogger.viewModel.info("Saved \(eventDTOs.count) events to local storage")
+            // Safe deletion with logging
+            let eventsToDelete = existingEvents.filter { !apiEventIDs.contains($0.id) }
+            let deletedCount = eventsToDelete.count
+
+            for event in eventsToDelete {
+                context.delete(event)
+            }
+
+            // Save with proper error handling
+            do {
+                try context.save()
+                if deletedCount > 0 {
+                    await AppLogger.viewModel.info("Saved \(eventDTOs.count) events and cleaned up \(deletedCount) old events")
+                } else {
+                    await AppLogger.viewModel.info("Saved \(eventDTOs.count) events to local storage")
+                }
+            } catch {
+                await AppLogger.viewModel.error("Failed to save events: \(error)")
+                // Don't throw - we want to keep using cached events
+            }
         }.value
 
         // Reload from storage
