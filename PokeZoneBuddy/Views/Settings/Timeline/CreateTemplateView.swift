@@ -9,13 +9,24 @@
 import SwiftUI
 import SwiftData
 
-/// View for creating a new timeline template
+/// View for creating or editing a timeline template
 struct CreateTemplateView: View {
 
     // MARK: - Environment
 
     @Environment(\.modelContext) private var modelContext
     @Environment(\.dismiss) private var dismiss
+
+    // MARK: - Properties
+
+    /// The template to edit (nil for creating a new template)
+    let templateToEdit: TimelineTemplate?
+
+    // MARK: - Initialization
+
+    init(templateToEdit: TimelineTemplate? = nil) {
+        self.templateToEdit = templateToEdit
+    }
 
     // MARK: - State
 
@@ -43,6 +54,16 @@ struct CreateTemplateView: View {
     ]
 
     // MARK: - Computed Properties
+
+    private var isEditMode: Bool {
+        templateToEdit != nil
+    }
+
+    private var navigationTitle: String {
+        isEditMode
+            ? String(localized: "timeline.templates.edit")
+            : String(localized: "timeline.templates.create")
+    }
 
     private var filteredCities: [FavoriteCity] {
         if searchText.isEmpty {
@@ -124,7 +145,7 @@ struct CreateTemplateView: View {
                     }
                 }
             }
-            .navigationTitle(String(localized: "timeline.templates.create"))
+            .navigationTitle(navigationTitle)
 #if os(iOS)
             .navigationBarTitleDisplayMode(.inline)
 #endif
@@ -149,6 +170,7 @@ struct CreateTemplateView: View {
             .onAppear {
                 setupService()
                 loadCities()
+                populateEditData()
             }
             .alert(
                 String(localized: "common.error"),
@@ -195,6 +217,15 @@ struct CreateTemplateView: View {
         }
     }
 
+    private func populateEditData() {
+        guard let template = templateToEdit else { return }
+
+        templateName = template.name
+        selectedEventType = template.eventType
+        selectedCityIDs = Set(template.cityIdentifiers)
+        isDefault = template.isDefault
+    }
+
     private func toggleCity(_ city: FavoriteCity) {
         if selectedCityIDs.contains(city.timeZoneIdentifier) {
             selectedCityIDs.remove(city.timeZoneIdentifier)
@@ -211,13 +242,25 @@ struct CreateTemplateView: View {
         Task {
             do {
                 let cityIdentifiers = Array(selectedCityIDs)
+                let trimmedName = templateName.trimmingCharacters(in: .whitespaces)
 
-                try await service.saveTemplate(
-                    name: templateName.trimmingCharacters(in: .whitespaces),
-                    eventType: selectedEventType,
-                    cityIdentifiers: cityIdentifiers,
-                    isDefault: isDefault
-                )
+                if let template = templateToEdit {
+                    // Edit existing template
+                    try await service.updateTemplate(
+                        template,
+                        name: trimmedName,
+                        cityIdentifiers: cityIdentifiers,
+                        isDefault: isDefault
+                    )
+                } else {
+                    // Create new template
+                    try await service.saveTemplate(
+                        name: trimmedName,
+                        eventType: selectedEventType,
+                        cityIdentifiers: cityIdentifiers,
+                        isDefault: isDefault
+                    )
+                }
 
                 await MainActor.run {
                     dismiss()

@@ -6981,6 +6981,23 @@
         }
       }
     },
+    "timeline.templates.apply" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Vorlage anwenden"
+          }
+        },
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Apply Template"
+          }
+        }
+      }
+    },
     "timeline.templates.create" : {
       "extractionState" : "manual",
       "localizations" : {
@@ -7028,6 +7045,23 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Delete this template?"
+          }
+        }
+      }
+    },
+    "timeline.templates.edit" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Bearbeiten"
+          }
+        },
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Edit"
           }
         }
       }

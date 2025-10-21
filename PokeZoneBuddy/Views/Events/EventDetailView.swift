@@ -33,6 +33,7 @@ struct EventDetailView: View {
 
     // Timeline Plans & Templates (v1.6.0)
     @State private var availablePlans: [TimelinePlan] = []
+    @State private var availableTemplates: [TimelineTemplate] = []
     @State private var savePlanDialogContext: SavePlanDialogContext?
     @State private var showShareSheet = false
     @State private var shareItem: ShareableItem?
@@ -561,6 +562,10 @@ struct EventDetailView: View {
                 Text(String(localized: "timeline.planning.title"))
                     .font(.system(size: 20, weight: .semibold, design: .rounded))
                     .foregroundStyle(.primary)
+
+                Spacer()
+
+                plannerSettingsButton
             }
 
             Text(String(localized: "timeline.planning.subtitle"))
@@ -797,6 +802,33 @@ struct EventDetailView: View {
                         }
                     }
                 }
+
+                // Templates submenu
+                if !availableTemplates.isEmpty {
+                    Menu {
+                        ForEach(availableTemplates) { template in
+                            Button {
+                                loadTemplate(template)
+                            } label: {
+                                HStack {
+                                    VStack(alignment: .leading, spacing: 2) {
+                                        Text(template.name)
+                                        Text("\(template.cityIdentifiers.count) \(template.cityIdentifiers.count == 1 ? String(localized: "timeline.plans.city") : String(localized: "timeline.plans.cities"))")
+                                            .font(.caption)
+                                            .foregroundStyle(.secondary)
+                                    }
+                                    if template.isDefault {
+                                        Spacer()
+                                        Image(systemName: "star.fill")
+                                            .foregroundStyle(.yellow)
+                                    }
+                                }
+                            }
+                        }
+                    } label: {
+                        Label(String(localized: "timeline.templates.apply"), systemImage: "square.stack")
+                    }
+                }
             }
 
             Section {
@@ -950,6 +982,12 @@ struct EventDetailView: View {
                 try await timelineService.loadPlans(for: event.id)
                 availablePlans = timelineService.plans
 
+                // Load all templates and filter by event type
+                try await timelineService.loadTemplates()
+                availableTemplates = timelineService.templates.filter { template in
+                    template.eventType == event.eventType || template.eventType == "all"
+                }
+
                 // Auto-apply default template if no cities selected
                 if selectedCityIDs.isEmpty, shouldDisplayMultiCitySection {
                     if let template = try await timelineService.loadDefaultTemplate(for: event.eventType) {
@@ -994,6 +1032,14 @@ struct EventDetailView: View {
             selectedCityIDs = Set(plan.cityIdentifiers)
         }
         AppLogger.viewModel.info("Loaded timeline plan: \(plan.name)")
+    }
+
+    /// Load a template
+    private func loadTemplate(_ template: TimelineTemplate) {
+        withAnimation(.easeInOut(duration: 0.2)) {
+            selectedCityIDs = Set(template.cityIdentifiers)
+        }
+        AppLogger.viewModel.info("Loaded template: \(template.name)")
     }
 
     /// Export timeline as image
