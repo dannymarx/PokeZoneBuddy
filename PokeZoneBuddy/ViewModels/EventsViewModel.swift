@@ -276,30 +276,71 @@ final class EventsViewModel {
     }
     
     // MARK: - Filtered Events
-    
-    /// PERFORMANCE: Get filtered events (filtering in Swift, not in Predicate)
+
+    /// OPTIMIZED: Get filtered events using SwiftData predicates for better performance
+    /// Uses database-level filtering instead of in-memory filtering
     func getFilteredEvents(config: FilterConfiguration) -> [Event] {
-        return events.filter { event in
-            // Type filter
-            if !config.selectedTypes.isEmpty {
-                if !config.selectedTypes.contains(event.eventType) {
-                    return false
-                }
+        // Build SwiftData predicate inline (combining type and search filters)
+        let combinedPredicate: Predicate<Event>?
+
+        if config.selectedTypes.isEmpty && config.searchText.isEmpty {
+            // No filters - return all
+            combinedPredicate = nil
+        } else if !config.selectedTypes.isEmpty && config.searchText.isEmpty {
+            // Only type filter
+            let types = config.selectedTypes
+            combinedPredicate = #Predicate<Event> { event in
+                types.contains(event.eventType)
             }
-            
-            // Search text filter
-            if !config.searchText.isEmpty {
-                let searchLower = config.searchText.lowercased()
-                let matchesName = event.name.lowercased().contains(searchLower)
-                let matchesHeading = event.heading.lowercased().contains(searchLower)
-                let matchesType = event.eventType.lowercased().contains(searchLower)
-                
-                if !matchesName && !matchesHeading && !matchesType {
-                    return false
-                }
+        } else if config.selectedTypes.isEmpty && !config.searchText.isEmpty {
+            // Only search filter - case-insensitive search
+            let searchText = config.searchText
+            combinedPredicate = #Predicate<Event> { event in
+                event.name.localizedStandardContains(searchText) ||
+                event.heading.localizedStandardContains(searchText) ||
+                event.eventType.localizedStandardContains(searchText)
             }
-            
-            return true
+        } else {
+            // Both type and search filters
+            let types = config.selectedTypes
+            let searchText = config.searchText
+            combinedPredicate = #Predicate<Event> { event in
+                types.contains(event.eventType) &&
+                (event.name.localizedStandardContains(searchText) ||
+                 event.heading.localizedStandardContains(searchText) ||
+                 event.eventType.localizedStandardContains(searchText))
+            }
+        }
+
+        // Query database with combined predicate
+        let descriptor = FetchDescriptor<Event>(
+            predicate: combinedPredicate,
+            sortBy: [SortDescriptor(\.startTime, order: .forward)]
+        )
+
+        do {
+            let filteredEvents = try modelContext.fetch(descriptor)
+            AppLogger.viewModel.debug("Filtered \(filteredEvents.count) events using database predicates")
+            return filteredEvents
+        } catch {
+            AppLogger.viewModel.error("Failed to fetch filtered events: \(error)")
+            // Fallback to in-memory filtering
+            AppLogger.viewModel.warn("Falling back to in-memory filtering")
+            return events.filter { event in
+                // Type filter
+                if !config.selectedTypes.isEmpty {
+                    guard config.selectedTypes.contains(event.eventType) else { return false }
+                }
+                // Search filter
+                if !config.searchText.isEmpty {
+                    let searchLower = config.searchText.lowercased()
+                    let matches = event.name.lowercased().contains(searchLower) ||
+                                event.heading.lowercased().contains(searchLower) ||
+                                event.eventType.lowercased().contains(searchLower)
+                    guard matches else { return false }
+                }
+                return true
+            }
         }
     }
     
