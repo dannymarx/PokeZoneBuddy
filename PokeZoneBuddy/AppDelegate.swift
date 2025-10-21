@@ -34,11 +34,12 @@ class AppDelegate: NSObject, NSApplicationDelegate {
             let windowID = "\(ObjectIdentifier(window).hashValue)"
             // Only configure each window once
             if !configuredWindows.contains(windowID) {
+                configuredWindows.insert(windowID)
                 // Delay configuration to let SwiftUI finish initial layout
-                DispatchQueue.main.asyncAfter(deadline: .now() + 0.2) { [weak self] in
+                // Use longer delay to ensure all layout passes are complete
+                DispatchQueue.main.asyncAfter(deadline: .now() + 0.5) { [weak self] in
                     self?.configureWindow(window)
                 }
-                configuredWindows.insert(windowID)
             }
         }
     }
@@ -52,11 +53,23 @@ class AppDelegate: NSObject, NSApplicationDelegate {
             return
         }
 
+        // Don't configure if window is currently in a layout pass
+        guard !window.inLiveResize else { return }
+
         print("🪟 Configuring window: \(window.title)")
         print("📏 Before - minSize: \(window.minSize), maxSize: \(window.maxSize)")
         print("🎨 Before - styleMask: \(window.styleMask.rawValue)")
         print("📍 Before - frame: \(window.frame)")
         print("🔒 Before - contentLayoutRect: \(window.contentLayoutRect)")
+
+        // Store the current frame so we can restore it
+        let currentFrame = window.frame
+
+        // Batch all configuration to minimize layout passes
+        // Use disableScreenUpdatesUntilFlush to prevent intermediate redraws
+        NSAnimationContext.beginGrouping()
+        NSAnimationContext.current.duration = 0
+        window.disableScreenUpdatesUntilFlush()
 
         // Set full resizability with complete style mask
         window.styleMask = [
@@ -67,9 +80,6 @@ class AppDelegate: NSObject, NSApplicationDelegate {
             .fullSizeContentView
         ]
 
-        // Store the current frame so we can restore it
-        let currentFrame = window.frame
-
         // Set minimal constraints - just enough for macOS window chrome
         // but small enough to allow effectively free resizing
         window.minSize = NSSize(width: 1, height: 1)
@@ -78,9 +88,6 @@ class AppDelegate: NSObject, NSApplicationDelegate {
         // Remove content size constraints completely
         window.contentMinSize = NSSize(width: 1, height: 1)
         window.contentMaxSize = NSSize(width: CGFloat.greatestFiniteMagnitude, height: CGFloat.greatestFiniteMagnitude)
-
-        // Restore the frame
-        window.setFrame(currentFrame, display: true)
 
         // Ensure window can be resized and moved freely
         window.isMovable = true
@@ -91,6 +98,14 @@ class AppDelegate: NSObject, NSApplicationDelegate {
 
         // Allow window to be positioned anywhere
         window.collectionBehavior = [.fullScreenPrimary, .managed]
+
+        NSAnimationContext.endGrouping()
+
+        // Restore the frame AFTER all other configuration is complete
+        // This minimizes the chance of triggering layout during the frame change
+        DispatchQueue.main.async {
+            window.setFrame(currentFrame, display: true, animate: false)
+        }
 
         print("✅ After - minSize: \(window.minSize), maxSize: \(window.maxSize)")
         print("✅ After - contentMinSize: \(window.contentMinSize), contentMaxSize: \(window.contentMaxSize)")
