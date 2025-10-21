@@ -183,7 +183,7 @@ struct SavePlanDialog: View {
         ),
         cityIdentifiers: ["Asia/Tokyo", "America/New_York", "Europe/London"],
         onSave: { name in
-            print("Saving plan: \(name)")
+            AppLogger.service.debug("Preview: Saving plan: \(name)")
         }
     )
 }
