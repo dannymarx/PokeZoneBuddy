@@ -296,11 +296,31 @@ extension Event {
         var utcCalendar = Calendar(identifier: .gregorian)
         utcCalendar.timeZone = TimeZone(secondsFromGMT: 0) ?? .gmt
         let components = utcCalendar.dateComponents([.year, .month, .day, .hour, .minute, .second], from: date)
-        
+
         // Interpretiere diese Komponenten als User's lokale Zeit
         var userCalendar = Calendar(identifier: .gregorian)
         userCalendar.timeZone = TimeZone.current
-        return userCalendar.date(from: components) ?? date
+
+        // Try to create date from components
+        guard let convertedDate = userCalendar.date(from: components) else {
+            // Log DST edge case - this happens during daylight saving transitions
+            AppLogger.viewModel.warn("Failed to convert date components to local time: \(components). Using UTC date as fallback.")
+
+            // Better fallback: try to find the next valid time
+            if let nextValidDate = userCalendar.nextDate(
+                after: date,
+                matching: components,
+                matchingPolicy: .nextTime
+            ) {
+                AppLogger.viewModel.info("Using next valid time: \(nextValidDate)")
+                return nextValidDate
+            }
+
+            // Last resort: return original UTC date
+            return date
+        }
+
+        return convertedDate
     }
     
     /// Dauer des Events in Stunden
