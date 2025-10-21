@@ -232,12 +232,18 @@ final class CitiesViewModel {
                 fullName = cityName
             }
             
-            // Prüfen ob Stadt bereits existiert (basierend auf fullName)
+            // Check by timezone identifier (the true unique key)
+            if favoriteCities.contains(where: { $0.timeZoneIdentifier == tzIdentifier }) {
+                throw CityError.cityAlreadyExists
+            }
+
+            // Optional: Warn if names are similar but different timezones
             let normalizedFullName = fullName.trimmingCharacters(in: .whitespacesAndNewlines).lowercased()
             if favoriteCities.contains(where: {
-                $0.fullName.trimmingCharacters(in: .whitespacesAndNewlines).lowercased() == normalizedFullName
+                $0.fullName.trimmingCharacters(in: .whitespacesAndNewlines).lowercased() == normalizedFullName &&
+                $0.timeZoneIdentifier != tzIdentifier
             }) {
-                throw CityError.cityAlreadyExists
+                AppLogger.viewModel.warn("Adding city with same name but different timezone: \(fullName) (\(tzIdentifier))")
             }
             
             // Neue Stadt erstellen und speichern
