@@ -238,16 +238,14 @@ final class ResearchReward {
 // MARK: - Convenience Extensions
 
 extension Event {
-    /// Display name with HTML entities decoded (for UI display)
-    /// Always decodes to ensure compatibility with old cached data
+    /// Display name (already HTML-decoded in init)
     var displayName: String {
-        return name.htmlDecodedFast
+        return name
     }
 
-    /// Display heading with HTML entities decoded (for UI display)
-    /// Always decodes to ensure compatibility with old cached data
+    /// Display heading (already HTML-decoded in init)
     var displayHeading: String {
-        return heading.htmlDecodedFast
+        return heading
     }
 
     /// Prüft ob das Event aktuell läuft
