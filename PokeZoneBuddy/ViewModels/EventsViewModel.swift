@@ -42,8 +42,11 @@ final class EventsViewModel {
     /// Count of events from last successful refresh
     private(set) var lastRefreshEventCount: Int = 0
 
+    /// Task for auto-resetting refresh state
+    private var autoResetTask: Task<Void, Never>?
+
     // MARK: - Dependencies
-    
+
     private let modelContext: ModelContext
     private let networkMonitor: NetworkMonitor
     private let apiService: APIService
@@ -151,11 +154,15 @@ final class EventsViewModel {
             refreshState = .success
             AppLogger.viewModel.info("Successfully refreshed \(eventCount) events")
 
+            // Cancel any pending auto-reset
+            autoResetTask?.cancel()
+
             // Auto-reset to idle after 2.5 seconds
-            Task {
+            autoResetTask = Task { @MainActor [weak self] in
                 try? await Task.sleep(nanoseconds: 2_500_000_000)
-                if refreshState == .success {
-                    refreshState = .idle
+                guard !Task.isCancelled else { return }
+                if self?.refreshState == .success {
+                    self?.refreshState = .idle
                 }
             }
 
@@ -173,11 +180,15 @@ final class EventsViewModel {
             refreshState = .error
             AppLogger.viewModel.error("Force refresh error: \(error)")
 
+            // Cancel any pending auto-reset
+            autoResetTask?.cancel()
+
             // Auto-reset to idle after 3 seconds
-            Task {
+            autoResetTask = Task { @MainActor [weak self] in
                 try? await Task.sleep(nanoseconds: 3_000_000_000)
-                if refreshState == .error {
-                    refreshState = .idle
+                guard !Task.isCancelled else { return }
+                if self?.refreshState == .error {
+                    self?.refreshState = .idle
                 }
             }
         }
@@ -212,15 +223,55 @@ final class EventsViewModel {
             // This is more efficient than delete-all-then-insert
             let apiEventIDs = Set(eventDTOs.map { $0.id })
             let descriptor = FetchDescriptor<Event>()
-            if let existingEvents = try? context.fetch(descriptor) {
-                for event in existingEvents where !apiEventIDs.contains(event.id) {
-                    context.delete(event)
+
+            let existingEvents: [Event]
+            do {
+                existingEvents = try context.fetch(descriptor)
+            } catch {
+                await AppLogger.viewModel.error("Failed to fetch existing events for cleanup: \(error)")
+                // Still try to save new events
+                do {
+                    try context.save()
+                    await AppLogger.viewModel.info("Saved \(eventDTOs.count) events to local storage")
+                } catch {
+                    await AppLogger.viewModel.error("Failed to save events: \(error)")
                 }
+                return
             }
 
-            try? context.save()
+            // Validate: Don't delete everything if API returns suspiciously few events
+            if eventDTOs.count < 5 && existingEvents.count > 10 {
+                await AppLogger.viewModel.warn("API returned only \(eventDTOs.count) events but we have \(existingEvents.count) cached. Skipping cleanup to prevent data loss.")
+                // Still save new events, but don't delete old ones
+                do {
+                    try context.save()
+                    await AppLogger.viewModel.info("Saved \(eventDTOs.count) events to local storage (cleanup skipped)")
+                } catch {
+                    await AppLogger.viewModel.error("Failed to save events: \(error)")
+                }
+                return
+            }
 
-            await AppLogger.viewModel.info("Saved \(eventDTOs.count) events to local storage")
+            // Safe deletion with logging
+            let eventsToDelete = existingEvents.filter { !apiEventIDs.contains($0.id) }
+            let deletedCount = eventsToDelete.count
+
+            for event in eventsToDelete {
+                context.delete(event)
+            }
+
+            // Save with proper error handling
+            do {
+                try context.save()
+                if deletedCount > 0 {
+                    await AppLogger.viewModel.info("Saved \(eventDTOs.count) events and cleaned up \(deletedCount) old events")
+                } else {
+                    await AppLogger.viewModel.info("Saved \(eventDTOs.count) events to local storage")
+                }
+            } catch {
+                await AppLogger.viewModel.error("Failed to save events: \(error)")
+                // Don't throw - we want to keep using cached events
+            }
         }.value
 
         // Reload from storage
@@ -228,30 +279,71 @@ final class EventsViewModel {
     }
     
     // MARK: - Filtered Events
-    
-    /// PERFORMANCE: Get filtered events (filtering in Swift, not in Predicate)
+
+    /// OPTIMIZED: Get filtered events using SwiftData predicates for better performance
+    /// Uses database-level filtering instead of in-memory filtering
     func getFilteredEvents(config: FilterConfiguration) -> [Event] {
-        return events.filter { event in
-            // Type filter
-            if !config.selectedTypes.isEmpty {
-                if !config.selectedTypes.contains(event.eventType) {
-                    return false
-                }
+        // Build SwiftData predicate inline (combining type and search filters)
+        let combinedPredicate: Predicate<Event>?
+
+        if config.selectedTypes.isEmpty && config.searchText.isEmpty {
+            // No filters - return all
+            combinedPredicate = nil
+        } else if !config.selectedTypes.isEmpty && config.searchText.isEmpty {
+            // Only type filter
+            let types = config.selectedTypes
+            combinedPredicate = #Predicate<Event> { event in
+                types.contains(event.eventType)
             }
-            
-            // Search text filter
-            if !config.searchText.isEmpty {
-                let searchLower = config.searchText.lowercased()
-                let matchesName = event.name.lowercased().contains(searchLower)
-                let matchesHeading = event.heading.lowercased().contains(searchLower)
-                let matchesType = event.eventType.lowercased().contains(searchLower)
-                
-                if !matchesName && !matchesHeading && !matchesType {
-                    return false
-                }
+        } else if config.selectedTypes.isEmpty && !config.searchText.isEmpty {
+            // Only search filter - case-insensitive search
+            let searchText = config.searchText
+            combinedPredicate = #Predicate<Event> { event in
+                event.name.localizedStandardContains(searchText) ||
+                event.heading.localizedStandardContains(searchText) ||
+                event.eventType.localizedStandardContains(searchText)
             }
-            
-            return true
+        } else {
+            // Both type and search filters
+            let types = config.selectedTypes
+            let searchText = config.searchText
+            combinedPredicate = #Predicate<Event> { event in
+                types.contains(event.eventType) &&
+                (event.name.localizedStandardContains(searchText) ||
+                 event.heading.localizedStandardContains(searchText) ||
+                 event.eventType.localizedStandardContains(searchText))
+            }
+        }
+
+        // Query database with combined predicate
+        let descriptor = FetchDescriptor<Event>(
+            predicate: combinedPredicate,
+            sortBy: [SortDescriptor(\.startTime, order: .forward)]
+        )
+
+        do {
+            let filteredEvents = try modelContext.fetch(descriptor)
+            AppLogger.viewModel.debug("Filtered \(filteredEvents.count) events using database predicates")
+            return filteredEvents
+        } catch {
+            AppLogger.viewModel.error("Failed to fetch filtered events: \(error)")
+            // Fallback to in-memory filtering
+            AppLogger.viewModel.warn("Falling back to in-memory filtering")
+            return events.filter { event in
+                // Type filter
+                if !config.selectedTypes.isEmpty {
+                    guard config.selectedTypes.contains(event.eventType) else { return false }
+                }
+                // Search filter
+                if !config.searchText.isEmpty {
+                    let searchLower = config.searchText.lowercased()
+                    let matches = event.name.lowercased().contains(searchLower) ||
+                                event.heading.lowercased().contains(searchLower) ||
+                                event.eventType.lowercased().contains(searchLower)
+                    guard matches else { return false }
+                }
+                return true
+            }
         }
     }
     
@@ -284,5 +376,12 @@ final class EventsViewModel {
                 return event.isUpcoming || event.isCurrentlyActive
             }
             .sorted { $0.startTime < $1.startTime }
+    }
+
+    // MARK: - Deinitialization
+
+    deinit {
+        // Cancel any pending auto-reset task to prevent memory leaks
+        autoResetTask?.cancel()
     }
 }

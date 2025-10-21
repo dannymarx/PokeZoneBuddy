@@ -160,13 +160,18 @@ final class TimelineService: TimelineServiceProtocol {
         try await timelineRepository.deletePlan(plan)
         AppLogger.service.info("Deleted plan: \(plan.name)")
 
-        // Reload plans (if we have any loaded, check if they're for a specific event or all)
-        if !plans.isEmpty && plans.allSatisfy({ $0.eventID == eventID }) {
-            // If all loaded plans are for the same event, reload for that event
-            try await loadPlans(for: eventID)
-        } else if !plans.isEmpty {
-            // Otherwise reload all plans
-            try await loadAllPlans()
+        // Reload plans with simplified logic and error handling
+        do {
+            if plans.contains(where: { $0.eventID == eventID }) {
+                // If we have plans for this event, reload for that event
+                try await loadPlans(for: eventID)
+            } else {
+                // Otherwise reload all plans
+                try await loadAllPlans()
+            }
+        } catch {
+            AppLogger.service.error("Failed to reload plans after deletion: \(error)")
+            plans = [] // Clear state on error
         }
     }
 

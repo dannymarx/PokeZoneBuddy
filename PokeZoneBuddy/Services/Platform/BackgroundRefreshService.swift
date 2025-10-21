@@ -67,7 +67,17 @@ final class BackgroundRefreshService {
         refreshTimer = nil
         AppLogger.background.info("Background refresh stopped")
     }
-    
+
+    // MARK: - Deinitialization
+
+    deinit {
+        refreshTimer?.invalidate()
+        refreshTimer = nil
+        AppLogger.background.debug("BackgroundRefreshService deallocated")
+    }
+
+    // MARK: - Refresh
+
     /// Perform manual refresh
     func performRefresh() async {
         guard !isRefreshing else {

@@ -48,34 +48,35 @@ final class NetworkMonitor {
     
     private func setupMonitoring() {
         pathMonitor.pathUpdateHandler = { [weak self] path in
-            DispatchQueue.main.async {
-                self?.isConnected = path.status == .satisfied
-                self?.isExpensive = path.isExpensive
-                self?.isConstrained = path.isConstrained
-                
+            Task { @MainActor [weak self] in
+                guard let self else { return }
+
+                self.isConnected = path.status == .satisfied
+                self.isExpensive = path.isExpensive
+                self.isConstrained = path.isConstrained
+
                 // Determine connection type
                 if path.usesInterfaceType(.wifi) {
-                    self?.connectionType = .wifi
+                    self.connectionType = .wifi
                 } else if path.usesInterfaceType(.cellular) {
-                    self?.connectionType = .cellular
+                    self.connectionType = .cellular
                 } else if path.usesInterfaceType(.wiredEthernet) {
-                    self?.connectionType = .wiredEthernet
+                    self.connectionType = .wiredEthernet
                 } else {
-                    self?.connectionType = nil
+                    self.connectionType = nil
                 }
 
                 // Only log if status actually changed
-                let connected = self?.isConnected ?? false
-                let typeString = String(describing: self?.connectionType)
+                let connected = self.isConnected
+                let typeString = String(describing: self.connectionType)
 
-                if let lastStatus = self?.lastLoggedStatus,
-                   lastStatus.connected != connected || lastStatus.type != typeString {
+                if lastLoggedStatus.connected != connected || lastLoggedStatus.type != typeString {
                     AppLogger.network.info("Network status: connected=\(connected), type=\(typeString)")
-                    self?.lastLoggedStatus = (connected, typeString)
+                    self.lastLoggedStatus = (connected, typeString)
                 }
             }
         }
-        
+
         pathMonitor.start(queue: monitorQueue)
     }
     
