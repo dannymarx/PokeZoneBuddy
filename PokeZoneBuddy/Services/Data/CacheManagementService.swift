@@ -13,9 +13,13 @@ import SwiftData
 final class CacheManagementService {
     
     // MARK: - Properties
-    
+
     private let modelContext: ModelContext
-    
+
+    // Cache size caching to avoid expensive disk scans
+    private var cachedDiskSize: (size: Int, timestamp: Date)?
+    private let cacheValidityDuration: TimeInterval = 60 // 1 minute
+
     // MARK: - Initialization
     
     init(modelContext: ModelContext) {
@@ -45,6 +49,8 @@ final class CacheManagementService {
     func clearImageCache() async {
         // Clear URLCache only (AsyncImage uses URLSession/URLCache)
         URLCache.shared.removeAllCachedResponses()
+        // Invalidate cached disk size since cache was cleared
+        invalidateCacheSizeCache()
         AppLogger.cache.info("Image cache cleared")
     }
     
@@ -65,14 +71,39 @@ final class CacheManagementService {
         }
         
         try modelContext.save()
-        
+
+        // Invalidate cached disk size since data was deleted
+        invalidateCacheSizeCache()
+
         AppLogger.cache.info("Deleted \(oldEvents.count) old events")
     }
     
     // MARK: - Private Methods
-    
-    /// Get disk cache size
+
+    /// Get disk cache size with caching to avoid expensive repeated calculations
     private func getDiskCacheSize() -> Int {
+        // Return cached value if recent
+        if let cached = cachedDiskSize,
+           Date().timeIntervalSince(cached.timestamp) < cacheValidityDuration {
+            AppLogger.cache.debug("Returning cached disk size: \(cached.size) bytes")
+            return cached.size
+        }
+
+        // Calculate and cache new value
+        let size = calculateDiskCacheSize()
+        cachedDiskSize = (size, Date())
+        AppLogger.cache.debug("Calculated fresh disk size: \(size) bytes (cached for \(Int(cacheValidityDuration))s)")
+        return size
+    }
+
+    /// Invalidate cached disk size (call after clearing cache)
+    private func invalidateCacheSizeCache() {
+        cachedDiskSize = nil
+        AppLogger.cache.debug("Invalidated disk size cache")
+    }
+
+    /// Calculate disk cache size by scanning directory
+    private func calculateDiskCacheSize() -> Int {
         guard let cachesURL = FileManager.default.urls(
             for: .cachesDirectory,
             in: .userDomainMask
