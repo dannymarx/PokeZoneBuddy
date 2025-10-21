@@ -34,11 +34,12 @@ class AppDelegate: NSObject, NSApplicationDelegate {
             let windowID = "\(ObjectIdentifier(window).hashValue)"
             // Only configure each window once
             if !configuredWindows.contains(windowID) {
+                configuredWindows.insert(windowID)
                 // Delay configuration to let SwiftUI finish initial layout
-                DispatchQueue.main.asyncAfter(deadline: .now() + 0.2) { [weak self] in
+                // Use longer delay to ensure all layout passes are complete
+                DispatchQueue.main.asyncAfter(deadline: .now() + 0.5) { [weak self] in
                     self?.configureWindow(window)
                 }
-                configuredWindows.insert(windowID)
             }
         }
     }
@@ -56,6 +57,15 @@ class AppDelegate: NSObject, NSApplicationDelegate {
         AppLogger.app.debug("Configuring window: \(window.title)")
         #endif
 
+        // Store the current frame so we can restore it
+        let currentFrame = window.frame
+
+        // Batch all configuration to minimize layout passes
+        // Use disableScreenUpdatesUntilFlush to prevent intermediate redraws
+        NSAnimationContext.beginGrouping()
+        NSAnimationContext.current.duration = 0
+        window.disableScreenUpdatesUntilFlush()
+
         // Set full resizability with complete style mask
         window.styleMask = [
             .titled,
@@ -65,9 +75,6 @@ class AppDelegate: NSObject, NSApplicationDelegate {
             .fullSizeContentView
         ]
 
-        // Store the current frame so we can restore it
-        let currentFrame = window.frame
-
         // Set minimal constraints - just enough for macOS window chrome
         // but small enough to allow effectively free resizing
         window.minSize = NSSize(width: 1, height: 1)
@@ -76,9 +83,6 @@ class AppDelegate: NSObject, NSApplicationDelegate {
         // Remove content size constraints completely
         window.contentMinSize = NSSize(width: 1, height: 1)
         window.contentMaxSize = NSSize(width: CGFloat.greatestFiniteMagnitude, height: CGFloat.greatestFiniteMagnitude)
-
-        // Restore the frame
-        window.setFrame(currentFrame, display: true)
 
         // Ensure window can be resized and moved freely
         window.isMovable = true
