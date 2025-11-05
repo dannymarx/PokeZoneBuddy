@@ -24,94 +24,173 @@
   <header>
     <div class="container">
       <div class="hero">
-        <img src="applogo.png" alt="PokeZoneBuddy" class="hero-icon" width="120" height="120">
-        <h1>PokeZoneBuddy</h1>
-        <p class="lead">Never miss an event across timezones. Track Pokémon GO events in your favorite cities. Plan multi-city participation with the new <strong>Multi-City Planning Tool</strong> and enjoy instant timeline imports after the 1.6.1 hotfix.</p>
-        
-        <div class="cta-group">
-          <a href="https://github.com/dannymarx/PokeZoneBuddy/releases/latest" class="btn btn-primary">Download for macOS</a>
-          <a href="https://github.com/dannymarx/PokeZoneBuddy" class="btn btn-secondary">View on GitHub</a>
+        <div class="hero-grid">
+          <div class="hero-media">
+            <img src="applogo.png" alt="PokeZoneBuddy app icon" width="148" height="148" style="background: transparent; border: none; border-radius: 0; box-shadow: none;">
+          </div>
+          <div class="hero-content">
+            <h1>PokeZoneBuddy</h1>
+            <p class="hero-subtitle">Track global event schedules, convert play windows instantly, and build multi-city timelines with reminder support.</p>
+            <div class="hero-actions">
+              <a href="https://github.com/dannymarx/PokeZoneBuddy/releases/latest" class="btn btn-primary">Download for macOS</a>
+              <a href="https://github.com/dannymarx/PokeZoneBuddy" class="btn btn-secondary">View on GitHub</a>
+            </div>
+            <p class="hero-meta">macOS 26+ • Free & Open Source • MIT License</p>
+          </div>
         </div>
-        
-        <p class="meta">macOS 26+ • Free & Open Source • MIT License</p>
       </div>
     </div>
   </header>
 
-  <!-- Example -->
-  <section class="example">
+  <!-- How it works & Preview -->
+  <section class="showcase" id="how-it-works">
     <div class="container">
-      <div class="example-card">
-        <div class="example-label">Example</div>
-        <p class="example-text">
-          Community Day in <strong>Tokyo</strong> runs 14:00–17:00 JST
-        </p>
-        <div class="example-arrow">→</div>
-        <p class="example-result">
-          Play <span class="highlight">07:00–10:00</span> in your local time
-        </p>
+      <div class="showcase-grid">
+        <div class="showcase-copy">
+          <span class="section-pill">How it works</span>
+          <h2>Timezone magic, explained</h2>
+          <p class="showcase-lead">PokeZoneBuddy keeps every event anchored to its origin timezone while translating the play window into yours—no more mental math.</p>
+
+          <ul class="showcase-steps">
+            <li>
+              <span class="step-index">1</span>
+              <div>
+                <strong>Pick a city</strong>
+                <p>Browse global Pokémon GO events across your saved destinations.</p>
+              </div>
+            </li>
+            <li>
+              <span class="step-index">2</span>
+              <div>
+                <strong>Select an event</strong>
+                <p>See native event hours alongside your precise local play window.</p>
+              </div>
+            </li>
+            <li>
+              <span class="step-index">3</span>
+              <div>
+                <strong>Plan the route</strong>
+                <p>Use the Multi-City timeline to stack events and spot travel gaps.</p>
+              </div>
+            </li>
+          </ul>
+
+          <div class="example-inline">
+            <div class="example-header">
+              <span class="example-badge">Example</span>
+              <span class="example-city">Community Day • Tokyo</span>
+            </div>
+            <div class="example-times">
+              <div class="example-block">
+                <span class="label">Event runs</span>
+                <span class="value">14:00–17:00 JST</span>
+              </div>
+              <div class="example-arrow" aria-hidden="true">→</div>
+              <div class="example-block">
+                <span class="label">You play</span>
+                <span class="value highlight">07:00–10:00</span>
+              </div>
+            </div>
+            <p class="example-note">The app handles conversions instantly so you can focus on playing.</p>
+          </div>
+        </div>
+
+        <div class="showcase-visual">
+          <div class="preview-frame">
+            <img src="appscreenshot.png" alt="PokeZoneBuddy app screenshot" loading="lazy">
+          </div>
+          <p class="preview-caption">Timeline-first design keeps every city and event aligned for effortless planning.</p>
+        </div>
       </div>
     </div>
   </section>
 
   <!-- Highlights -->
-  <section class="highlights">
+  <section class="highlights" id="features">
     <div class="container">
-      <h2>Features</h2>
-
-      <div class="card-grid">
-        <article class="card featured">
-          <div class="card-icon">🗺️</div>
-          <h3>Multi-City Planning Tool</h3>
-          <p>Plan sequential event participation across multiple cities. Visual timeline shows when to play in each location with smart travel gap detection and optimal strategy suggestions.</p>
-        </article>
-
-        <article class="card">
-          <div class="card-icon">🌍</div>
-          <h3>Local Time, Zero Effort</h3>
-          <p>Browse every Pokémon GO event in your timezone with filters, live countdowns, and one-click calendar export.</p>
-        </article>
-
-        <article class="card">
-          <div class="card-icon">🔔</div>
-          <h3>Smart Event Reminders</h3>
-          <p>Get automatic notifications for favorited events. Timezone-aware reminders with customizable timing from 15 minutes to 1 day before.</p>
-        </article>
-
-        <article class="card">
-          <div class="card-icon">📍</div>
-          <h3>City Spots & Import/Export</h3>
-          <p>Save gyms, PokéStops, or meetup points per city. Backup and transfer your data across devices with JSON import/export, now launching instantly from Settings.</p>
-        </article>
+      <div class="section-header">
+        <div class="section-heading">
+          <span class="section-pill">Feature set</span>
+          <h2>Feature highlights</h2>
+          <p class="section-subtitle">Everything you need to stay ahead of global Pokémon GO events.</p>
+        </div>
+        <a class="section-link" href="https://github.com/dannymarx/PokeZoneBuddy#readme" target="_blank" rel="noopener">Explore on GitHub<span aria-hidden="true"> →</span></a>
       </div>
-    </div>
-  </section>
 
-  <!-- Preview -->
-  <section class="preview">
-    <div class="container">
-      <div class="preview-frame">
-        <img src="appscreenshot.png" alt="PokeZoneBuddy app screenshot" loading="lazy">
-      </div>
+      <article class="section-card feature-card">
+        <div class="feature-grid">
+          <div class="feature-item">
+            <span class="feature-icon">🗺️</span>
+            <h3>Multi-City Planning Tool</h3>
+            <p>Plan sequential participation across your favorite cities with travel gap detection and optimal play suggestions.</p>
+          </div>
+          <div class="feature-item">
+            <span class="feature-icon">🌍</span>
+            <h3>Local Time, Zero Effort</h3>
+            <p>Browse every Pokémon GO event in your timezone with smart filters, live countdowns, and one-click calendar export.</p>
+          </div>
+          <div class="feature-item">
+            <span class="feature-icon">🔔</span>
+            <h3>Smart Event Reminders</h3>
+            <p>Favorited events trigger timezone-aware notifications with customizable lead times from 15 minutes to 1 day.</p>
+          </div>
+          <div class="feature-item">
+            <span class="feature-icon">📍</span>
+            <h3>City Spots & Import/Export</h3>
+            <p>Save gyms, PokéStops, and meetup points per city, then move data between devices with fast JSON import/export.</p>
+          </div>
+        </div>
+      </article>
     </div>
   </section>
 
   <!-- Release Notes -->
-  <section class="release-notes">
+  <section class="release-notes" id="release-notes">
     <div class="container">
-      <h2>Release Notes – v1.6.1</h2>
-      <ul>
-        <li><strong>Fixed:</strong> Restored the Settings timeline plan import button so Finder/iOS pickers appear immediately.</li>
-        <li><strong>Changed:</strong> Scoped the timeline importer to its button to preserve independent data imports.</li>
-      </ul>
-      <p>See the full <a href="https://github.com/dannymarx/PokeZoneBuddy/blob/main/CHANGELOG.md" target="_blank" rel="noopener">CHANGELOG</a> for every detail.</p>
+      <div class="section-header">
+        <div class="section-heading">
+          <span class="section-pill">Latest release</span>
+          <h2>Release notes</h2>
+          <p class="section-subtitle">Fresh updates from the changelog, always up to date.</p>
+        </div>
+        <a class="section-link" href="https://github.com/dannymarx/PokeZoneBuddy/blob/main/CHANGELOG.md" target="_blank" rel="noopener">View full changelog<span aria-hidden="true"> →</span></a>
+      </div>
+
+      <article class="section-card release-card" data-release-card>
+        <div class="release-meta">
+          <div>
+            <p class="release-version" data-release-version>v1.6.1</p>
+            <p class="release-date" data-release-date>Nov 5, 2025</p>
+          </div>
+          <div class="release-actions">
+            <a class="btn btn-secondary btn-ghost" href="https://github.com/dannymarx/PokeZoneBuddy/releases/latest" target="_blank" rel="noopener">Download update</a>
+          </div>
+        </div>
+
+        <div class="release-content" data-release-content>
+          <div class="release-groups">
+            <div class="release-group">
+              <h3>Changed</h3>
+              <ul>
+                <li>Scoped the Settings timeline plan import button to its own file importer to prevent view-wide picker conflicts.</li>
+              </ul>
+            </div>
+            <div class="release-group">
+              <h3>Fixed</h3>
+              <ul>
+                <li>Restored the Settings timeline plan import button so the Finder/iOS picker opens immediately alongside the cities &amp; spots importer.</li>
+              </ul>
+            </div>
+          </div>
+        </div>
+      </article>
     </div>
   </section>
 
   <!-- Legal Notice -->
   <section class="legal-notice">
     <div class="container">
-      <div class="legal-card">
+      <article class="section-card legal-card">
         <h3>⚠️ Important Legal Notice</h3>
         <p>
           <strong>This website is not officially affiliated with Pokémon GO</strong> and is intended to fall under Fair Use doctrine, similar to any other informational site such as a wiki.
@@ -122,7 +201,7 @@
         <p class="credits">
           Event data courtesy of <a href="https://leekduck.com" target="_blank" rel="noopener">Leek Duck</a> via <a href="https://github.com/bigfoott/ScrapedDuck" target="_blank" rel="noopener">ScrapedDuck API</a>. All rights reserved by their respective owners.
         </p>
-      </div>
+      </article>
     </div>
   </section>
 
@@ -142,6 +221,172 @@
 
   <script>
     document.getElementById('year').textContent = new Date().getFullYear();
+  </script>
+  <script>
+    (function () {
+      const card = document.querySelector('[data-release-card]');
+      if (!card) {
+        return;
+      }
+
+      const versionEl = card.querySelector('[data-release-version]');
+      const dateEl = card.querySelector('[data-release-date]');
+      const contentEl = card.querySelector('[data-release-content]');
+
+      const parseInline = (text) =>
+        text
+          .replace(/`([^`]+)`/g, '<code>$1</code>')
+          .replace(/\*\*(.+?)\*\*/g, '<strong>$1</strong>')
+          .replace(/\[(.+?)\]\((https?:\/\/[^\s)]+)\)/g, '<a href="$2" target="_blank" rel="noopener">$1</a>');
+
+      const changelogUrl = 'https://raw.githubusercontent.com/dannymarx/PokeZoneBuddy/main/CHANGELOG.md';
+
+      const renderRelease = (release) => {
+        if (versionEl) {
+          const cleanVersion = release.version.startsWith('v') ? release.version : `v${release.version}`;
+          versionEl.textContent = cleanVersion;
+        }
+
+        if (dateEl) {
+          let formattedDate = release.date;
+          const timestamp = Date.parse(release.date);
+          if (!Number.isNaN(timestamp)) {
+            try {
+              formattedDate = new Intl.DateTimeFormat(navigator.language || 'en-US', {
+                year: 'numeric',
+                month: 'short',
+                day: 'numeric',
+              }).format(new Date(timestamp));
+            } catch (error) {
+              formattedDate = release.date;
+            }
+          }
+          dateEl.textContent = formattedDate;
+        }
+
+        if (!contentEl) {
+          return;
+        }
+
+        if (!release.sections.length) {
+          contentEl.innerHTML = '<p class="release-empty">No detailed notes for this release. See the full <a href="https://github.com/dannymarx/PokeZoneBuddy/blob/main/CHANGELOG.md" target="_blank" rel="noopener">changelog</a>.</p>';
+          return;
+        }
+
+        const groupHtml = release.sections
+          .map((section) => {
+            const itemsHtml = section.items
+              .map((item) => {
+                let html = `<li>${item.text}`;
+                if (item.children.length) {
+                  const childHtml = item.children.map((child) => `<li>${child}</li>`).join('');
+                  html += `<ul class="release-sublist">${childHtml}</ul>`;
+                }
+                html += '</li>';
+                return html;
+              })
+              .join('');
+
+            return `<div class="release-group">
+              <h3>${section.title}</h3>
+              <ul>${itemsHtml}</ul>
+            </div>`;
+          })
+          .join('');
+
+        contentEl.innerHTML = `<div class="release-groups">${groupHtml}</div>`;
+      };
+
+      const parseChangelog = (markdown) => {
+        const lines = markdown.split(/\r?\n/);
+        const startIndex = lines.findIndex((line) => line.startsWith('## ['));
+        if (startIndex === -1) {
+          throw new Error('Unable to locate latest release entry.');
+        }
+
+        const headerLine = lines[startIndex];
+        const headerMatch = headerLine.match(/^## \[(.+?)\]\s+–\s+(.+)$/);
+        const version = headerMatch ? headerMatch[1] : headerLine.replace(/^##\s+/, '').trim();
+        const date = headerMatch ? headerMatch[2].trim() : '';
+
+        const sections = [];
+        let currentSection = null;
+
+        for (let i = startIndex + 1; i < lines.length; i += 1) {
+          const line = lines[i];
+          if (line.startsWith('## [')) {
+            break;
+          }
+
+          if (!line.trim()) {
+            continue;
+          }
+
+          if (line.startsWith('### ')) {
+            currentSection = {
+              title: line.replace('### ', '').trim(),
+              items: [],
+            };
+            sections.push(currentSection);
+            continue;
+          }
+
+          const topLevelMatch = line.match(/^- (.+)$/);
+          if (topLevelMatch && currentSection) {
+            currentSection.items.push({
+              text: parseInline(topLevelMatch[1].trim()),
+              children: [],
+            });
+            continue;
+          }
+
+          const nestedMatch = line.match(/^\s{2,}- (.+)$/);
+          if (nestedMatch && currentSection) {
+            const latestItem = currentSection.items[currentSection.items.length - 1];
+            if (latestItem) {
+              latestItem.children.push(parseInline(nestedMatch[1].trim()));
+            }
+          }
+        }
+
+        const filteredSections = sections
+          .map((section) => {
+            const filteredItems = section.items.filter(
+              (item) => item.text.toLowerCase() !== 'none.' || item.children.length,
+            );
+            return {
+              title: section.title,
+              items: filteredItems,
+            };
+          })
+          .filter((section) => section.items.length);
+
+        return {
+          version,
+          date,
+          sections: filteredSections,
+        };
+      };
+
+      fetch(changelogUrl)
+        .then((response) => {
+          if (!response.ok) {
+            throw new Error(`Failed to fetch changelog: ${response.status}`);
+          }
+          return response.text();
+        })
+        .then((markdown) => {
+          const release = parseChangelog(markdown);
+          renderRelease(release);
+        })
+        .catch(() => {
+          if (contentEl) {
+            contentEl.innerHTML =
+              'Unable to load the latest notes right now. See the full <a href="https://github.com/dannymarx/PokeZoneBuddy/blob/main/CHANGELOG.md" target="_blank" rel="noopener">changelog</a>.';
+            contentEl.classList.add('release-error');
+          }
+        });
+    }());
   </script>
 </body>
 </html>
