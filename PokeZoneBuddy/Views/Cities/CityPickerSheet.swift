@@ -190,7 +190,7 @@ private struct CityPickerRowView: View {
     ]
 
     CityPickerSheet(cities: mockCities) { city in
-        print("Selected: \(city.name)")
+        AppLogger.viewModel.debug("Preview: Selected city: \(city.name)")
     }
     .modelContainer(container)
 }

@@ -44,28 +44,8 @@ final class CitiesViewModel {
     /// Aktueller Suchtext
     var searchText: String = "" {
         didSet {
-            // Cancel any pending debounce task
-            searchTask?.cancel()
-
             let trimmed = searchText.trimmingCharacters(in: .whitespacesAndNewlines)
-            if trimmed.isEmpty {
-                // Immediately clear results when empty
-                searchResults = []
-                searchCompleter.cancel()
-                return
-            }
-
-            // Debounce updates to reduce query frequency
-            searchTask = Task { [weak self] in
-                // 250ms debounce
-                try? await Task.sleep(nanoseconds: 250_000_000)
-                // Exit if cancelled
-                if Task.isCancelled { return }
-                await MainActor.run {
-                    // MKLocalSearchCompleter verarbeitet den Query-Fragment selbstständig
-                    self?.searchCompleter.queryFragment = trimmed
-                }
-            }
+            updateSearch(query: trimmed)
         }
     }
     
@@ -110,7 +90,37 @@ final class CitiesViewModel {
         // Lieblingsstädte aus Datenbank laden
         loadFavoriteCitiesFromDatabase()
     }
-    
+
+    // MARK: - Search Helper
+
+    /// Update search query with debouncing to reduce task churn
+    /// - Parameter query: The trimmed search query
+    @MainActor
+    private func updateSearch(query: String) {
+        // Cancel any pending debounce task
+        searchTask?.cancel()
+
+        // Immediately clear results when empty
+        guard !query.isEmpty else {
+            searchResults = []
+            searchCompleter.cancel()
+            return
+        }
+
+        // Debounce updates to reduce query frequency
+        searchTask = Task {
+            do {
+                // 250ms debounce
+                try await Task.sleep(for: .milliseconds(250))
+                // Exit if cancelled
+                guard !Task.isCancelled else { return }
+                // MKLocalSearchCompleter processes the query fragment
+                searchCompleter.queryFragment = query
+            } catch {
+                // Task cancelled - normal during typing
+            }
+        }
+    }
 
     // MARK: - Public Methods
     
@@ -121,8 +131,9 @@ final class CitiesViewModel {
             favoriteCities = try modelContext.fetch(descriptor)
             sortCities()
             dataVersion += 1  // Increment to trigger view updates
+            AppLogger.viewModel.debug("Loaded \(favoriteCities.count) cities from database")
         } catch {
-            AppLogger.viewModel.error("Fehler beim Laden der Städte: \(String(describing: error))")
+            AppLogger.viewModel.logError("Load cities from database", error: error)
             errorMessage = "Failed to load saved cities"
             showError = true
         }
@@ -231,12 +242,18 @@ final class CitiesViewModel {
                 fullName = cityName
             }
             
-            // Prüfen ob Stadt bereits existiert (basierend auf fullName)
+            // Check by timezone identifier (the true unique key)
+            if favoriteCities.contains(where: { $0.timeZoneIdentifier == tzIdentifier }) {
+                throw CityError.cityAlreadyExists
+            }
+
+            // Optional: Warn if names are similar but different timezones
             let normalizedFullName = fullName.trimmingCharacters(in: .whitespacesAndNewlines).lowercased()
             if favoriteCities.contains(where: {
-                $0.fullName.trimmingCharacters(in: .whitespacesAndNewlines).lowercased() == normalizedFullName
+                $0.fullName.trimmingCharacters(in: .whitespacesAndNewlines).lowercased() == normalizedFullName &&
+                $0.timeZoneIdentifier != tzIdentifier
             }) {
-                throw CityError.cityAlreadyExists
+                AppLogger.viewModel.warn("Adding city with same name but different timezone: \(fullName) (\(tzIdentifier))")
             }
             
             // Neue Stadt erstellen und speichern
@@ -251,18 +268,18 @@ final class CitiesViewModel {
             
             // Liste neu laden
             loadFavoriteCitiesFromDatabase()
-            
+
             // Suche zurücksetzen
             searchText = ""
             searchResults = []
-            
-            AppLogger.viewModel.info("Stadt hinzugefügt: \(cityName)")
+
+            AppLogger.viewModel.infoPrivate("Added city: \(cityName)")
         } catch let error as CityError {
-            AppLogger.viewModel.error("Fehler beim Hinzufügen: \(error.localizedDescription)")
+            AppLogger.viewModel.logError("Add city", error: error, context: completion.title)
             errorMessage = error.localizedDescription
             showError = true
         } catch {
-            AppLogger.viewModel.error("Unbekannter Fehler: \(String(describing: error))")
+            AppLogger.viewModel.logError("Add city (unknown error)", error: error, context: completion.title)
             errorMessage = "Failed to add the city"
             showError = true
         }
@@ -278,9 +295,9 @@ final class CitiesViewModel {
         do {
             try modelContext.save()
             loadFavoriteCitiesFromDatabase()
-            AppLogger.viewModel.info("Stadt entfernt: \(city.name)")
+            AppLogger.viewModel.infoPrivate("Removed city: \(city.name)")
         } catch {
-            AppLogger.viewModel.error("Fehler beim Entfernen: \(String(describing: error))")
+            AppLogger.viewModel.logError("Remove city", error: error, context: city.name)
             errorMessage = "Failed to remove the city"
             showError = true
         }
@@ -297,9 +314,9 @@ final class CitiesViewModel {
         do {
             try modelContext.save()
             loadFavoriteCitiesFromDatabase()
-            AppLogger.viewModel.info("Städte entfernt: \(offsets.count) Stadt(e)")
+            AppLogger.viewModel.logSuccess("Removed cities", count: offsets.count, itemName: "city")
         } catch {
-            AppLogger.viewModel.error("Fehler beim Entfernen: \(String(describing: error))")
+            AppLogger.viewModel.logError("Remove multiple cities", error: error)
             errorMessage = "Failed to remove cities"
             showError = true
         }
@@ -335,9 +352,10 @@ final class CitiesViewModel {
         }
 
         // Prüfe auf Duplikate (gleiche Koordinaten in gleicher Stadt)
+        // Uses Haversine distance with 10 meter threshold for realistic duplicate detection
         let isDuplicate = city.spots.contains { spot in
-            abs(spot.latitude - latitude) < 0.000001 &&
-            abs(spot.longitude - longitude) < 0.000001
+            coordinatesAreDuplicate(lat1: spot.latitude, lon1: spot.longitude,
+                                  lat2: latitude, lon2: longitude)
         }
 
         if isDuplicate {
@@ -363,7 +381,8 @@ final class CitiesViewModel {
 
         do {
             try modelContext.save()
-            loadFavoriteCitiesFromDatabase() // Reload to update spot counts
+            // Incremental update instead of full reload
+            dataVersion += 1
             AppLogger.viewModel.info(
                 "Spot hinzugefügt: \(name) in \(city.name) (\(category.localizedName))"
             )
@@ -388,7 +407,8 @@ final class CitiesViewModel {
 
         do {
             try modelContext.save()
-            loadFavoriteCitiesFromDatabase() // Reload to update spot counts
+            // Incremental update instead of full reload
+            dataVersion += 1
             AppLogger.viewModel.info("Spot gelöscht: \(spotName) aus \(cityName)")
         } catch {
             AppLogger.viewModel.error(
@@ -412,10 +432,11 @@ final class CitiesViewModel {
 
         do {
             try modelContext.save()
-            loadFavoriteCitiesFromDatabase() // Reload to update spot counts
-            AppLogger.viewModel.info("Spots gelöscht: \(offsets.count) Spot(s) aus \(city.name)")
+            // Incremental update instead of full reload
+            dataVersion += 1
+            AppLogger.viewModel.logSuccess("Deleted spots from \(city.name)", count: offsets.count, itemName: "spot")
         } catch {
-            AppLogger.viewModel.error("Fehler beim Löschen: \(String(describing: error))")
+            AppLogger.viewModel.logError("Delete multiple spots", error: error, context: city.name)
             errorMessage = "Failed to delete spots"
             showError = true
         }
@@ -439,7 +460,8 @@ final class CitiesViewModel {
 
         do {
             try modelContext.save()
-            loadFavoriteCitiesFromDatabase() // Reload to trigger view updates
+            // Incremental update instead of full reload
+            dataVersion += 1
             AppLogger.viewModel.info(
                 "Spot aktualisiert: \(name) (\(category.localizedName))"
             )
@@ -460,7 +482,8 @@ final class CitiesViewModel {
 
         do {
             try modelContext.save()
-            loadFavoriteCitiesFromDatabase() // Reload to trigger view updates
+            // Incremental update instead of full reload
+            dataVersion += 1
             AppLogger.viewModel.info(
                 "Spot Favoriten-Status geändert: \(spot.name) -> \(newStatus)"
             )
@@ -597,6 +620,37 @@ final class CitiesViewModel {
         // Cities typically have comma-separated subtitle with region/country
         // Streets typically have the full address in subtitle
         return true
+    }
+
+    // MARK: - Coordinate Helper
+
+    /// Check if two coordinates are duplicates using Haversine distance
+    /// - Parameters:
+    ///   - lat1: Latitude of first coordinate
+    ///   - lon1: Longitude of first coordinate
+    ///   - lat2: Latitude of second coordinate
+    ///   - lon2: Longitude of second coordinate
+    /// - Returns: True if coordinates are within 10 meters of each other
+    private func coordinatesAreDuplicate(lat1: Double, lon1: Double, lat2: Double, lon2: Double) -> Bool {
+        let threshold: Double = 10.0 // meters
+
+        // Quick check for exact matches (within floating-point precision)
+        if abs(lat1 - lat2) < 0.0000001 && abs(lon1 - lon2) < 0.0000001 {
+            return true
+        }
+
+        // Haversine distance for nearby coordinates
+        let R = 6371000.0 // Earth radius in meters
+        let dLat = (lat2 - lat1) * .pi / 180.0
+        let dLon = (lon2 - lon1) * .pi / 180.0
+
+        let a = sin(dLat / 2) * sin(dLat / 2) +
+                cos(lat1 * .pi / 180.0) * cos(lat2 * .pi / 180.0) *
+                sin(dLon / 2) * sin(dLon / 2)
+        let c = 2 * atan2(sqrt(a), sqrt(1 - a))
+        let distance = R * c
+
+        return distance < threshold
     }
 }
 

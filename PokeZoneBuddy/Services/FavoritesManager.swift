@@ -35,6 +35,7 @@ class FavoritesManager {
     func toggleFavorite(eventID: String) {
         if let existing = fetchFavorite(eventID: eventID) {
             // Event is favorited - remove it
+            AppLogger.service.info("Unfavoriting event: \(eventID)")
             modelContext.delete(existing)
 
             // Cancel notifications and delete preferences
@@ -42,9 +43,11 @@ class FavoritesManager {
                 await NotificationManager.shared.cancelNotifications(for: eventID)
                 let preferencesManager = ReminderPreferencesManager(modelContext: modelContext)
                 preferencesManager.deletePreferences(for: eventID)
+                AppLogger.service.debug("Canceled notifications and deleted preferences for unfavorited event: \(eventID)")
             }
         } else {
             // Event is not favorited - add it
+            AppLogger.service.info("Favoriting event: \(eventID)")
             let favorite = FavoriteEvent(eventID: eventID)
             modelContext.insert(favorite)
 
@@ -54,12 +57,19 @@ class FavoritesManager {
                     let preferencesManager = ReminderPreferencesManager(modelContext: modelContext)
                     let offsets = preferencesManager.getEnabledOffsets(for: eventID)
                     await NotificationManager.shared.scheduleNotifications(for: event, offsets: offsets)
+                    AppLogger.service.debug("Scheduled \(offsets.count) notification(s) for newly favorited event: \(eventID)")
+                } else {
+                    AppLogger.service.warn("Could not find event to schedule notifications: \(eventID)")
                 }
             }
         }
 
         // Save changes
-        try? modelContext.save()
+        do {
+            try modelContext.save()
+        } catch {
+            AppLogger.service.logError("Save favorite", error: error, context: "eventID: \(eventID)")
+        }
     }
     
     /// Checks if an event is favorited
@@ -75,11 +85,13 @@ class FavoritesManager {
         let descriptor = FetchDescriptor<FavoriteEvent>(
             sortBy: [SortDescriptor(\.addedDate, order: .reverse)]
         )
-        
+
         guard let favorites = try? modelContext.fetch(descriptor) else {
+            AppLogger.service.error("Failed to fetch favorite events from database")
             return []
         }
-        
+
+        AppLogger.service.debug("Retrieved \(favorites.count) favorited event(s)")
         return favorites.map { $0.eventID }
     }
     

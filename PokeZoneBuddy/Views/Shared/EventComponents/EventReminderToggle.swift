@@ -190,7 +190,7 @@ struct EventReminderDetailView: View {
 
                         Spacer(minLength: 4)
 
-                        Button(String(localized: "action.open_settings")) {
+                        Button(String(localized: "action.open_system_settings")) {
                             openSettings()
                         }
                         .buttonStyle(.borderless)
@@ -216,7 +216,7 @@ struct EventReminderDetailView: View {
 
             Spacer()
 
-            Button(String(localized: "action.open_settings")) {
+            Button(String(localized: "action.open_system_settings")) {
                 openSettings()
             }
             .buttonStyle(.borderless)
