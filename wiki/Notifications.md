@@ -23,5 +23,4 @@ Never miss a raid hour or Community Day again. PokeZoneBuddy’s reminder system
   - Jump straight to system settings if permissions change.
 - Background refresh routinely clears expired reminders and temporary notification images.
 
-Need to share timelines or restore your city library after a reinstall? Continue to [Data Management](./Data-Management.md).
-
+Need to share timelines or restore your city library after a reinstall? Continue to [Data Management](./Data-Management).

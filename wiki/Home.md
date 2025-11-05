@@ -10,17 +10,16 @@ Welcome to the public guide for PokeZoneBuddy — your Swiss army knife for keep
 - Back up or restore your entire city and spot library, and manage cached data when storage gets tight.
 
 ## Quick Links
-- [Getting Started](./Getting-Started.md) – Install the app, sync your first data, and learn the basics.
-- [Events Hub](./Events-Hub.md) – Tour the event list, detail view, filters, and favourites.
-- [Timeline Planner](./Timeline-Planner.md) – Craft reusable travel plans and share them.
-- [Cities and Spots](./Cities-and-Spots.md) – Build your location library and manage coordinates.
-- [Notifications](./Notifications.md) – Control reminders, permissions, and calendar export.
-- [Settings and Utilities](./Settings-and-Utilities.md) – Themes, timeline management, cache tools.
-- [Data Management](./Data-Management.md) – Work with JSON exports and `.pzb` timeline bundles.
-- [Tips and FAQ](./Tips-and-FAQ.md) – Handy tricks and answers to common questions.
-- [Shortcuts and Integrations](./Shortcuts-and-Integrations.md) – macOS Shortcuts, Calendar, share sheet.
-- [Support and Feedback](./Support-and-Feedback.md) – How to report bugs, request features, or contribute.
-- [Privacy and Legal](./Privacy-and-Legal.md) – Licensing, attributions, and fair use notes.
+- [Getting Started](./Getting-Started) – Install the app, sync your first data, and learn the basics.
+- [Events Hub](./Events-Hub) – Tour the event list, detail view, filters, and favourites.
+- [Timeline Planner](./Timeline-Planner) – Craft reusable travel plans and share them.
+- [Cities and Spots](./Cities-and-Spots) – Build your location library and manage coordinates.
+- [Notifications](./Notifications) – Control reminders, permissions, and calendar export.
+- [Settings and Utilities](./Settings-and-Utilities) – Themes, timeline management, cache tools.
+- [Data Management](./Data-Management) – Work with JSON exports and `.pzb` timeline bundles.
+- [Tips and FAQ](./Tips-and-FAQ) – Handy tricks and answers to common questions.
+- [Shortcuts and Integrations](./Shortcuts-and-Integrations) – macOS Shortcuts, Calendar, share sheet.
+- [Support and Feedback](./Support-and-Feedback) – How to report bugs, request features, or contribute.
+- [Privacy and Legal](./Privacy-and-Legal) – Licensing, attributions, and fair use notes.
 
 Prefer a quick overview? Glance through the [feature highlights](#what-you-can-do) above, then head to the section that matches your current goal.
-

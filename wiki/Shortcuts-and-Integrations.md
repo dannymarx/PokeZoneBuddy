@@ -19,5 +19,4 @@ Extend PokeZoneBuddy beyond the app with system integrations that save time and 
 ## File Management
 - Timeline `.pzb` bundles and city exports live in the system temporary directory until you share or save them. Make sure to store important files in a safe location if you plan to reuse them.
 
-Looking to collaborate or report issues? Head to [Support and Feedback](./Support-and-Feedback.md). For legal and attribution details, see [Privacy and Legal](./Privacy-and-Legal.md).
-
+Looking to collaborate or report issues? Head to [Support and Feedback](./Support-and-Feedback). For legal and attribution details, see [Privacy and Legal](./Privacy-and-Legal).

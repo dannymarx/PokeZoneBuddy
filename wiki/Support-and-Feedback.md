@@ -26,4 +26,4 @@ Have an idea, spotted a bug, or need help importing a plan? Here’s how to get 
 - Watch the repository or subscribe to releases to be notified when new builds ship.
 - Review the [Changelog](https://github.com/dannymarx/PokeZoneBuddy/blob/main/CHANGELOG.md) for detailed release notes once they publish.
 
-Need to understand the app’s legal stance before contributing? Read [Privacy and Legal](./Privacy-and-Legal.md).
+Need to understand the app’s legal stance before contributing? Read [Privacy and Legal](./Privacy-and-Legal).
