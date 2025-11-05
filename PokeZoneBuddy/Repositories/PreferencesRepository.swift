@@ -109,14 +109,19 @@ final class PreferencesRepository: PreferencesRepositoryProtocol {
         isEnabled: Bool,
         lastScheduledDate: Date?
     ) async throws {
-        let preferences = fetchReminderPreferences(for: eventID) ?? ReminderPreferences(eventID: eventID)
+        let preferences: ReminderPreferences
+
+        if let existing = fetchReminderPreferences(for: eventID) {
+            preferences = existing
+        } else {
+            let newPreferences = ReminderPreferences(eventID: eventID)
+            modelContext.insert(newPreferences)
+            preferences = newPreferences
+        }
+
         preferences.enabledOffsets = offsets.isEmpty ? [.thirtyMinutes] : offsets
         preferences.isEnabled = isEnabled
         preferences.lastScheduledDate = lastScheduledDate
-
-        if preferences.persistentModelID == nil {
-            modelContext.insert(preferences)
-        }
 
         try modelContext.save()
     }
