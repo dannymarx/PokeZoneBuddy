@@ -5,6 +5,28 @@ This project follows [Semantic Versioning](https://semver.org/).
 
 ---
 
+## [1.6.1] – 2025-11-05
+
+### Added
+- None.
+
+### Changed
+- Scoped the Settings timeline plan import button to its own file importer to prevent view-wide picker conflicts.
+
+### Fixed
+- Restored the Settings timeline plan import button so the Finder/iOS picker opens immediately alongside the cities & spots importer.
+
+### Deprecated
+- None.
+
+### Removed
+- None.
+
+### Security
+- None.
+
+---
+
 ## [1.6.0] – 2025-11-05
 
 ### Added

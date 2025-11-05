@@ -117,7 +117,7 @@ struct SettingsView: View {
     @State private var isRefreshing = false
     @State private var navigationPath = NavigationPath()
     @State private var localCitiesViewModel: CitiesViewModel?
-    @State private var showImportPicker = false
+    @State private var showTimelineImportPicker = false
     @State private var timelineService: TimelineService?
     @State private var importResult: ImportResult?
     @State private var showPlansView = false
@@ -215,13 +215,6 @@ struct SettingsView: View {
                 Button(String(localized: "common.cancel"), role: .cancel) { }
             } message: {
                 Text(String(localized: "data.delete_all.warning"))
-            }
-            .fileImporter(
-                isPresented: $showImportPicker,
-                allowedContentTypes: [.json],
-                allowsMultipleSelection: false
-            ) { result in
-                handleImport(result)
             }
             .alert(
                 String(localized: "timeline.import.success"),
@@ -361,7 +354,7 @@ struct SettingsView: View {
                     .padding(.leading, 56)
 
                 Button {
-                    showImportPicker = true
+                    showTimelineImportPicker = true
                 } label: {
                     timelineNavigationLabel(
                         icon: "square.and.arrow.down",
@@ -371,6 +364,13 @@ struct SettingsView: View {
                     )
                 }
                 .buttonStyle(.plain)
+                .fileImporter(
+                    isPresented: $showTimelineImportPicker,
+                    allowedContentTypes: [.json],
+                    allowsMultipleSelection: false
+                ) { result in
+                    handleImport(result)
+                }
             }
             .background(
                 RoundedRectangle(cornerRadius: 12, style: .continuous)

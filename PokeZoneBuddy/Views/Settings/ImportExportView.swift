@@ -27,6 +27,7 @@ struct ImportExportView: View {
     @State private var previewCityCount = 0
     @State private var previewSpotCount = 0
     @State private var selectedFileURL: URL?
+    @State private var selectedFileHasSecurityScope = false
     @State private var importResult: ImportExportService.ImportResult?
     @State private var importError: Error?
 
@@ -81,6 +82,7 @@ struct ImportExportView: View {
         }
         .alert(String(localized: "import.preview.title"), isPresented: $showImportPreview) {
             Button(String(localized: "common.cancel"), role: .cancel) {
+                releaseSelectedFileAccess()
                 selectedFileURL = nil
             }
             Button(String(localized: "import.merge_with_existing")) {
@@ -100,6 +102,7 @@ struct ImportExportView: View {
                 importData(mode: .replace)
             }
             Button(String(localized: "common.cancel"), role: .cancel) {
+                releaseSelectedFileAccess()
                 selectedFileURL = nil
             }
         } message: {
@@ -108,6 +111,7 @@ struct ImportExportView: View {
         .alert(String(localized: "import.complete.title"), isPresented: $showImportResult) {
             Button(String(localized: "common.ok")) {
                 importResult = nil
+                releaseSelectedFileAccess()
                 selectedFileURL = nil
             }
         } message: {
@@ -120,6 +124,12 @@ struct ImportExportView: View {
     }
 
     // MARK: - Export Handling
+
+    private func releaseSelectedFileAccess() {
+        guard selectedFileHasSecurityScope, let url = selectedFileURL else { return }
+        url.stopAccessingSecurityScopedResource()
+        selectedFileHasSecurityScope = false
+    }
 
     private func handleExport() {
         isProcessing = true
@@ -150,12 +160,13 @@ struct ImportExportView: View {
     private func handleFileSelection(_ result: Result<[URL], Error>) {
         switch result {
         case .success(let urls):
+            releaseSelectedFileAccess()
             guard let url = urls.first else { return }
 
-            // Start accessing security-scoped resource
-            guard url.startAccessingSecurityScopedResource() else {
-                AppLogger.viewModel.error("Failed to access file: \(url.path)")
-                return
+            // Start accessing security-scoped resource when available (sandboxed builds)
+            let hasSecurityScope = url.startAccessingSecurityScopedResource()
+            if !hasSecurityScope {
+                AppLogger.viewModel.warn("Proceeding without security-scoped access for \(url.path)")
             }
 
             Task {
@@ -165,11 +176,15 @@ struct ImportExportView: View {
                         previewCityCount = cities
                         previewSpotCount = spots
                         selectedFileURL = url
+                        selectedFileHasSecurityScope = hasSecurityScope
                         showImportPreview = true
                     }
                 } catch {
-                    url.stopAccessingSecurityScopedResource()
+                    if hasSecurityScope {
+                        url.stopAccessingSecurityScopedResource()
+                    }
                     await MainActor.run {
+                        selectedFileHasSecurityScope = false
                         importError = error
                         showImportResult = true
                     }
@@ -190,7 +205,10 @@ struct ImportExportView: View {
         Task {
             do {
                 let result = try await viewModel.importData(from: url, mode: mode)
-                url.stopAccessingSecurityScopedResource()
+                if selectedFileHasSecurityScope {
+                    url.stopAccessingSecurityScopedResource()
+                    selectedFileHasSecurityScope = false
+                }
 
                 await MainActor.run {
                     importResult = result
@@ -201,7 +219,10 @@ struct ImportExportView: View {
 
                 AppLogger.viewModel.info("Import completed: \(result.summary)")
             } catch {
-                url.stopAccessingSecurityScopedResource()
+                if selectedFileHasSecurityScope {
+                    url.stopAccessingSecurityScopedResource()
+                    selectedFileHasSecurityScope = false
+                }
 
                 await MainActor.run {
                     importError = error
@@ -215,8 +236,6 @@ struct ImportExportView: View {
         }
     }
 }
-
-// MARK: - JSON Document
 
 /// Wrapper for Data to enable file export
 struct JSONDocument: FileDocument {
