@@ -1,3 +1,6 @@
+permissions:
+  contents: write
+
 name: Sync Wiki
 
 on:
@@ -11,6 +14,9 @@ jobs:
     steps:
       - name: Checkout repository
         uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+          persist-credentials: false
 
       - name: Publish wiki
         env:
@@ -24,23 +30,19 @@ jobs:
             exit 0
           fi
 
-          git config --global user.name "${GITHUB_ACTOR}"
-          git config --global user.email "${GITHUB_ACTOR}@users.noreply.github.com"
-
           rm -rf wiki-tmp
-          git clone "https://${GITHUB_ACTOR}:${TOKEN}@github.com/${REPO}.wiki.git" wiki-tmp
+          git clone "https://x-access-token:${TOKEN}@github.com/${REPO}.wiki.git" wiki-tmp
+
+          rsync -av --delete --filter='P .git/' wiki/ wiki-tmp/
 
           cd wiki-tmp
-          find . -mindepth 1 -maxdepth 1 ! -name ".git" -exec rm -rf {} +
-          cd ..
+          git config user.name "${GITHUB_ACTOR}"
+          git config user.email "${GITHUB_ACTOR}@users.noreply.github.com"
 
-          rsync -av --delete wiki/ wiki-tmp/
-
-          cd wiki-tmp
           if git status --porcelain | grep .; then
             git add --all
             git commit -m "docs: sync public wiki from main"
-            git push
+            git push origin HEAD:master
           else
             echo "Wiki already up to date."
           fi
