@@ -2,7 +2,7 @@
 
 **PokeZoneBuddy** is a SwiftUI companion for macOS and iOS that keeps every Pokémon GO event and travel-ready timezone plan at your fingertips. Convert event schedules for Tokyo, New York, Berlin, or anywhere else without manual math and keep reusable timelines synced across devices.
 
-[![Version](https://img.shields.io/badge/version-1.6.0-blue.svg)](https://github.com/dannymarx/PokeZoneBuddy/releases)
+[![Version](https://img.shields.io/badge/version-1.6.1-blue.svg)](https://github.com/dannymarx/PokeZoneBuddy/releases)
 [![Platform](https://img.shields.io/badge/platform-macOS%2026.0+%20%7C%20iOS%2026.0+-lightgrey.svg)](https://github.com/dannymarx/PokeZoneBuddy)
 [![License](https://img.shields.io/badge/license-MIT-green.svg)](./LICENSE)
 [![Swift](https://img.shields.io/badge/swift-5.9+-orange.svg)](https://swift.org)
