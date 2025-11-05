@@ -7,7 +7,6 @@
 //
 
 import SwiftUI
-import SwiftData
 
 /// Compact event card for sidebar favorite events display
 struct FavoriteEventCard: View {
@@ -15,7 +14,7 @@ struct FavoriteEventCard: View {
     @State private var isHovered = false
     @State private var hasReminders = false
 
-    @Environment(\.modelContext) private var modelContext
+    @Environment(EventPreferencesService.self) private var eventPreferencesService
 
     private static let dateFormatter: DateFormatter = {
         let formatter = DateFormatter()
@@ -123,7 +122,6 @@ struct FavoriteEventCard: View {
     }
 
     private func checkReminders() {
-        let preferencesManager = ReminderPreferencesManager(modelContext: modelContext)
-        hasReminders = preferencesManager.isEnabled(for: event.id)
+        hasReminders = eventPreferencesService.remindersEnabled(for: event.id)
     }
 }

@@ -4,11 +4,11 @@
 //
 //  Created by Claude on 10/16/25.
 //
-//  This service consolidates FavoritesManager and ReminderPreferencesManager
-//  into a single, cohesive service for managing event preferences.
+//  Central service for managing favourites and reminder preferences.
 //
 
 import Foundation
+import Observation
 
 // MARK: - Service Protocol
 
@@ -17,39 +17,77 @@ protocol EventPreferencesServiceProtocol {
     func isFavorite(eventID: String) -> Bool
     func getAllFavoriteEventIDs() -> Set<String>
 
-    func setReminders(eventID: String, offsets: [ReminderOffset]) async throws
-    func getReminders(for eventID: String) -> [ReminderOffset]
-    func removeReminders(for eventID: String) async throws
+    func reminderState(for eventID: String) -> ReminderPreferenceState
+    func remindersEnabled(for eventID: String) -> Bool
+    func updateReminders(
+        for event: Event,
+        offsets: [ReminderOffset],
+        isEnabled: Bool,
+        cityIdentifier: String?
+    ) async throws
+    func disableReminders(for eventID: String) async throws
 }
 
 // MARK: - Service Implementation
 
 @MainActor
+@Observable
 final class EventPreferencesService: EventPreferencesServiceProtocol {
     private let preferencesRepository: PreferencesRepositoryProtocol
-    private let notificationCoordinator: NotificationCoordinatorProtocol
+    private let eventRepository: EventRepositoryProtocol
+    private let notificationManager: NotificationManagerProtocol
 
     init(
         preferencesRepository: PreferencesRepositoryProtocol,
-        notificationCoordinator: NotificationCoordinatorProtocol
+        eventRepository: EventRepositoryProtocol,
+        notificationManager: NotificationManagerProtocol
     ) {
         self.preferencesRepository = preferencesRepository
-        self.notificationCoordinator = notificationCoordinator
+        self.eventRepository = eventRepository
+        self.notificationManager = notificationManager
     }
 
     // MARK: - Favorites
 
     func toggleFavorite(eventID: String) async throws {
-        let isFavorite = preferencesRepository.isFavorite(eventID: eventID)
-
-        if isFavorite {
-            // Remove favorite and cancel notifications
+        if preferencesRepository.isFavorite(eventID: eventID) {
             try await preferencesRepository.removeFavorite(eventID: eventID)
-            await notificationCoordinator.cancelNotifications(for: eventID)
-        } else {
-            // Add favorite
-            try await preferencesRepository.addFavorite(eventID: eventID)
+            try await preferencesRepository.deleteReminder(eventID: eventID)
+            await notificationManager.cancelNotifications(for: eventID)
+            AppLogger.notifications.info("Removed favorite and cleared reminders for event \(eventID)")
+            return
         }
+
+        try await preferencesRepository.addFavorite(eventID: eventID)
+        AppLogger.notifications.info("Added favorite for event \(eventID)")
+
+        // Restore reminders if user previously enabled them
+        let state = preferencesRepository.getReminderState(for: eventID)
+        guard state.isEnabled, !state.offsets.isEmpty else {
+            return
+        }
+
+        guard let event = try await eventRepository.fetchEvent(id: eventID) else {
+            AppLogger.notifications.warn("Favorite added but event not found for reminder restore: \(eventID)")
+            return
+        }
+
+        await notificationManager.scheduleNotifications(
+            for: event,
+            city: nil,
+            offsets: state.offsets
+        )
+
+        try await preferencesRepository.upsertReminder(
+            eventID: eventID,
+            offsets: state.offsets,
+            isEnabled: true,
+            lastScheduledDate: Date()
+        )
+    }
+
+    func reminderState(for eventID: String) -> ReminderPreferenceState {
+        preferencesRepository.getReminderState(for: eventID)
     }
 
     func isFavorite(eventID: String) -> Bool {
@@ -60,22 +98,48 @@ final class EventPreferencesService: EventPreferencesServiceProtocol {
         preferencesRepository.getAllFavoriteEventIDs()
     }
 
+    func remindersEnabled(for eventID: String) -> Bool {
+        reminderState(for: eventID).isEnabled
+    }
+
     // MARK: - Reminders
 
-    func setReminders(eventID: String, offsets: [ReminderOffset]) async throws {
-        // Save reminder preferences
-        try await preferencesRepository.saveReminders(eventID: eventID, offsets: offsets)
+    func updateReminders(
+        for event: Event,
+        offsets: [ReminderOffset],
+        isEnabled: Bool,
+        cityIdentifier: String?
+    ) async throws {
+        let normalizedOffsets = offsets.isEmpty ? [.thirtyMinutes] : offsets
 
-        // Schedule notifications
-        await notificationCoordinator.scheduleNotifications(for: eventID, offsets: offsets)
+        await notificationManager.cancelNotifications(for: event.id)
+
+        var lastScheduledDate: Date? = nil
+        if isEnabled {
+            await notificationManager.scheduleNotifications(
+                for: event,
+                city: cityIdentifier,
+                offsets: normalizedOffsets
+            )
+            lastScheduledDate = Date()
+        }
+
+        try await preferencesRepository.upsertReminder(
+            eventID: event.id,
+            offsets: normalizedOffsets,
+            isEnabled: isEnabled,
+            lastScheduledDate: lastScheduledDate
+        )
     }
 
-    func getReminders(for eventID: String) -> [ReminderOffset] {
-        preferencesRepository.getReminders(for: eventID)
-    }
-
-    func removeReminders(for eventID: String) async throws {
-        try await preferencesRepository.removeReminders(for: eventID)
-        await notificationCoordinator.cancelNotifications(for: eventID)
+    func disableReminders(for eventID: String) async throws {
+        let state = preferencesRepository.getReminderState(for: eventID)
+        await notificationManager.cancelNotifications(for: eventID)
+        try await preferencesRepository.upsertReminder(
+            eventID: eventID,
+            offsets: state.offsets,
+            isEnabled: false,
+            lastScheduledDate: nil
+        )
     }
 }

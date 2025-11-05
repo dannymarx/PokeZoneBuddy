@@ -158,38 +158,42 @@ class NotificationManager: ObservableObject {
     func rescheduleAllNotifications(modelContext: ModelContext) async {
         AppLogger.notifications.info("Rescheduling all notifications due to timezone change")
 
-        // Get all favorited events
-        let favoritesManager = FavoritesManager(modelContext: modelContext)
-        let favoriteEventIDs = favoritesManager.getAllFavoriteEventIDs()
+        let preferencesRepository = PreferencesRepository(modelContext: modelContext)
+        let eventRepository = EventRepository(modelContext: modelContext)
 
+        let favoriteEventIDs = Array(preferencesRepository.getAllFavoriteEventIDs())
         AppLogger.notifications.debug("Found \(favoriteEventIDs.count) favorited event(s) to reschedule")
 
-        // Cancel all existing notifications first
         await cancelAllNotifications()
 
-        // Reschedule only for upcoming events
         var rescheduledCount = 0
         var skippedCount = 0
 
         for eventID in favoriteEventIDs {
-            guard let event = fetchEvent(eventID: eventID, modelContext: modelContext) else {
+            guard let event = try? await eventRepository.fetchEvent(id: eventID) else {
                 AppLogger.notifications.warn("Could not find event \(eventID) for rescheduling")
                 continue
             }
 
-            // CRITICAL: Only reschedule if event is still upcoming
             guard event.isUpcoming else {
                 AppLogger.notifications.debug("Skipping rescheduling for past event: \(eventID)")
                 skippedCount += 1
                 continue
             }
 
-            // Get user's preferred reminder offsets for this event
-            let preferencesManager = ReminderPreferencesManager(modelContext: modelContext)
-            let offsets = preferencesManager.getEnabledOffsets(for: eventID)
+            let state = preferencesRepository.getReminderState(for: eventID)
+            guard state.isEnabled, !state.offsets.isEmpty else {
+                AppLogger.notifications.debug("No enabled reminders for event: \(eventID)")
+                continue
+            }
 
-            // Schedule notifications for each offset
-            await scheduleNotifications(for: event, offsets: offsets)
+            await scheduleNotifications(for: event, city: nil, offsets: state.offsets)
+            try? await preferencesRepository.upsertReminder(
+                eventID: eventID,
+                offsets: state.offsets,
+                isEnabled: true,
+                lastScheduledDate: Date()
+            )
             rescheduledCount += 1
         }
 
@@ -297,17 +301,6 @@ class NotificationManager: ObservableObject {
         return UNCalendarNotificationTrigger(dateMatching: components, repeats: false)
     }
 
-    /// Fetch an event by ID from the database
-    /// - Parameters:
-    ///   - eventID: The unique ID of the event
-    ///   - modelContext: The SwiftData ModelContext to query
-    /// - Returns: The Event if found, nil otherwise
-    private func fetchEvent(eventID: String, modelContext: ModelContext) -> Event? {
-        let descriptor = FetchDescriptor<Event>(
-            predicate: #Predicate { $0.id == eventID }
-        )
-        return try? modelContext.fetch(descriptor).first
-    }
 }
 
 // MARK: - Notification Content Builder
@@ -373,6 +366,15 @@ struct NotificationContentBuilder {
         }
     }
 }
+
+// MARK: - Protocol Conformance
+
+protocol NotificationManagerProtocol {
+    func scheduleNotifications(for event: Event, city: String?, offsets: [ReminderOffset]) async
+    func cancelNotifications(for eventID: String) async
+}
+
+extension NotificationManager: NotificationManagerProtocol {}
 
 // MARK: - Notification Names
 

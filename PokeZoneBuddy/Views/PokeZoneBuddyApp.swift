@@ -66,6 +66,8 @@ struct PokeZoneBuddyApp: App {
 
     /// Timeline service for plan and template management (v1.6.0)
     @State private var timelineService: TimelineService?
+    /// Event preferences service for favourites + reminders
+    @State private var eventPreferencesService: EventPreferencesService?
 
     /// Theme preference with proper reactive binding
     @AppStorage(ThemePreference.storageKey) private var themePreferenceRaw = ThemePreference.system.rawValue
@@ -80,10 +82,11 @@ struct PokeZoneBuddyApp: App {
         WindowGroup {
             #if os(iOS)
             Group {
-                if let timelineService {
+                if let timelineService, let eventPreferencesService {
                     MainTabView()
                         .environment(networkMonitor)
                         .environment(timelineService)
+                        .environment(eventPreferencesService)
                         .preferredColorScheme(currentTheme)
                 } else {
                     ProgressView()
@@ -95,11 +98,12 @@ struct PokeZoneBuddyApp: App {
             }
             #else
             Group {
-                if let timelineService {
+                if let timelineService, let eventPreferencesService {
                     MacOSMainView()
                         .environment(networkMonitor)
                         .environment(calendarService)
                         .environment(timelineService)
+                        .environment(eventPreferencesService)
                         .preferredColorScheme(currentTheme)
                 } else {
                     ProgressView()
@@ -139,6 +143,16 @@ struct PokeZoneBuddyApp: App {
             cityRepository: cityRepository
         )
         AppLogger.app.info("Timeline service initialized")
+
+        // Initialize EventPreferencesService with repositories
+        let eventRepository = EventRepository(modelContext: modelContext)
+        let preferencesRepository = PreferencesRepository(modelContext: modelContext)
+        eventPreferencesService = EventPreferencesService(
+            preferencesRepository: preferencesRepository,
+            eventRepository: eventRepository,
+            notificationManager: NotificationManager.shared
+        )
+        AppLogger.app.info("Event preferences service initialized")
     }
 
     // MARK: - Background Refresh Setup
@@ -148,9 +162,15 @@ struct PokeZoneBuddyApp: App {
         BackgroundRefreshService.shared.configure(networkMonitor: networkMonitor)
 
         // Start auto-refresh
-        BackgroundRefreshService.shared.startAutoRefresh {
-            // Refresh logic will be handled by EventsViewModel
-            AppLogger.app.info("Auto-refresh triggered")
+        BackgroundRefreshService.shared.startAutoRefresh { [sharedModelContainer, networkMonitor] in
+            AppLogger.background.info("Auto-refresh triggered")
+            let context = ModelContext(sharedModelContainer)
+            let refreshViewModel = EventsViewModel(
+                modelContext: context,
+                networkMonitor: networkMonitor
+            )
+            await refreshViewModel.syncEvents()
+            AppLogger.background.info("Auto-refresh sync completed")
         }
     }
 }
