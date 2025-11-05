@@ -7,6 +7,7 @@
 //
 
 import SwiftUI
+import TipKit
 #if os(macOS)
 import AppKit
 #endif
@@ -22,6 +23,7 @@ struct EventDetailView: View {
     @Environment(\.dynamicTypeSize) private var dynamicTypeSize
     @Environment(TimelineService.self) private var timelineService
     @Environment(EventPreferencesService.self) private var eventPreferencesService
+    @Environment(TipService.self) private var tipService
     @Environment(\.colorScheme) private var colorScheme
 #if os(macOS)
     @Environment(CalendarService.self) private var calendarService
@@ -974,6 +976,10 @@ struct EventDetailView: View {
         }
         .menuStyle(.borderlessButton)
         .buttonStyle(.plain)
+        .popoverTip(
+            tipService.tipsEnabled ? tipService.plannerTemplateTip : nil,
+            arrowEdge: .top
+        )
     }
 
     /// Load timeline plans and apply default template
@@ -1021,6 +1027,7 @@ struct EventDetailView: View {
             availablePlans = timelineService.plans
 
             AppLogger.viewModel.info("Saved timeline plan: \(name)")
+            tipService.recordPlanSaved()
         } catch {
             exportError = error.localizedDescription
             showExportError = true

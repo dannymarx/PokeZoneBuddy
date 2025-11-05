@@ -6,6 +6,7 @@
 //
 
 import SwiftUI
+import TipKit
 import UniformTypeIdentifiers
 
 /// View for importing and exporting app data
@@ -32,6 +33,7 @@ struct ImportExportView: View {
     @State private var importError: Error?
 
     @State private var isProcessing = false
+    @Environment(TipService.self) private var tipService
 
     // MARK: - Body
 
@@ -46,6 +48,10 @@ struct ImportExportView: View {
             ) {
                 handleExport()
             }
+            .popoverTip(
+                tipService.tipsEnabled ? tipService.timelineExportTip : nil,
+                arrowEdge: .top
+            )
 
             Divider()
                 .padding(.leading, 16)
@@ -150,6 +156,7 @@ struct ImportExportView: View {
         switch result {
         case .success(let url):
             AppLogger.viewModel.info("Data exported successfully to \(url.path)")
+            tipService.recordTimelineExport()
         case .failure(let error):
             AppLogger.viewModel.error("Export failed: \(String(describing: error))")
         }
