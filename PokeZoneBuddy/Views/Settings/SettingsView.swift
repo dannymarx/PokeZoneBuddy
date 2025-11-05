@@ -705,8 +705,8 @@ struct SettingsView: View {
 
             VStack(spacing: 0) {
                 TipsToggleRow(
-                    title: String(localized: "settings.tips.toggle_title"),
-                    subtitle: String(localized: "settings.tips.toggle_subtitle"),
+                    title: "settings.tips.toggle_title",
+                    subtitle: "settings.tips.toggle_subtitle",
                     isOn: tipsEnabledBinding
                 )
 
