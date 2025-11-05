@@ -27,8 +27,7 @@ struct PlannerTemplateTip: Tip {
 
     var rules: [Rule] {
         #Rule(Self.planSavedEvent) { event in
-            let count = event.donations.count
-            return count > 0 && count <= 2
+            event.donations.count > 0 && event.donations.count <= 2
         }
     }
 
@@ -57,8 +56,7 @@ struct EventFiltersTip: Tip {
 
     var rules: [Rule] {
         #Rule(Self.filtersUsedEvent) { event in
-            let count = event.donations.count
-            return count > 0 && count <= 3
+            event.donations.count > 0 && event.donations.count <= 3
         }
     }
 
@@ -86,8 +84,7 @@ struct TimelineExportTip: Tip {
 
     var rules: [Rule] {
         #Rule(Self.exportEvent) { event in
-            let count = event.donations.count
-            return count > 0 && count <= 2
+            event.donations.count > 0 && event.donations.count <= 2
         }
     }
 
