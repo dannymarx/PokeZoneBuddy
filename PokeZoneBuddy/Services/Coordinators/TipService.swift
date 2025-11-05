@@ -19,8 +19,13 @@ final class TipService {
 
     // MARK: - Dependencies
 
-    @ObservationIgnored private let store: TipStore
     @ObservationIgnored private let preferencesStore: TipPreferencesStoreProtocol
+
+    // MARK: - Tip Instances
+
+    let plannerTemplateTip = PlannerTemplateTip()
+    let eventFiltersTip = EventFiltersTip()
+    let timelineExportTip = TimelineExportTip()
 
     // MARK: - State
 
@@ -30,34 +35,25 @@ final class TipService {
 
     // MARK: - Initialization
 
-    init(
-        store: TipStore = .shared,
-        preferencesStore: TipPreferencesStoreProtocol
-    ) {
-        self.store = store
+    init(preferencesStore: TipPreferencesStoreProtocol) {
         self.preferencesStore = preferencesStore
 
         let preferences = preferencesStore.fetchOrCreate()
         self.tipsEnabled = preferences.isEnabled
         self.lastReset = preferences.lastReset
+
+        configureTipKit()
     }
 
     // MARK: - Configuration
 
-    func configureIfNeeded(with tips: [any Tip.Type]) async {
+    private func configureTipKit() {
         guard !isConfigured else { return }
 
         do {
-            try await store.load()
-
-            if !tips.isEmpty {
-                try await store.register(tips: tips)
-            }
-
-            try await store.setTipsEnabled(tipsEnabled)
-
+            try Tips.configure()
             isConfigured = true
-            AppLogger.tips.info("TipKit configured (enabled: \(tipsEnabled))")
+            AppLogger.tips.info("TipKit configured")
         } catch {
             AppLogger.tips.error("Failed to configure TipKit: \(error.localizedDescription)")
         }
@@ -72,45 +68,45 @@ final class TipService {
 
         await preferencesStore.update(isEnabled: isEnabled)
 
-        do {
-            try await store.setTipsEnabled(isEnabled)
-            AppLogger.tips.info("Updated TipKit enabled state: \(isEnabled)")
-
-            if !isEnabled {
-                try await store.invalidateAllTips()
-            }
-        } catch {
-            AppLogger.tips.error("Failed to update TipKit enabled state: \(error.localizedDescription)")
+        if !isEnabled {
+            dismissActiveTips()
         }
     }
 
     func resetTips() async {
         do {
-            try await store.resetAllTips()
+            try Tips.resetDatastore()
             let resetDate = Date()
             lastReset = resetDate
             await preferencesStore.update(lastReset: .some(resetDate))
-            AppLogger.tips.info("Reset all tips")
+            AppLogger.tips.info("Reset TipKit datastore")
         } catch {
-            AppLogger.tips.error("Failed to reset tips: \(error.localizedDescription)")
+            AppLogger.tips.error("Failed to reset TipKit datastore: \(error.localizedDescription)")
         }
     }
 
     // MARK: - Tip Triggers
 
-    func recordPlanSaved() {}
+    func recordPlanSaved() {
+        guard tipsEnabled else { return }
+        Task { await PlannerTemplateTip.planSavedEvent.donate() }
+    }
 
-    func recordFiltersUsed() {}
+    func recordFiltersUsed() {
+        guard tipsEnabled else { return }
+        Task { await EventFiltersTip.filtersUsedEvent.donate() }
+    }
 
-    func recordTimelineExport() {}
+    func recordTimelineExport() {
+        guard tipsEnabled else { return }
+        Task { await TimelineExportTip.exportEvent.donate() }
+    }
 
     // MARK: - Scene Handling
 
-    func dismissActiveTips() async {
-        do {
-            try await store.invalidateAllTips()
-        } catch {
-            AppLogger.tips.error("Failed to invalidate active tips: \(error.localizedDescription)")
-        }
+    func dismissActiveTips() {
+        plannerTemplateTip.invalidate(reason: .tipClosed)
+        eventFiltersTip.invalidate(reason: .tipClosed)
+        timelineExportTip.invalidate(reason: .tipClosed)
     }
 }

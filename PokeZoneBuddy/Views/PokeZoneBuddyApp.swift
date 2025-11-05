@@ -163,9 +163,6 @@ struct PokeZoneBuddyApp: App {
         let tipPreferencesStore = TipPreferencesStore(modelContext: modelContext)
         let tipService = TipService(preferencesStore: tipPreferencesStore)
         self.tipService = tipService
-        Task {
-            await tipService.configureIfNeeded(with: [])
-        }
         AppLogger.app.info("Tip service initialized")
     }
 
