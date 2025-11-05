@@ -57,7 +57,9 @@ final class TipPreferencesStore: TipPreferencesStoreProtocol {
             return cachedPreferences
         }
 
-        let descriptor = FetchDescriptor<TipPreferences>(fetchLimit: 1)
+        var descriptor = FetchDescriptor<TipPreferences>()
+        descriptor.fetchLimit = 1
+
         if let existing = try? modelContext.fetch(descriptor).first {
             cachedPreferences = existing
             defaults.set(existing.isEnabled, forKey: TipService.tipsEnabledDefaultsKey)
