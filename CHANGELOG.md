@@ -5,7 +5,7 @@ This project follows [Semantic Versioning](https://semver.org/).
 
 ---
 
-## [1.6.0] – Unreleased
+## [1.6.0] – 2025-11-05
 
 ### Added
 - Multi-city timeline plans that save event-specific city selections with rename/update flows plus JSON export/import.
@@ -18,9 +18,12 @@ This project follows [Semantic Versioning](https://semver.org/).
 - Multi-City Planner integrates a gear menu for saving, loading, template application, sharing, and macOS calendar shortcuts.
 - Settings reorganized to surface the full timeline toolkit alongside appearance, notifications, and data management.
 - Reminder controls expose configurable offsets within the planner and allow macOS users to target a specific city timezone.
+- Event preferences now flow through `EventPreferencesService`, retiring the legacy favourites/reminder managers and ensuring a single scheduling pipeline.
+- Background refresh uses a dedicated `EventsViewModel` to run full `syncEvents()` cycles before cleaning temporary assets.
 
 ### Fixed
 - Automatic cleanup now removes stale temporary notification assets after background refresh to prevent cache bloat.
+- Rescheduling notifications after timezone changes reads reminder preferences directly from SwiftData to avoid missed reminders.
 
 ---
 

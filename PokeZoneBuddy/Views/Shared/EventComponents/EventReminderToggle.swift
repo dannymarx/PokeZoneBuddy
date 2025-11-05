@@ -7,7 +7,6 @@
 
 import SwiftUI
 import UserNotifications
-import SwiftData
 
 /// A simple, streamlined reminder toggle for event detail views
 struct EventReminderDetailView: View {
@@ -25,7 +24,7 @@ struct EventReminderDetailView: View {
 
     // MARK: - Environment
 
-    @Environment(\.modelContext) private var modelContext
+    @Environment(EventPreferencesService.self) private var eventPreferencesService
 
     // MARK: - State
 
@@ -228,25 +227,23 @@ struct EventReminderDetailView: View {
     // MARK: - Actions
     
     private func loadNotifications() async {
-        let preferencesManager = ReminderPreferencesManager(modelContext: modelContext)
-        if let preferences = preferencesManager.getPreferences(for: event.id) {
-            isEnabled = preferences.isEnabled
-            selectedOffset = preferences.enabledOffsets.first ?? .thirtyMinutes
-        } else {
-            isEnabled = false
-            selectedOffset = .thirtyMinutes
-        }
+        let state = eventPreferencesService.reminderState(for: event.id)
+        isEnabled = state.isEnabled
+        selectedOffset = state.offsets.first ?? .thirtyMinutes
+        await notificationManager.updateAuthorizationStatus()
     }
     
     private func handleToggle(_ enabled: Bool) {
         Task {
-            let preferencesManager = ReminderPreferencesManager(modelContext: modelContext)
-            if enabled {
-                preferencesManager.updatePreferences(for: event.id, offsets: [selectedOffset], isEnabled: true)
-                await notificationManager.scheduleNotifications(for: event, offsets: [selectedOffset])
-            } else {
-                preferencesManager.updatePreferences(for: event.id, offsets: [selectedOffset], isEnabled: false)
-                await notificationManager.cancelNotifications(for: event.id)
+            do {
+                try await eventPreferencesService.updateReminders(
+                    for: event,
+                    offsets: [selectedOffset],
+                    isEnabled: enabled,
+                    cityIdentifier: nil
+                )
+            } catch {
+                AppLogger.notifications.error("Failed to update reminder toggle for \(event.id): \(error)")
             }
         }
     }
@@ -254,10 +251,16 @@ struct EventReminderDetailView: View {
     private func updateReminder() {
         guard isEnabled else { return }
         Task {
-            let preferencesManager = ReminderPreferencesManager(modelContext: modelContext)
-            preferencesManager.updatePreferences(for: event.id, offsets: [selectedOffset], isEnabled: true)
-            await notificationManager.cancelNotifications(for: event.id)
-            await notificationManager.scheduleNotifications(for: event, offsets: [selectedOffset])
+            do {
+                try await eventPreferencesService.updateReminders(
+                    for: event,
+                    offsets: [selectedOffset],
+                    isEnabled: true,
+                    cityIdentifier: nil
+                )
+            } catch {
+                AppLogger.notifications.error("Failed to update reminder offset for \(event.id): \(error)")
+            }
         }
     }
     

@@ -365,14 +365,13 @@ final class EventsViewModel {
     /// Favorisierte Events (nur zukünftige/aktive, sortiert nach StartTime)
     /// PERFORMANCE: Uses Set for O(1) ID lookup
     var favoriteEvents: [Event] {
-        let favoritesManager = FavoritesManager(modelContext: modelContext)
-        let favoriteIDs = Set(favoritesManager.getAllFavoriteEventIDs())
+        let descriptor = FetchDescriptor<FavoriteEvent>()
+        let favorites = (try? modelContext.fetch(descriptor)) ?? []
+        let favoriteIDs = Set(favorites.map { $0.eventID })
 
         return events
             .filter { event in
-                // Must be favorited
                 guard favoriteIDs.contains(event.id) else { return false }
-                // Must be upcoming or active (not past)
                 return event.isUpcoming || event.isCurrentlyActive
             }
             .sorted { $0.startTime < $1.startTime }

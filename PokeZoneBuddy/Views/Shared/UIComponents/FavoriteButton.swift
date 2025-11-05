@@ -16,7 +16,7 @@ struct FavoriteButton: View {
     // MARK: - Properties
 
     let eventID: String
-    @Environment(\.modelContext) private var modelContext
+    @Environment(EventPreferencesService.self) private var eventPreferencesService
 
     // Query all favorites - this automatically updates when favorites change!
     @Query private var allFavorites: [FavoriteEvent]
@@ -44,8 +44,13 @@ struct FavoriteButton: View {
     // MARK: - Private Methods
 
     private func toggleFavorite() {
-        let manager = FavoritesManager(modelContext: modelContext)
-        manager.toggleFavorite(eventID: eventID)
+        Task {
+            do {
+                try await eventPreferencesService.toggleFavorite(eventID: eventID)
+            } catch {
+                AppLogger.notifications.error("Failed to toggle favorite for \(eventID): \(error)")
+            }
+        }
     }
 }
 

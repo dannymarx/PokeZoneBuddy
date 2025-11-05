@@ -16,9 +16,28 @@ protocol PreferencesRepositoryProtocol {
     func addFavorite(eventID: String) async throws
     func removeFavorite(eventID: String) async throws
 
-    func getReminders(for eventID: String) -> [ReminderOffset]
-    func saveReminders(eventID: String, offsets: [ReminderOffset]) async throws
-    func removeReminders(for eventID: String) async throws
+    func getReminderState(for eventID: String) -> ReminderPreferenceState
+    func upsertReminder(
+        eventID: String,
+        offsets: [ReminderOffset],
+        isEnabled: Bool,
+        lastScheduledDate: Date?
+    ) async throws
+    func deleteReminder(eventID: String) async throws
+}
+
+// MARK: - Reminder Preference Snapshot
+
+struct ReminderPreferenceState {
+    let offsets: [ReminderOffset]
+    let isEnabled: Bool
+    let lastScheduledDate: Date?
+
+    static let disabled = ReminderPreferenceState(
+        offsets: [.thirtyMinutes],
+        isEnabled: false,
+        lastScheduledDate: nil
+    )
 }
 
 // MARK: - Repository Implementation
@@ -71,45 +90,52 @@ final class PreferencesRepository: PreferencesRepositoryProtocol {
 
     // MARK: - Reminders
 
-    func getReminders(for eventID: String) -> [ReminderOffset] {
-        let descriptor = FetchDescriptor<ReminderPreferences>(
-            predicate: #Predicate { $0.eventID == eventID }
-        )
-        guard let preferences = try? modelContext.fetch(descriptor).first else {
-            return []
+    func getReminderState(for eventID: String) -> ReminderPreferenceState {
+        guard let preferences = fetchReminderPreferences(for: eventID) else {
+            return .disabled
         }
-        return preferences.enabledOffsets
+
+        let offsets = preferences.enabledOffsets.isEmpty ? [.thirtyMinutes] : preferences.enabledOffsets
+        return ReminderPreferenceState(
+            offsets: offsets,
+            isEnabled: preferences.isEnabled && !offsets.isEmpty,
+            lastScheduledDate: preferences.lastScheduledDate
+        )
     }
 
-    func saveReminders(eventID: String, offsets: [ReminderOffset]) async throws {
-        // Remove existing
-        let descriptor = FetchDescriptor<ReminderPreferences>(
-            predicate: #Predicate { $0.eventID == eventID }
-        )
-        let existing = try modelContext.fetch(descriptor)
-        for pref in existing {
-            modelContext.delete(pref)
-        }
+    func upsertReminder(
+        eventID: String,
+        offsets: [ReminderOffset],
+        isEnabled: Bool,
+        lastScheduledDate: Date?
+    ) async throws {
+        let preferences = fetchReminderPreferences(for: eventID) ?? ReminderPreferences(eventID: eventID)
+        preferences.enabledOffsets = offsets.isEmpty ? [.thirtyMinutes] : offsets
+        preferences.isEnabled = isEnabled
+        preferences.lastScheduledDate = lastScheduledDate
 
-        // Add new
-        if !offsets.isEmpty {
-            let preferences = ReminderPreferences(eventID: eventID, enabledOffsets: offsets)
+        if preferences.persistentModelID == nil {
             modelContext.insert(preferences)
         }
 
         try modelContext.save()
     }
 
-    func removeReminders(for eventID: String) async throws {
+    func deleteReminder(eventID: String) async throws {
+        guard let preferences = fetchReminderPreferences(for: eventID) else {
+            return
+        }
+
+        modelContext.delete(preferences)
+        try modelContext.save()
+    }
+
+    // MARK: - Helpers
+
+    private func fetchReminderPreferences(for eventID: String) -> ReminderPreferences? {
         let descriptor = FetchDescriptor<ReminderPreferences>(
             predicate: #Predicate { $0.eventID == eventID }
         )
-        let preferences = try modelContext.fetch(descriptor)
-
-        for pref in preferences {
-            modelContext.delete(pref)
-        }
-
-        try modelContext.save()
+        return try? modelContext.fetch(descriptor).first
     }
 }

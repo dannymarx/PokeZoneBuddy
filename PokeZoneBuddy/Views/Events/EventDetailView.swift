@@ -21,8 +21,8 @@ struct EventDetailView: View {
     @Environment(\.horizontalSizeClass) private var horizontalSizeClass
     @Environment(\.dynamicTypeSize) private var dynamicTypeSize
     @Environment(TimelineService.self) private var timelineService
+    @Environment(EventPreferencesService.self) private var eventPreferencesService
     @Environment(\.colorScheme) private var colorScheme
-    @Environment(\.modelContext) private var modelContext
 #if os(macOS)
     @Environment(CalendarService.self) private var calendarService
 #endif
@@ -1156,14 +1156,9 @@ struct EventDetailView: View {
     // MARK: - Reminder Helpers
 
     private func loadReminderPreferences() {
-        let manager = ReminderPreferencesManager(modelContext: modelContext)
-        if let preferences = manager.getPreferences(for: event.id) {
-            reminderEnabled = preferences.isEnabled
-            reminderOffset = preferences.enabledOffsets.first ?? .thirtyMinutes
-        } else {
-            reminderEnabled = false
-            reminderOffset = .thirtyMinutes
-        }
+        let state = eventPreferencesService.reminderState(for: event.id)
+        reminderEnabled = state.isEnabled
+        reminderOffset = state.offsets.first ?? .thirtyMinutes
 
         if reminderCityIdentifier == nil {
             reminderCityIdentifier = selectedTimelineCities.first?.timeZoneIdentifier
@@ -1191,7 +1186,13 @@ struct EventDetailView: View {
         if reminderEnabled {
             rescheduleReminders()
         } else {
-            Task { await MainActor.run { updateReminderPreferences(isEnabled: false) } }
+            Task {
+                do {
+                    try await eventPreferencesService.disableReminders(for: event.id)
+                } catch {
+                    AppLogger.notifications.error("Failed to disable reminders for \(event.id): \(error)")
+                }
+            }
         }
     }
 
@@ -1227,18 +1228,15 @@ struct EventDetailView: View {
         let enabled = reminderEnabled
 
         Task {
-            await MainActor.run {
-                updateReminderPreferences(isEnabled: enabled)
-            }
-
-            await notificationManager.cancelNotifications(for: event.id)
-
-            if enabled {
-                if let cityIdentifier {
-                    await notificationManager.scheduleNotifications(for: event, city: cityIdentifier, offsets: [offset])
-                } else {
-                    await notificationManager.scheduleNotifications(for: event, offsets: [offset])
-                }
+            do {
+                try await eventPreferencesService.updateReminders(
+                    for: event,
+                    offsets: [offset],
+                    isEnabled: enabled,
+                    cityIdentifier: cityIdentifier
+                )
+            } catch {
+                AppLogger.notifications.error("Failed to reschedule reminders for \(event.id): \(error)")
             }
 
             await MainActor.run {
@@ -1253,12 +1251,6 @@ struct EventDetailView: View {
             return identifier
         }
         return nil
-    }
-
-    @MainActor
-    private func updateReminderPreferences(isEnabled: Bool) {
-        let manager = ReminderPreferencesManager(modelContext: modelContext)
-        manager.updatePreferences(for: event.id, offsets: [reminderOffset], isEnabled: isEnabled)
     }
 
 #if os(macOS)
