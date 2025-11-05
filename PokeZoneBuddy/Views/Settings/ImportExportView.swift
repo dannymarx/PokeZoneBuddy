@@ -14,13 +14,24 @@ struct ImportExportView: View {
     // MARK: - Properties
 
     let viewModel: CitiesViewModel
-    @ObservedObject var controller: ImportExportController
-    let onImportTapped: () -> Void
 
     // MARK: - State
 
     @State private var showExportSheet = false
+    @State private var showImportPicker = false
+    @State private var showImportPreview = false
+    @State private var showImportModeSelection = false
+    @State private var showImportResult = false
+
     @State private var exportDocument: JSONDocument?
+    @State private var previewCityCount = 0
+    @State private var previewSpotCount = 0
+    @State private var selectedFileURL: URL?
+    @State private var selectedFileHasSecurityScope = false
+    @State private var importResult: ImportExportService.ImportResult?
+    @State private var importError: Error?
+
+    @State private var isProcessing = false
 
     // MARK: - Body
 
@@ -46,14 +57,14 @@ struct ImportExportView: View {
                 buttonText: "Import",
                 buttonColor: .systemGreen
             ) {
-                onImportTapped()
+                showImportPicker = true
             }
         }
         .background(
             RoundedRectangle(cornerRadius: 12, style: .continuous)
                 .fill(.quaternary.opacity(0.2))
         )
-        .disabled(controller.isProcessing)
+        .disabled(isProcessing)
         .fileExporter(
             isPresented: $showExportSheet,
             document: exportDocument,
@@ -62,55 +73,51 @@ struct ImportExportView: View {
         ) { result in
             handleExportResult(result)
         }
-        .alert(
-            String(localized: "import.preview.title"),
-            isPresented: Binding(
-                get: { controller.showImportPreview },
-                set: { controller.showImportPreview = $0 }
-            )
-        ) {
+        .fileImporter(
+            isPresented: $showImportPicker,
+            allowedContentTypes: [.json],
+            allowsMultipleSelection: false
+        ) { result in
+            handleFileSelection(result)
+        }
+        .alert(String(localized: "import.preview.title"), isPresented: $showImportPreview) {
             Button(String(localized: "common.cancel"), role: .cancel) {
-                controller.cancelImportPreview()
+                releaseSelectedFileAccess()
+                selectedFileURL = nil
             }
             Button(String(localized: "import.merge_with_existing")) {
-                controller.importData(mode: .merge)
+                importData(mode: .merge)
             }
             Button(String(localized: "import.replace_all_data"), role: .destructive) {
-                controller.showImportModeSelection = true
+                showImportModeSelection = true
             }
         } message: {
             Text(String(localized: "import.preview.message"))
         }
         .confirmationDialog(
             String(localized: "import.confirm_replace"),
-            isPresented: Binding(
-                get: { controller.showImportModeSelection },
-                set: { controller.showImportModeSelection = $0 }
-            )
+            isPresented: $showImportModeSelection
         ) {
             Button(String(localized: "import.replace_all_data"), role: .destructive) {
-                controller.importData(mode: .replace)
+                importData(mode: .replace)
             }
             Button(String(localized: "common.cancel"), role: .cancel) {
-                controller.cancelImportPreview()
+                releaseSelectedFileAccess()
+                selectedFileURL = nil
             }
         } message: {
             Text(String(localized: "import.replace_warning.message"))
         }
-        .alert(
-            String(localized: "import.complete.title"),
-            isPresented: Binding(
-                get: { controller.showImportResult },
-                set: { controller.showImportResult = $0 }
-            )
-        ) {
+        .alert(String(localized: "import.complete.title"), isPresented: $showImportResult) {
             Button(String(localized: "common.ok")) {
-                controller.dismissResult()
+                importResult = nil
+                releaseSelectedFileAccess()
+                selectedFileURL = nil
             }
         } message: {
-            if let result = controller.importResult {
+            if let result = importResult {
                 Text(result.summary)
-            } else if controller.importError != nil {
+            } else if importError != nil {
                 Text(String(localized: "import.failed.message"))
             }
         }
@@ -118,8 +125,14 @@ struct ImportExportView: View {
 
     // MARK: - Export Handling
 
+    private func releaseSelectedFileAccess() {
+        guard selectedFileHasSecurityScope, let url = selectedFileURL else { return }
+        url.stopAccessingSecurityScopedResource()
+        selectedFileHasSecurityScope = false
+    }
+
     private func handleExport() {
-        controller.isProcessing = true
+        isProcessing = true
 
         do {
             let data = try viewModel.exportAllData()
@@ -130,7 +143,7 @@ struct ImportExportView: View {
             // Could add error alert here if needed
         }
 
-        controller.isProcessing = false
+        isProcessing = false
     }
 
     private func handleExportResult(_ result: Result<URL, Error>) {
@@ -139,6 +152,87 @@ struct ImportExportView: View {
             AppLogger.viewModel.info("Data exported successfully to \(url.path)")
         case .failure(let error):
             AppLogger.viewModel.error("Export failed: \(String(describing: error))")
+        }
+    }
+
+    // MARK: - Import Handling
+
+    private func handleFileSelection(_ result: Result<[URL], Error>) {
+        switch result {
+        case .success(let urls):
+            releaseSelectedFileAccess()
+            guard let url = urls.first else { return }
+
+            // Start accessing security-scoped resource when available (sandboxed builds)
+            let hasSecurityScope = url.startAccessingSecurityScopedResource()
+            if !hasSecurityScope {
+                AppLogger.viewModel.warn("Proceeding without security-scoped access for \(url.path)")
+            }
+
+            Task {
+                do {
+                    let (cities, spots) = try await viewModel.previewImport(from: url)
+                    await MainActor.run {
+                        previewCityCount = cities
+                        previewSpotCount = spots
+                        selectedFileURL = url
+                        selectedFileHasSecurityScope = hasSecurityScope
+                        showImportPreview = true
+                    }
+                } catch {
+                    if hasSecurityScope {
+                        url.stopAccessingSecurityScopedResource()
+                    }
+                    await MainActor.run {
+                        selectedFileHasSecurityScope = false
+                        importError = error
+                        showImportResult = true
+                    }
+                    AppLogger.viewModel.error("Import preview failed: \(String(describing: error))")
+                }
+            }
+
+        case .failure(let error):
+            AppLogger.viewModel.error("File selection failed: \(String(describing: error))")
+        }
+    }
+
+    private func importData(mode: ImportExportService.ImportMode) {
+        guard let url = selectedFileURL else { return }
+
+        isProcessing = true
+
+        Task {
+            do {
+                let result = try await viewModel.importData(from: url, mode: mode)
+                if selectedFileHasSecurityScope {
+                    url.stopAccessingSecurityScopedResource()
+                    selectedFileHasSecurityScope = false
+                }
+
+                await MainActor.run {
+                    importResult = result
+                    importError = nil
+                    showImportResult = true
+                    isProcessing = false
+                }
+
+                AppLogger.viewModel.info("Import completed: \(result.summary)")
+            } catch {
+                if selectedFileHasSecurityScope {
+                    url.stopAccessingSecurityScopedResource()
+                    selectedFileHasSecurityScope = false
+                }
+
+                await MainActor.run {
+                    importError = error
+                    importResult = nil
+                    showImportResult = true
+                    isProcessing = false
+                }
+
+                AppLogger.viewModel.error("Import failed: \(String(describing: error))")
+            }
         }
     }
 }
@@ -219,168 +313,5 @@ private struct ActionRow: View {
             }
         }
         .padding(16)
-    }
-}
-
-// MARK: - Controller
-
-final class ImportExportController: ObservableObject {
-    @Published var isProcessing = false
-    @Published var showImportPreview = false
-    @Published var showImportModeSelection = false
-    @Published var showImportResult = false
-    @Published var previewCityCount = 0
-    @Published var previewSpotCount = 0
-    @Published var importResult: ImportExportService.ImportResult?
-    @Published var importError: Error?
-
-    private let viewModel: CitiesViewModel
-    private var selectedFileURL: URL?
-    private var selectedFileHasSecurityScope = false
-
-    init(viewModel: CitiesViewModel) {
-        self.viewModel = viewModel
-    }
-
-    func handleFileSelection(_ result: Result<[URL], Error>) {
-        switch result {
-        case .success(let urls):
-            releaseSelectedFileAccess()
-            guard let url = urls.first else { return }
-
-            let hasSecurityScope = url.startAccessingSecurityScopedResource()
-            if !hasSecurityScope {
-                AppLogger.viewModel.warn("Proceeding without security-scoped access for \(url.path)")
-            }
-
-            Task {
-                do {
-                    let (cities, spots) = try await viewModel.previewImport(from: url)
-                    await MainActor.run {
-                        previewCityCount = cities
-                        previewSpotCount = spots
-                        selectedFileURL = url
-                        selectedFileHasSecurityScope = hasSecurityScope
-                        importError = nil
-                        showImportPreview = true
-                    }
-                } catch {
-                    if hasSecurityScope {
-                        url.stopAccessingSecurityScopedResource()
-                    }
-
-                    await MainActor.run {
-                        selectedFileHasSecurityScope = false
-                        selectedFileURL = nil
-                        importError = error
-                        showImportResult = true
-                    }
-
-                    AppLogger.viewModel.error("Import preview failed: \(String(describing: error))")
-                }
-            }
-
-        case .failure(let error):
-            releaseSelectedFileAccess()
-            AppLogger.viewModel.error("File selection failed: \(String(describing: error))")
-        }
-    }
-
-    func importData(mode: ImportExportService.ImportMode) {
-        guard let url = selectedFileURL else { return }
-        let hasSecurityScope = selectedFileHasSecurityScope
-
-        isProcessing = true
-
-        Task {
-            do {
-                let result = try await viewModel.importData(from: url, mode: mode)
-
-                if hasSecurityScope {
-                    url.stopAccessingSecurityScopedResource()
-                }
-
-                await MainActor.run {
-                    importResult = result
-                    importError = nil
-                    showImportResult = true
-                    showImportPreview = false
-                    showImportModeSelection = false
-                    isProcessing = false
-                    selectedFileHasSecurityScope = false
-                    selectedFileURL = nil
-                }
-
-                AppLogger.viewModel.info("Import completed: \(result.summary)")
-            } catch {
-                if hasSecurityScope {
-                    url.stopAccessingSecurityScopedResource()
-                }
-
-                await MainActor.run {
-                    importError = error
-                    importResult = nil
-                    showImportResult = true
-                    showImportPreview = false
-                    showImportModeSelection = false
-                    isProcessing = false
-                    selectedFileHasSecurityScope = false
-                    selectedFileURL = nil
-                }
-
-                AppLogger.viewModel.error("Import failed: \(String(describing: error))")
-            }
-        }
-    }
-
-    func cancelImportPreview() {
-        releaseSelectedFileAccess()
-        showImportPreview = false
-        showImportModeSelection = false
-    }
-
-    func dismissResult() {
-        showImportResult = false
-        importResult = nil
-        importError = nil
-        releaseSelectedFileAccess()
-    }
-
-    private func releaseSelectedFileAccess() {
-        if selectedFileHasSecurityScope, let url = selectedFileURL {
-            url.stopAccessingSecurityScopedResource()
-        }
-
-        selectedFileHasSecurityScope = false
-        selectedFileURL = nil
-    }
-}
-
-// MARK: - Container
-
-struct ImportExportContainer: View {
-    let viewModel: CitiesViewModel
-
-    @StateObject private var controller: ImportExportController
-    @State private var showImportPicker = false
-
-    init(viewModel: CitiesViewModel) {
-        self.viewModel = viewModel
-        _controller = StateObject(wrappedValue: ImportExportController(viewModel: viewModel))
-    }
-
-    var body: some View {
-        ImportExportView(
-            viewModel: viewModel,
-            controller: controller,
-            onImportTapped: { showImportPicker = true }
-        )
-        .fileImporter(
-            isPresented: $showImportPicker,
-            allowedContentTypes: [.json],
-            allowsMultipleSelection: false
-        ) { result in
-            controller.handleFileSelection(result)
-        }
     }
 }
