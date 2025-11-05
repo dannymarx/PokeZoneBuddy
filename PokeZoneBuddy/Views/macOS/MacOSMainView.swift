@@ -7,8 +7,9 @@
 //
 
 #if os(macOS)
-import SwiftUI
+import AppKit
 import SwiftData
+import SwiftUI
 
 struct MacOSMainView: View {
 
@@ -16,6 +17,8 @@ struct MacOSMainView: View {
 
     @Environment(\.modelContext) private var modelContext
     @Environment(NetworkMonitor.self) private var networkMonitor
+    @Environment(TipService.self) private var tipService
+    @Environment(\.scenePhase) private var scenePhase
 
     // MARK: - State
 
@@ -39,6 +42,14 @@ struct MacOSMainView: View {
             if eventsViewModel == nil {
                 initializeViewModels()
             }
+        }
+        .onChange(of: scenePhase) { _, newPhase in
+            if newPhase != .active {
+                tipService.dismissActiveTips()
+            }
+        }
+        .onReceive(NotificationCenter.default.publisher(for: NSApplication.didResignActiveNotification)) { _ in
+            tipService.dismissActiveTips()
         }
     }
 

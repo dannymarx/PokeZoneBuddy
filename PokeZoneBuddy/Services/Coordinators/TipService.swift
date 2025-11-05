@@ -71,6 +71,8 @@ final class TipService {
         if !isEnabled {
             dismissActiveTips()
         }
+
+        AppLogger.tips.info("Tips enabled set to \(isEnabled)")
     }
 
     func resetTips() async {
@@ -89,16 +91,19 @@ final class TipService {
 
     func recordPlanSaved() {
         guard tipsEnabled else { return }
+        AppLogger.tips.info("Recorded timeline plan saved donation")
         Task { await PlannerTemplateTip.planSavedEvent.donate() }
     }
 
     func recordFiltersUsed() {
         guard tipsEnabled else { return }
+        AppLogger.tips.info("Recorded events filter usage donation")
         Task { await EventFiltersTip.filtersUsedEvent.donate() }
     }
 
     func recordTimelineExport() {
         guard tipsEnabled else { return }
+        AppLogger.tips.info("Recorded timeline export donation")
         Task { await TimelineExportTip.exportEvent.donate() }
     }
 
@@ -108,5 +113,6 @@ final class TipService {
         plannerTemplateTip.invalidate(reason: .tipClosed)
         eventFiltersTip.invalidate(reason: .tipClosed)
         timelineExportTip.invalidate(reason: .tipClosed)
+        AppLogger.tips.debug("Dismissed active tips due to scene transition")
     }
 }
