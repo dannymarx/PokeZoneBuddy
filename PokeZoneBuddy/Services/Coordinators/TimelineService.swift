@@ -66,7 +66,7 @@ final class TimelineService: TimelineServiceProtocol {
     init(
         timelineRepository: TimelineRepositoryProtocol,
         cityRepository: CityRepositoryProtocol,
-        appVersion: String = "1.6.0"
+        appVersion: String = "1.6.1"
     ) {
         self.timelineRepository = timelineRepository
         self.cityRepository = cityRepository
