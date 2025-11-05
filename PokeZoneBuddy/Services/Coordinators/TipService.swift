@@ -31,7 +31,7 @@ final class TipService {
 
     private(set) var tipsEnabled: Bool
     private(set) var lastReset: Date?
-    private var isConfigured = false
+    private static var isTipKitConfigured = false
 
     // MARK: - Initialization
 
@@ -48,11 +48,11 @@ final class TipService {
     // MARK: - Configuration
 
     private func configureTipKit() {
-        guard !isConfigured else { return }
+        guard !Self.isTipKitConfigured else { return }
 
         do {
             try Tips.configure()
-            isConfigured = true
+            Self.isTipKitConfigured = true
             AppLogger.tips.info("TipKit configured")
         } catch {
             AppLogger.tips.error("Failed to configure TipKit: \(error.localizedDescription)")
