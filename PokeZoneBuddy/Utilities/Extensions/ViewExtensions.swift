@@ -219,7 +219,10 @@ private struct ScrollViewConfigurator: NSViewRepresentable {
     }
 
     func updateNSView(_ nsView: NSView, context: Context) {
+        // Avoid layout recursion by scheduling configuration outside the layout cycle
         DispatchQueue.main.async {
+            // Only configure if we're not in the middle of a layout pass
+            guard nsView.window != nil, nsView.window?.isVisible == true else { return }
             nsView.window?.contentView?.configureScrollbarsInSubviews()
         }
     }
@@ -227,6 +230,9 @@ private struct ScrollViewConfigurator: NSViewRepresentable {
 
 private extension NSView {
     func configureScrollbarsInSubviews() {
+        // Avoid recursion by checking if we're in a layout pass
+        guard !self.inLiveResize else { return }
+
         // Configure scrollbars for this view if it's a scroll view
         if let scrollView = self as? NSScrollView {
             configureScrollView(scrollView)
@@ -244,6 +250,9 @@ private extension NSView {
     }
 
     private func configureScrollView(_ scrollView: NSScrollView) {
+        // Avoid triggering layout during configuration
+        guard !scrollView.inLiveResize else { return }
+
         // Use overlay style - scrollbars appear only when scrolling or hovering
         scrollView.scrollerStyle = .overlay
 
@@ -257,8 +266,11 @@ private extension NSView {
         // - Scrollers appear when hovering over the scroll area
         // - Scrollers fade out after inactivity
 
-        // Optional: Force immediate update
-        scrollView.flashScrollers()
+        // Flash scrollers outside the layout cycle to avoid recursion
+        // Schedule on next run loop to ensure layout is complete
+        DispatchQueue.main.async {
+            scrollView.flashScrollers()
+        }
     }
 }
 

@@ -18,6 +18,10 @@ class NotificationManager: ObservableObject {
     private let center = UNUserNotificationCenter.current()
     @Published var authorizationStatus: UNAuthorizationStatus = .notDetermined
 
+    // Throttling for timezone changes
+    private var lastRescheduleTime: Date?
+    private let rescheduleThrottleInterval: TimeInterval = 60 // 1 minute
+
     private init() {
         // Add observer for timezone changes
         NotificationCenter.default.addObserver(
@@ -26,9 +30,25 @@ class NotificationManager: ObservableObject {
             queue: .main
         ) { [weak self] _ in
             Task { @MainActor in
-                await self?.rescheduleAllNotifications()
+                await self?.handleTimezoneChange()
             }
         }
+    }
+
+    /// Handle timezone change with throttling
+    private func handleTimezoneChange() async {
+        // Throttle rapid timezone changes
+        if let lastTime = lastRescheduleTime,
+           Date().timeIntervalSince(lastTime) < rescheduleThrottleInterval {
+            AppLogger.notifications.debug("Ignoring timezone change (throttled)")
+            return
+        }
+
+        lastRescheduleTime = Date()
+        AppLogger.notifications.info("Timezone changed, will reschedule notifications when ModelContext is available")
+        // Note: Actual rescheduling must be triggered by the app with ModelContext
+        // Post notification for app to handle
+        NotificationCenter.default.post(name: .timezoneDidChange, object: nil)
     }
 
     // MARK: - Authorization
@@ -133,12 +153,47 @@ class NotificationManager: ObservableObject {
     // MARK: - Rescheduling
 
     /// Reschedule all notifications for favorited events
-    func rescheduleAllNotifications() async {
-        AppLogger.notifications.info("Rescheduling all notifications")
+    /// This should be called after timezone changes or when the app needs to refresh all notifications
+    /// - Parameter modelContext: The SwiftData ModelContext to access favorites and events
+    func rescheduleAllNotifications(modelContext: ModelContext) async {
+        AppLogger.notifications.info("Rescheduling all notifications due to timezone change")
 
-        // This will be called from FavoritesManager context
-        // For now, just log
-        AppLogger.notifications.debug("Reschedule requested - will be implemented with FavoritesManager integration")
+        // Get all favorited events
+        let favoritesManager = FavoritesManager(modelContext: modelContext)
+        let favoriteEventIDs = favoritesManager.getAllFavoriteEventIDs()
+
+        AppLogger.notifications.debug("Found \(favoriteEventIDs.count) favorited event(s) to reschedule")
+
+        // Cancel all existing notifications first
+        await cancelAllNotifications()
+
+        // Reschedule only for upcoming events
+        var rescheduledCount = 0
+        var skippedCount = 0
+
+        for eventID in favoriteEventIDs {
+            guard let event = fetchEvent(eventID: eventID, modelContext: modelContext) else {
+                AppLogger.notifications.warn("Could not find event \(eventID) for rescheduling")
+                continue
+            }
+
+            // CRITICAL: Only reschedule if event is still upcoming
+            guard event.isUpcoming else {
+                AppLogger.notifications.debug("Skipping rescheduling for past event: \(eventID)")
+                skippedCount += 1
+                continue
+            }
+
+            // Get user's preferred reminder offsets for this event
+            let preferencesManager = ReminderPreferencesManager(modelContext: modelContext)
+            let offsets = preferencesManager.getEnabledOffsets(for: eventID)
+
+            // Schedule notifications for each offset
+            await scheduleNotifications(for: event, offsets: offsets)
+            rescheduledCount += 1
+        }
+
+        AppLogger.notifications.info("Rescheduled \(rescheduledCount) event(s), skipped \(skippedCount) past event(s)")
     }
 
     // MARK: - Cleanup
@@ -223,17 +278,14 @@ class NotificationManager: ObservableObject {
 
     /// Create a unique notification identifier
     private func notificationIdentifier(eventID: String, offset: ReminderOffset) -> String {
-        return "event-\(eventID)-\(offset.rawValue)"
+        return "event::\(eventID)::\(offset.rawValue)"
     }
 
     /// Extract event ID from notification identifier
     private func extractEventID(from identifier: String) -> String? {
-        let components = identifier.split(separator: "-")
-        guard components.count >= 2, components[0] == "event" else { return nil }
-
-        // Reconstruct event ID (might contain dashes)
-        let eventIDComponents = components.dropFirst().dropLast()
-        return eventIDComponents.isEmpty ? nil : eventIDComponents.joined(separator: "-")
+        let components = identifier.split(separator: "::")
+        guard components.count == 3, components[0] == "event" else { return nil }
+        return String(components[1])
     }
 
     /// Create a calendar trigger for a specific date
@@ -243,6 +295,18 @@ class NotificationManager: ObservableObject {
             from: date
         )
         return UNCalendarNotificationTrigger(dateMatching: components, repeats: false)
+    }
+
+    /// Fetch an event by ID from the database
+    /// - Parameters:
+    ///   - eventID: The unique ID of the event
+    ///   - modelContext: The SwiftData ModelContext to query
+    /// - Returns: The Event if found, nil otherwise
+    private func fetchEvent(eventID: String, modelContext: ModelContext) -> Event? {
+        let descriptor = FetchDescriptor<Event>(
+            predicate: #Predicate { $0.id == eventID }
+        )
+        return try? modelContext.fetch(descriptor).first
     }
 }
 
@@ -308,4 +372,11 @@ struct NotificationContentBuilder {
             return "\(event.displayName) starts globally in \(timeRemaining)"
         }
     }
+}
+
+// MARK: - Notification Names
+
+extension Notification.Name {
+    /// Notification posted when timezone changes (throttled)
+    static let timezoneDidChange = Notification.Name("timezoneDidChange")
 }

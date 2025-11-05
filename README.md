@@ -1,63 +1,74 @@
 # PokeZoneBuddy
 
-**PokeZoneBuddy** is a macOS app that displays Pokémon GO events and automatically converts event times to your favorite cities' local times. Know exactly when you need to be active at home to participate in an event happening in Tokyo, New York, or anywhere else in the world.
+**PokeZoneBuddy** is a SwiftUI companion for macOS and iOS that keeps every Pokémon GO event and travel-ready timezone plan at your fingertips. Convert event schedules for Tokyo, New York, Berlin, or anywhere else without manual math and keep reusable timelines synced across devices.
 
-[![Version](https://img.shields.io/badge/version-1.5.0-blue.svg)](https://github.com/dannymarx/PokeZoneBuddy/releases)
-[![Platform](https://img.shields.io/badge/platform-macOS%2026.0+-lightgrey.svg)](https://github.com/dannymarx/PokeZoneBuddy)
+[![Version](https://img.shields.io/badge/version-1.6.0-blue.svg)](https://github.com/dannymarx/PokeZoneBuddy/releases)
+[![Platform](https://img.shields.io/badge/platform-macOS%2026.0+%20%7C%20iOS%2026.0+-lightgrey.svg)](https://github.com/dannymarx/PokeZoneBuddy)
 [![License](https://img.shields.io/badge/license-MIT-green.svg)](./LICENSE)
 [![Swift](https://img.shields.io/badge/swift-5.9+-orange.svg)](https://swift.org)
 
 ---
 
-## ✨ Features
+## ✨ Feature Highlights
 
-### 🗺️ Multi-City Planr (NEW in 1.5.0!)
-- **Sequential Timeline**: Plan event participation across multiple cities with a visual chronological timeline
-- **Smart Travel Gaps**: Automatic detection of playable windows between cities
-- **Optimal Strategy**: See the best path to maximize multi-city event participation
-- **Color-Coded Cities**: Easy-to-read visual timeline with distinct colors for each location
-- **Playing Time Indicators**: Know exactly when you can play in each city
+### 🗺️ Multi-City Planner
+- **Sequential Timeline**: Visualize event windows across every selected city with smart travel gap detection
+- **Reusable Plans**: Save, rename, and reload multi-city strategies per event without rebuilding from scratch
+- **Templates & Defaults**: Apply reusable templates (with per-event-type defaults) to bootstrap new plans instantly
+- **Sharing Toolkit**: Export timelines as high-resolution PNG images or JSON bundles and share them via the cross-platform share sheet
+- **macOS Shortcuts**: Send cities straight to Calendar or target notifications to a chosen timezone right from the planner
 
-### 🌍 Time Zone Magic
-- **Favorite Cities**: Track events in cities around the world
-- **Smart Conversion**: Automatic conversion to your local timezone
-- **Calendar Export**: Add events to macOS Calendar with one click
+### 📚 Timeline Library
+- **Plan Management**: Dedicated settings hub to browse, search, edit, and delete saved plans grouped by event type
+- **Template Studio**: Create reusable city templates, toggle defaults, and refine city selections over time
+- **Import Ready**: Pull in teammate plans through the Files picker and apply them immediately to the current event
+- **Quick Stats**: Live counters for plan and template totals keep your timeline library tidy
+
+### 🌍 Time Zone Toolkit
+- **Favorite Cities**: Track home bases and travel destinations with automatic timezone conversion and localized formatting
+- **Global vs Local**: Handle global events gracefully while still converting local window events to your preferred timezone
+- **Calendar Export**: macOS users can push any city’s window directly to the native Calendar app with one click
 
 ### 📅 Event Management
-- **Live Overview**: Browse all upcoming Pokémon GO events
-- **Event Details**:
-  - Featured Pokémon with shiny availability
-  - Raid bosses and special research
-  - Event bonuses and multipliers
-- **Filter & Search**: Find events by type or name instantly
-- **Favorites**: Star important events for quick access
-- **Event Reminders**: Get notified 30 minutes before favorited events start
+- **Live Feed**: Browse upcoming Pokémon GO events with countdowns, filters, and fast search
+- **Deep Details**: Dive into featured Pokémon, raid bosses, bonuses, research, and more for every event
+- **Favorites Hub**: Star critical events for quick access—SwiftData keeps selections synced safely offline
+- **Offline First**: Aggressive caching and background refresh keep event data available even without a connection
 
 ### 📍 City Spots
-- **Add Local Spots**: Store gyms, PokéStops, meeting points, or custom coordinates for every city
-- **Rich Context**: Attach notes, categorize spots, and favorite the most important locations
-- **Share & Copy**: One-tap coordinate copy, share-ready exports, and clipboard-friendly formatting
-- **Import/Export**: Backup and transfer your cities and spots data across devices
+- **Local Intel**: Save gyms, PokéStops, meetup points, or custom coordinates per city with rich notes and categories
+- **Quick Actions**: Favorite important spots, sort intelligently, and copy/share coordinates in a tap
+- **Import/Export**: Move your entire city + spot library across devices via JSON backups
 
 ### 🔔 Smart Notifications
-- **Automatic Reminders**: Notifications scheduled automatically when you favorite an event
-- **Timezone-Aware**: Reminders adjust automatically to your local time
-- **Customizable Timing**: Choose from 15 minutes to 1 day before event start
-- **Background Cleanup**: Expired notifications are automatically removed
+- **Automatic Reminders**: Favoriting an event schedules reminders automatically
+- **Custom Offsets**: Choose notification lead times from 15 minutes up to 1 day
+- **Timezone Targeting**: On macOS select which city’s local time should drive the reminder
+- **Background Cleanup**: Expired reminders and temporary notification images are pruned automatically
 
 ### 🎨 Native Experience
-- **macOS Design**: Native SwiftUI with Dark Mode support
-- **Multi-language**: English and German
+- **Universal SwiftUI**: Tailored layouts for macOS (multi-window) and iOS (tab navigation)
+- **Theme Control**: Switch between system, light, and dark appearances at any time
+- **Polished & Accessible**: English and German localization, VoiceOver-friendly components, and modern animations
+
+### 🛠 Technical Highlights
+- **SwiftData Everywhere**: Events, favorites, cities, spots, timeline plans, and templates share a rock-solid data store
+- **Resilient Networking**: ScrapedDuck API integration with offline caching, background refresh, and request deduplication
+- **Service Architecture**: Dedicated services for timelines, import/export, notifications, EventKit, network monitoring, and more
 
 ---
 
 ## 🚀 Installation
 
-### Download
+### macOS
 1. Download the latest **[Release](https://github.com/dannymarx/PokeZoneBuddy/releases/latest)**
 2. Open the `.dmg` file
 3. Drag **PokeZoneBuddy** to your Applications folder
 4. Launch and enjoy!
+
+### iOS
+- Open `PokeZoneBuddy.xcodeproj` with Xcode 16 or newer
+- Select the iOS scheme and run on a simulator or development device (no App Store build yet)
 
 ---
 

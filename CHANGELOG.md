@@ -5,6 +5,25 @@ This project follows [Semantic Versioning](https://semver.org/).
 
 ---
 
+## [1.6.0] – Unreleased
+
+### Added
+- Multi-city timeline plans that save event-specific city selections with rename/update flows plus JSON export/import.
+- Timeline templates with per-event-type defaults and dedicated management screens in Settings.
+- Planner export tools to capture high-resolution PNG timelines and share them via the new cross-platform share sheet.
+- Timeline management hub in Settings with plan/template stats, grouped search, and Files-based plan import.
+- Background refresh cleanup that prunes temporary timeline assets and notification images.
+
+### Changed
+- Multi-City Planner integrates a gear menu for saving, loading, template application, sharing, and macOS calendar shortcuts.
+- Settings reorganized to surface the full timeline toolkit alongside appearance, notifications, and data management.
+- Reminder controls expose configurable offsets within the planner and allow macOS users to target a specific city timezone.
+
+### Fixed
+- Automatic cleanup now removes stale temporary notification assets after background refresh to prevent cache bloat.
+
+---
+
 ## [1.5.0] – 2025-10-20
 
 ### Added

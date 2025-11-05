@@ -3,6 +3,7 @@
 //  PokeZoneBuddy
 //
 //  Created by Danny Hollek on 13.10.2025.
+//  Updated by Claude Code on 2025-10-20 for v1.6.0 Timeline Plans
 //
 
 import Foundation
@@ -72,5 +73,100 @@ struct ExportSpot: Codable {
         self.category = spot.category.rawValue
         self.createdAt = spot.createdAt
         self.isFavorite = spot.isFavorite
+    }
+}
+
+// MARK: - Timeline Plan Export (v1.6.0)
+
+/// Exportable timeline plan in portable JSON format
+/// File extension: .pzb (PokeZoneBuddy file)
+struct ExportableTimelinePlan: Codable {
+    /// Version string for format compatibility
+    let version: String
+
+    /// App version that created this export
+    let appVersion: String
+
+    /// Export timestamp
+    let exportDate: Date
+
+    /// Plan name
+    let planName: String
+
+    /// Event type
+    let eventType: String
+
+    /// Event name (optional - null for templates)
+    let eventName: String?
+
+    /// Event ID (optional - null for templates)
+    let eventID: String?
+
+    /// Cities in this plan
+    let cities: [ExportableCity]
+
+    /// Current export format version
+    static let currentVersion = "1.0"
+
+    /// Nested city structure for timeline plans
+    struct ExportableCity: Codable {
+        let name: String
+        let timeZoneIdentifier: String
+        let fullName: String
+    }
+
+    /// Initialize from a TimelinePlan
+    init(from plan: TimelinePlan, cities: [FavoriteCity], appVersion: String) {
+        self.version = ExportableTimelinePlan.currentVersion
+        self.appVersion = appVersion
+        self.exportDate = Date()
+        self.planName = plan.name
+        self.eventType = plan.eventType
+        self.eventName = plan.eventName
+        self.eventID = plan.eventID
+        self.cities = cities.map { city in
+            ExportableCity(
+                name: city.name,
+                timeZoneIdentifier: city.timeZoneIdentifier,
+                fullName: city.fullName
+            )
+        }
+    }
+
+    /// Initialize from a TimelineTemplate
+    init(from template: TimelineTemplate, cities: [FavoriteCity], appVersion: String) {
+        self.version = ExportableTimelinePlan.currentVersion
+        self.appVersion = appVersion
+        self.exportDate = Date()
+        self.planName = template.name
+        self.eventType = template.eventType
+        self.eventName = nil
+        self.eventID = nil
+        self.cities = cities.map { city in
+            ExportableCity(
+                name: city.name,
+                timeZoneIdentifier: city.timeZoneIdentifier,
+                fullName: city.fullName
+            )
+        }
+    }
+
+    /// Initialize from raw data (for import)
+    init(
+        planName: String,
+        eventType: String,
+        eventName: String?,
+        eventID: String?,
+        cities: [ExportableCity],
+        appVersion: String
+    ) {
+        self.version = ExportableTimelinePlan.currentVersion
+        self.appVersion = appVersion
+        self.exportDate = Date()
+        self.planName = planName
+        self.eventType = eventType
+        self.eventName = eventName
+        self.eventID = eventID
+        self.cities = cities
     }
 }

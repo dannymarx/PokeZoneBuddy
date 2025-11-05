@@ -29,7 +29,7 @@ struct PokeZoneBuddyApp: App {
     // MARK: - SwiftData Container
 
     /// SwiftData ModelContainer for local persistence
-    /// Stores Events, FavoriteCities, and FavoriteEvents locally (no CloudKit)
+    /// Stores Events, FavoriteCities, FavoriteEvents, Timeline Plans & Templates locally (no CloudKit)
     /// Nested models (SpotlightDetails, RaidDetails, etc.) are automatically discovered via @Relationship
     var sharedModelContainer: ModelContainer = {
         let schema = Schema([
@@ -37,7 +37,9 @@ struct PokeZoneBuddyApp: App {
             FavoriteCity.self,
             CitySpot.self,
             FavoriteEvent.self,
-            ReminderPreferences.self
+            ReminderPreferences.self,
+            TimelinePlan.self,
+            TimelineTemplate.self
         ])
 
         let modelConfiguration = ModelConfiguration(
@@ -62,6 +64,9 @@ struct PokeZoneBuddyApp: App {
     @State private var calendarService = CalendarService()
     #endif
 
+    /// Timeline service for plan and template management (v1.6.0)
+    @State private var timelineService: TimelineService?
+
     /// Theme preference with proper reactive binding
     @AppStorage(ThemePreference.storageKey) private var themePreferenceRaw = ThemePreference.system.rawValue
 
@@ -74,20 +79,36 @@ struct PokeZoneBuddyApp: App {
     var body: some Scene {
         WindowGroup {
             #if os(iOS)
-            MainTabView()
-                .environment(networkMonitor)
-                .preferredColorScheme(currentTheme)
-                .onAppear {
-                    setupBackgroundRefresh()
+            Group {
+                if let timelineService {
+                    MainTabView()
+                        .environment(networkMonitor)
+                        .environment(timelineService)
+                        .preferredColorScheme(currentTheme)
+                } else {
+                    ProgressView()
+                        .onAppear {
+                            setupServices()
+                            setupBackgroundRefresh()
+                        }
                 }
+            }
             #else
-            MacOSMainView()
-                .environment(networkMonitor)
-                .environment(calendarService)
-                .preferredColorScheme(currentTheme)
-                .onAppear {
-                    setupBackgroundRefresh()
+            Group {
+                if let timelineService {
+                    MacOSMainView()
+                        .environment(networkMonitor)
+                        .environment(calendarService)
+                        .environment(timelineService)
+                        .preferredColorScheme(currentTheme)
+                } else {
+                    ProgressView()
+                        .onAppear {
+                            setupServices()
+                            setupBackgroundRefresh()
+                        }
                 }
+            }
             #endif
         }
         .modelContainer(sharedModelContainer)
@@ -106,12 +127,26 @@ struct PokeZoneBuddyApp: App {
         #endif
     }
     
+    // MARK: - Service Setup
+
+    private func setupServices() {
+        // Initialize TimelineService with repositories
+        let modelContext = sharedModelContainer.mainContext
+        let timelineRepository = TimelineRepository(modelContext: modelContext)
+        let cityRepository = CityRepository(modelContext: modelContext)
+        timelineService = TimelineService(
+            timelineRepository: timelineRepository,
+            cityRepository: cityRepository
+        )
+        AppLogger.app.info("Timeline service initialized")
+    }
+
     // MARK: - Background Refresh Setup
-    
+
     private func setupBackgroundRefresh() {
         // Configure singleton with network monitor
         BackgroundRefreshService.shared.configure(networkMonitor: networkMonitor)
-        
+
         // Start auto-refresh
         BackgroundRefreshService.shared.startAutoRefresh {
             // Refresh logic will be handled by EventsViewModel

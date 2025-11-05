@@ -7,102 +7,209 @@
 //
 
 import SwiftUI
+#if os(macOS)
+import AppKit
+#endif
 
 struct EventDetailView: View {
     
     // MARK: - Properties
-    
+
     let event: Event
     let favoriteCities: [FavoriteCity]
-    
+
     @Environment(\.horizontalSizeClass) private var horizontalSizeClass
     @Environment(\.dynamicTypeSize) private var dynamicTypeSize
-    
+    @Environment(TimelineService.self) private var timelineService
+    @Environment(\.colorScheme) private var colorScheme
+    @Environment(\.modelContext) private var modelContext
+#if os(macOS)
+    @Environment(CalendarService.self) private var calendarService
+#endif
+
     private let timezoneService = TimezoneService.shared
+    private let notificationManager = NotificationManager.shared
     @State private var selectedCityIDs: Set<String> = []
+
+    // Timeline Plans & Templates (v1.6.0)
+    @State private var availablePlans: [TimelinePlan] = []
+    @State private var availableTemplates: [TimelineTemplate] = []
+    @State private var savePlanDialogContext: SavePlanDialogContext?
+    @State private var showShareSheet = false
+    @State private var shareItem: ShareableItem?
+    @State private var isExportingImage = false
+    @State private var isExportingData = false
+    @State private var exportError: String?
+    @State private var showExportError = false
+    @State private var reminderEnabled = false
+    @State private var reminderOffset: ReminderOffset = .thirtyMinutes
+    @State private var reminderCityIdentifier: String?
+    @State private var isUpdatingReminder = false
+#if os(macOS)
+    @State private var calendarSuccessCityName: String?
+    @State private var calendarErrorMessage: String?
+    @State private var addingCalendarCityID: String?
+#endif
 
     private var eventImageURL: URL? {
         guard let imageURL = event.imageURL else { return nil }
         return URL(string: imageURL)
     }
+
+    private struct SavePlanDialogContext: Identifiable, Equatable {
+        let id = UUID()
+        let cityIdentifiers: [String]
+    }
     
     // MARK: - Body
-    
+
     var body: some View {
-        ScrollViewReader { proxy in
-            ScrollView(.vertical, showsIndicators: false) {
-                VStack(alignment: contentAlignment, spacing: contentSpacing) {
-                    // Anchor for scrolling to top
-                    Color.clear
-                        .frame(height: 0)
-                        .id("top")
-                    
-                    // Event Image Header
-                    if let url = eventImageURL {
-                        eventImageHeader(url: url)
+        contentView
+        .sheet(item: $savePlanDialogContext, onDismiss: {
+            savePlanDialogContext = nil
+        }) { context in
+            SavePlanDialog(
+                event: event,
+                cityIdentifiers: context.cityIdentifiers,
+                onSave: { planName in
+                    Task {
+                        await savePlan(name: planName)
                     }
-                    
-                    // Event Header
-                    eventHeaderSection
-                    
-                    // Countdown/Status (fallback when no image header)
-                    if eventImageURL == nil {
-                        EventCountdownView(event: event)
-                    }
-                    
-                    // Event Meta & Reminders
-                    eventMetaCard
-                    
-                    // Pokemon Details (Spotlight/Raid/CD)
-                    pokemonDetailsSection
-
-                    // Multi-city Timeline (single-day events)
-                    if shouldDisplayMultiCitySection {
-                        if shouldShowTimeline(for: selectedTimelineCities) {
-                            EventTimelineView(
-                                event: event,
-                                favoriteCities: selectedTimelineCities
-                            )
-                            .transition(.opacity.combined(with: .scale))
-                        } else {
-                            timelineSelectionPlaceholder
-                        }
-                    }
-
-                    // Time Zones Section
-                    if !favoriteCities.isEmpty {
-                        timeZonesSection
-                    } else {
-                        noCitiesPlaceholder
-                    }
-                    
-                    // Copyright Footer
-                    copyrightFooter
-                    
-                    Spacer(minLength: usesCompactLayout ? 24 : 40)
                 }
-                .padding(.horizontal, horizontalPadding)
-                .padding(.vertical, verticalPadding)
-                .frame(
-                    maxWidth: maxContentWidth ?? .infinity,
-                    alignment: usesCompactLayout ? .leading : .center
-                )
-            }
-            .scrollIndicators(.hidden, axes: .vertical)
-            .hideScrollIndicatorsCompat()
-            .onAppear(perform: syncSelectedCities)
-            .onChange(of: selectableCityIdentifiers) { _, _ in
-                syncSelectedCities()
-            }
-            .onChange(of: event.id) { _, _ in
-                // Scroll to top when event changes
-                withAnimation(.easeOut(duration: 0.3)) {
-                    proxy.scrollTo("top", anchor: .top)
-                }
+            )
+        }
+        .sheet(isPresented: $showShareSheet) {
+            if let shareItem = shareItem {
+                ShareSheet(item: shareItem)
             }
         }
-        .frame(maxWidth: .infinity, maxHeight: .infinity)
-        .background(Color.appBackground)
+        .alert(String(localized: "alert.error.title"), isPresented: $showExportError) {
+            Button(String(localized: "common.ok")) {
+                exportError = nil
+            }
+        } message: {
+            if let exportError = exportError {
+                Text(exportError)
+            }
+        }
+#if os(macOS)
+        .alert(String(localized: "alert.success.title"), isPresented: Binding(
+            get: { calendarSuccessCityName != nil },
+            set: { if !$0 { calendarSuccessCityName = nil } }
+        )) {
+            Button(String(localized: "common.ok")) {
+                calendarSuccessCityName = nil
+            }
+        } message: {
+            Text(String(localized: "calendar.success"))
+        }
+        .alert(String(localized: "alert.error.title"), isPresented: Binding(
+            get: { calendarErrorMessage != nil },
+            set: { if !$0 { calendarErrorMessage = nil } }
+        )) {
+            Button(String(localized: "common.ok")) {
+                calendarErrorMessage = nil
+            }
+        } message: {
+            if let calendarErrorMessage = calendarErrorMessage {
+                Text(calendarErrorMessage)
+            }
+        }
+#endif
+    }
+
+    // MARK: - Layout
+
+    private var contentView: some View {
+        ZStack {
+            Color.appBackground
+                .ignoresSafeArea()
+
+            ScrollViewReader { proxy in
+                ScrollView(.vertical, showsIndicators: false) {
+                    VStack(alignment: contentAlignment, spacing: contentSpacing) {
+                        // Anchor for scrolling to top
+                        Color.clear
+                            .frame(height: 0)
+                            .id("top")
+
+                        // Event Image Header
+                        if let url = eventImageURL {
+                            eventImageHeader(url: url)
+                        }
+
+                        // Event Header
+                        eventHeaderSection
+
+                        // Countdown/Status (fallback when no image header)
+                        if eventImageURL == nil {
+                            EventCountdownView(event: event)
+                        }
+
+                        // Event Meta & Reminders
+                        eventMetaCard
+
+                        // Pokemon Details (Spotlight/Raid/CD)
+                        pokemonDetailsSection
+
+                        // Multi-city Timeline (single-day events)
+                        if shouldDisplayMultiCitySection {
+                            VStack(spacing: 16) {
+                                // Timeline view or placeholder
+                                if shouldShowTimeline(for: selectedTimelineCities) {
+                                    EventTimelineView(
+                                        event: event,
+                                        favoriteCities: selectedTimelineCities,
+                                        plannerMenu: AnyView(plannerSettingsButton)
+                                    )
+                                    .transition(.opacity.combined(with: .scale))
+                                } else {
+                                    timelineSelectionPlaceholder
+                                }
+                            }
+                        }
+
+                        // Time Zones Section
+                        if !favoriteCities.isEmpty {
+                            timeZonesSection
+                        } else {
+                            noCitiesPlaceholder
+                        }
+
+                        // Copyright Footer
+                        copyrightFooter
+
+                        Spacer(minLength: usesCompactLayout ? 24 : 40)
+                    }
+                    .padding(.horizontal, horizontalPadding)
+                    .padding(.vertical, verticalPadding)
+                    .frame(
+                        maxWidth: maxContentWidth ?? .infinity,
+                        alignment: usesCompactLayout ? .leading : .center
+                    )
+                }
+                .scrollIndicators(.hidden, axes: .vertical)
+                .hideScrollIndicatorsCompat()
+                .onAppear {
+                    syncSelectedCities()
+                    loadTimelinePlansAndTemplates()
+                    loadReminderPreferences()
+                }
+                .onChange(of: selectableCityIdentifiers) { _, _ in
+                    syncSelectedCities()
+                }
+                .onChange(of: event.id) { _, _ in
+                    // Scroll to top when event changes
+                    withAnimation(.easeOut(duration: 0.3)) {
+                        proxy.scrollTo("top", anchor: .top)
+                    }
+                    // Load plans for new event
+                    loadTimelinePlansAndTemplates()
+                    loadReminderPreferences()
+                }
+            }
+            .frame(maxWidth: .infinity, maxHeight: .infinity)
+        }
     }
     
     // MARK: - Event Image Header
@@ -262,11 +369,6 @@ struct EventDetailView: View {
                     EventMetaCell(item: item)
                 }
 
-                if event.isUpcoming {
-                    reminderTile
-                        .gridCellColumns(metaColumnCount)
-                        .padding(.top, usesCompactLayout ? 4 : 0)
-                }
             }
             .padding(.horizontal, 16)
             .padding(.top, 18)
@@ -281,22 +383,6 @@ struct EventDetailView: View {
                 .strokeBorder(Color.primary.opacity(0.08), lineWidth: 1)
         )
         .shadow(color: .black.opacity(0.05), radius: 12, x: 0, y: 4)
-    }
-
-    private var reminderTile: some View {
-        EventReminderDetailView(event: event, layout: .embedded)
-            .padding(.vertical, 10)
-            .padding(.horizontal, 12)
-            .background(
-                RoundedRectangle(cornerRadius: 14, style: .continuous)
-                    .fill(Color.primary.opacity(0.035))
-            )
-            .overlay(
-                RoundedRectangle(cornerRadius: 14, style: .continuous)
-                    .strokeBorder(Color.primary.opacity(0.08), lineWidth: 1)
-            )
-            .clipShape(RoundedRectangle(cornerRadius: 14, style: .continuous))
-            .padding(.horizontal, usesCompactLayout ? 0 : 4)
     }
 
     private var eventMetaItems: [EventMetaItem] {
@@ -468,7 +554,7 @@ struct EventDetailView: View {
 
     private var timelineSelectionPlaceholder: some View {
         VStack(alignment: .leading, spacing: 16) {
-            HStack(spacing: 8) {
+            HStack(spacing: 12) {
                 Image(systemName: "map.fill")
                     .font(.system(size: 18, weight: .semibold))
                     .foregroundStyle(Color.systemBlue)
@@ -476,6 +562,12 @@ struct EventDetailView: View {
                 Text(String(localized: "timeline.planning.title"))
                     .font(.system(size: 20, weight: .semibold, design: .rounded))
                     .foregroundStyle(.primary)
+
+                Spacer()
+
+                plannerSettingsButton
+                    .font(.system(size: 18, weight: .semibold))
+                    .frame(width: 40, height: 40)
             }
 
             Text(String(localized: "timeline.planning.subtitle"))
@@ -680,6 +772,367 @@ struct EventDetailView: View {
         return duration <= 86_400
     }
 
+    // MARK: - Timeline Plans & Templates (v1.6.0)
+
+    /// Planner actions (Save / Load / Share / Calendar)
+    private var plannerSettingsButton: some View {
+        Menu {
+            Section {
+                Button {
+                    savePlanDialogContext = SavePlanDialogContext(
+                        cityIdentifiers: Array(selectedCityIDs)
+                    )
+                } label: {
+                    Label(String(localized: "timeline.plans.save"), systemImage: "square.and.arrow.down")
+                }
+                .disabled(selectedCityIDs.isEmpty)
+
+                if availablePlans.isEmpty {
+                    Text(String(localized: "timeline.plans.no_plans"))
+                        .foregroundStyle(.secondary)
+                } else {
+                    ForEach(availablePlans) { plan in
+                        Button {
+                            loadPlan(plan)
+                        } label: {
+                            VStack(alignment: .leading, spacing: 2) {
+                                Text(plan.name)
+                                Text("\(plan.cityIdentifiers.count) \(plan.cityIdentifiers.count == 1 ? String(localized: "timeline.plans.city") : String(localized: "timeline.plans.cities"))")
+                                    .font(.caption)
+                                    .foregroundStyle(.secondary)
+                            }
+                        }
+                    }
+                }
+
+                // Templates submenu
+                if !availableTemplates.isEmpty {
+                    Menu {
+                        ForEach(availableTemplates) { template in
+                            Button {
+                                loadTemplate(template)
+                            } label: {
+                                HStack {
+                                    VStack(alignment: .leading, spacing: 2) {
+                                        Text(template.name)
+                                        Text("\(template.cityIdentifiers.count) \(template.cityIdentifiers.count == 1 ? String(localized: "timeline.plans.city") : String(localized: "timeline.plans.cities"))")
+                                            .font(.caption)
+                                            .foregroundStyle(.secondary)
+                                    }
+                                    if template.isDefault {
+                                        Spacer()
+                                        Image(systemName: "star.fill")
+                                            .foregroundStyle(.yellow)
+                                    }
+                                }
+                            }
+                        }
+                    } label: {
+                        Label(String(localized: "timeline.templates.apply"), systemImage: "square.stack")
+                    }
+                }
+            }
+
+            Section {
+                Button {
+                    Task { await exportAsImage() }
+                } label: {
+                    Label(String(localized: "timeline.plans.export_image"), systemImage: "photo")
+                }
+                .disabled(selectedCityIDs.isEmpty)
+
+                Button {
+                    Task { await exportPlanData() }
+                } label: {
+                    Label(String(localized: "timeline.plans.export_data"), systemImage: "doc.badge.arrow.up")
+                }
+                .disabled(selectedCityIDs.isEmpty)
+            }
+
+            Section {
+                Button {
+                    if reminderEnabled {
+                        disableReminders()
+                    } else {
+                        enableReminders(for: currentReminderCity())
+                    }
+                } label: {
+                    Label(
+                        reminderEnabled ? "Disable Notifications" : "Enable Notifications",
+                        systemImage: reminderEnabled ? "bell.slash" : "bell.fill"
+                    )
+                }
+                .disabled(isUpdatingReminder || (!notificationManager.isAuthorized && !reminderEnabled))
+
+                Menu {
+                    ForEach(ReminderOffset.allCases, id: \.self) { offset in
+                        Button {
+                            updateReminderOffset(to: offset)
+                        } label: {
+                            HStack {
+                                Text(offset.displayName)
+                                if reminderOffset == offset {
+                                    Image(systemName: "checkmark")
+                                }
+                            }
+                        }
+                    }
+                } label: {
+                    Label("Reminder Offset: \(reminderOffset.displayName)", systemImage: "timer")
+                }
+                .disabled(isUpdatingReminder)
+
+#if os(macOS)
+                Menu {
+                    if selectedTimelineCities.isEmpty {
+                        Text("Select a city to target notifications.")
+                            .foregroundStyle(.secondary)
+                    } else {
+                        Button {
+                            selectReminderCity(nil)
+                        } label: {
+                            HStack {
+                                Text("Default Timezone")
+                                if reminderCityIdentifier == nil {
+                                    Image(systemName: "checkmark")
+                                }
+                            }
+                        }
+                        ForEach(selectedTimelineCities) { city in
+                            Button {
+                                selectReminderCity(city)
+                            } label: {
+                                HStack {
+                                    Text(city.name)
+                                    if reminderCityIdentifier == city.timeZoneIdentifier {
+                                        Image(systemName: "checkmark")
+                                    }
+                                }
+                            }
+                        }
+                    }
+                } label: {
+                    Label(
+                        reminderCityMenuTitle,
+                        systemImage: "globe"
+                    )
+                }
+                .disabled(isUpdatingReminder)
+
+                if !notificationManager.isAuthorized {
+                    Button(String(localized: "action.open_system_settings")) {
+                        openNotificationSettings()
+                    }
+                    .disabled(isUpdatingReminder)
+                }
+#endif
+            } header: {
+#if os(macOS)
+                Text("Event Notifications")
+#else
+                EmptyView()
+#endif
+            }
+
+#if os(macOS)
+            Section(String(localized: "calendar.action.add")) {
+                let cities = selectedTimelineCities
+                if cities.isEmpty {
+                    Text(String(localized: "calendar.action.add.empty", defaultValue: "Select at least one city to add it to Calendar."))
+                        .foregroundStyle(.secondary)
+                } else {
+                    ForEach(cities) { city in
+                        Button {
+                            handleAddToCalendar(for: city)
+                        } label: {
+                            Label(
+                                city.name,
+                                systemImage: addingCalendarCityID == city.timeZoneIdentifier ? "hourglass" : "calendar.badge.plus"
+                            )
+                        }
+                        .disabled(addingCalendarCityID != nil && addingCalendarCityID != city.timeZoneIdentifier)
+                    }
+                }
+            }
+#endif
+        } label: {
+            Image(systemName: "gearshape.fill")
+                .font(.system(size: 14, weight: .semibold))
+                .foregroundStyle(Color.primary.opacity(0.85))
+                .padding(.horizontal, 14)
+                .padding(.vertical, 10)
+                .background(
+                    Capsule()
+                        .fill(Color.primary.opacity(0.08))
+                        .overlay(
+                            Capsule()
+                                .stroke(Color.primary.opacity(0.12), lineWidth: 1)
+                        )
+                )
+                .shadow(color: Color.black.opacity(0.12), radius: 10, y: 5)
+                .accessibilityLabel(Text(String(localized: "timeline.plans.options")))
+        }
+        .menuStyle(.borderlessButton)
+        .buttonStyle(.plain)
+    }
+
+    /// Load timeline plans and apply default template
+    private func loadTimelinePlansAndTemplates() {
+        Task {
+            do {
+                // Load plans for this event
+                try await timelineService.loadPlans(for: event.id)
+                availablePlans = timelineService.plans
+
+                // Load all templates and filter by event type
+                try await timelineService.loadTemplates()
+                availableTemplates = timelineService.templates.filter { template in
+                    template.eventType == event.eventType || template.eventType == "all"
+                }
+
+                // Auto-apply default template if no cities selected
+                if selectedCityIDs.isEmpty, shouldDisplayMultiCitySection {
+                    if let template = try await timelineService.loadDefaultTemplate(for: event.eventType) {
+                        withAnimation(.easeInOut(duration: 0.2)) {
+                            selectedCityIDs = Set(template.cityIdentifiers)
+                        }
+                        AppLogger.viewModel.info("Auto-applied default template: \(template.name)")
+                    }
+                }
+            } catch {
+                AppLogger.viewModel.error("Failed to load timeline plans: \(error)")
+            }
+        }
+    }
+
+    /// Save a new plan
+    private func savePlan(name: String) async {
+        do {
+            try await timelineService.savePlan(
+                name: name,
+                eventID: event.id,
+                eventName: event.name,
+                eventType: event.eventType,
+                cityIdentifiers: Array(selectedCityIDs)
+            )
+
+            // Reload plans
+            try await timelineService.loadPlans(for: event.id)
+            availablePlans = timelineService.plans
+
+            AppLogger.viewModel.info("Saved timeline plan: \(name)")
+        } catch {
+            exportError = error.localizedDescription
+            showExportError = true
+            AppLogger.viewModel.error("Failed to save plan: \(error)")
+        }
+    }
+
+    /// Load a saved plan
+    private func loadPlan(_ plan: TimelinePlan) {
+        withAnimation(.easeInOut(duration: 0.2)) {
+            selectedCityIDs = Set(plan.cityIdentifiers)
+        }
+        AppLogger.viewModel.info("Loaded timeline plan: \(plan.name)")
+    }
+
+    /// Load a template
+    private func loadTemplate(_ template: TimelineTemplate) {
+        withAnimation(.easeInOut(duration: 0.2)) {
+            selectedCityIDs = Set(template.cityIdentifiers)
+        }
+        AppLogger.viewModel.info("Loaded template: \(template.name)")
+    }
+
+    /// Export timeline as image
+    private func exportAsImage() async {
+        guard !isExportingImage else { return }
+        isExportingImage = true
+        defer { isExportingImage = false }
+
+        do {
+            let renderer = TimelineImageRenderer()
+            let planName = "Timeline_\(event.eventType)"
+
+            guard let image = await renderer.render(
+                event: event,
+                cities: selectedTimelineCities,
+                planName: planName,
+                colorScheme: colorScheme
+            ) else {
+                throw TimelineImageError.failedToRender
+            }
+
+            #if os(iOS)
+            shareItem = .image(image, filename: "\(planName).png")
+            #elseif os(macOS)
+            shareItem = .image(image, filename: "\(planName).png")
+            #endif
+
+            showShareSheet = true
+            AppLogger.viewModel.info("Exported timeline as image")
+        } catch {
+            exportError = error.localizedDescription
+            showExportError = true
+            AppLogger.viewModel.error("Failed to export image: \(error)")
+        }
+    }
+
+    /// Export plan data as JSON
+    private func exportPlanData() async {
+        guard !isExportingData else { return }
+        isExportingData = true
+        defer { isExportingData = false }
+
+        do {
+            // Create a temporary plan for export
+            let tempPlan = TimelinePlan(
+                name: "Timeline_\(event.eventType)",
+                eventID: event.id,
+                eventName: event.name,
+                eventType: event.eventType,
+                cityIdentifiers: Array(selectedCityIDs)
+            )
+
+            let data = try await timelineService.exportPlan(tempPlan)
+            let filename = "\(tempPlan.name.replacingOccurrences(of: " ", with: "_")).pzb"
+
+            shareItem = try ShareableItem.temporaryFile(data: data, filename: filename)
+            showShareSheet = true
+            AppLogger.viewModel.info("Exported plan data: \(filename)")
+        } catch {
+            exportError = error.localizedDescription
+            showExportError = true
+            AppLogger.viewModel.error("Failed to export plan data: \(error)")
+        }
+    }
+
+#if os(macOS)
+    private func handleAddToCalendar(for city: FavoriteCity) {
+        guard addingCalendarCityID == nil else { return }
+        let cityID = city.timeZoneIdentifier
+        addingCalendarCityID = cityID
+
+        Task {
+            do {
+                try await calendarService.addEventToCalendar(event: event, city: city)
+                await MainActor.run {
+                    calendarSuccessCityName = city.name
+                }
+            } catch {
+                await MainActor.run {
+                    calendarErrorMessage = error.localizedDescription
+                }
+            }
+            await MainActor.run {
+                if addingCalendarCityID == cityID {
+                    addingCalendarCityID = nil
+                }
+            }
+        }
+    }
+#endif
+
     private func syncSelectedCities() {
         guard shouldDisplayMultiCitySection else {
             selectedCityIDs = []
@@ -691,7 +1144,130 @@ struct EventDetailView: View {
         } else {
             selectedCityIDs = selectedCityIDs.intersection(validIDs)
         }
+
+        if let currentID = reminderCityIdentifier,
+           !selectedTimelineCities.contains(where: { $0.timeZoneIdentifier == currentID }) {
+            reminderCityIdentifier = selectedTimelineCities.first?.timeZoneIdentifier
+        } else if reminderCityIdentifier == nil {
+            reminderCityIdentifier = selectedTimelineCities.first?.timeZoneIdentifier
+        }
     }
+
+    // MARK: - Reminder Helpers
+
+    private func loadReminderPreferences() {
+        let manager = ReminderPreferencesManager(modelContext: modelContext)
+        if let preferences = manager.getPreferences(for: event.id) {
+            reminderEnabled = preferences.isEnabled
+            reminderOffset = preferences.enabledOffsets.first ?? .thirtyMinutes
+        } else {
+            reminderEnabled = false
+            reminderOffset = .thirtyMinutes
+        }
+
+        if reminderCityIdentifier == nil {
+            reminderCityIdentifier = selectedTimelineCities.first?.timeZoneIdentifier
+        }
+
+        Task {
+            await notificationManager.updateAuthorizationStatus()
+        }
+    }
+
+    private func enableReminders(for city: FavoriteCity?) {
+        reminderEnabled = true
+        reminderCityIdentifier = city?.timeZoneIdentifier ?? reminderCityIdentifier ?? selectedTimelineCities.first?.timeZoneIdentifier
+        rescheduleReminders()
+    }
+
+    private func disableReminders() {
+        reminderEnabled = false
+        rescheduleReminders()
+    }
+
+    private func updateReminderOffset(to offset: ReminderOffset) {
+        guard reminderOffset != offset else { return }
+        reminderOffset = offset
+        if reminderEnabled {
+            rescheduleReminders()
+        } else {
+            Task { await MainActor.run { updateReminderPreferences(isEnabled: false) } }
+        }
+    }
+
+    private func selectReminderCity(_ city: FavoriteCity?) {
+        reminderCityIdentifier = city?.timeZoneIdentifier
+        if reminderEnabled {
+            rescheduleReminders()
+        }
+    }
+
+    private func currentReminderCity() -> FavoriteCity? {
+        if let identifier = reminderCityIdentifier,
+           let city = selectedTimelineCities.first(where: { $0.timeZoneIdentifier == identifier }) {
+            return city
+        }
+        return selectedTimelineCities.first
+    }
+
+    private var reminderCityMenuTitle: String {
+        if let identifier = reminderCityIdentifier,
+           let city = selectedTimelineCities.first(where: { $0.timeZoneIdentifier == identifier }) {
+            return city.name
+        }
+        return "Default Timezone"
+    }
+
+    private func rescheduleReminders() {
+        guard !isUpdatingReminder else { return }
+        isUpdatingReminder = true
+
+        let cityIdentifier = resolvedReminderCityIdentifier()
+        let offset = reminderOffset
+        let enabled = reminderEnabled
+
+        Task {
+            await MainActor.run {
+                updateReminderPreferences(isEnabled: enabled)
+            }
+
+            await notificationManager.cancelNotifications(for: event.id)
+
+            if enabled {
+                if let cityIdentifier {
+                    await notificationManager.scheduleNotifications(for: event, city: cityIdentifier, offsets: [offset])
+                } else {
+                    await notificationManager.scheduleNotifications(for: event, offsets: [offset])
+                }
+            }
+
+            await MainActor.run {
+                isUpdatingReminder = false
+            }
+        }
+    }
+
+    private func resolvedReminderCityIdentifier() -> String? {
+        if let identifier = reminderCityIdentifier,
+           selectedTimelineCities.contains(where: { $0.timeZoneIdentifier == identifier }) {
+            return identifier
+        }
+        return nil
+    }
+
+    @MainActor
+    private func updateReminderPreferences(isEnabled: Bool) {
+        let manager = ReminderPreferencesManager(modelContext: modelContext)
+        manager.updatePreferences(for: event.id, offsets: [reminderOffset], isEnabled: isEnabled)
+    }
+
+#if os(macOS)
+    private func openNotificationSettings() {
+        if let url = URL(string: "x-apple.systempreferences:com.apple.preference.notifications") {
+            NSWorkspace.shared.open(url)
+        }
+    }
+#endif
 }
 
 // MARK: - Event Meta
@@ -848,15 +1424,6 @@ private struct CityTimeCard: View {
                         .lineLimit(1)
                     }
 
-                    // Add to Calendar Button (macOS only)
-                    #if os(macOS)
-                    Divider()
-                        .padding(.vertical, 4)
-
-                    AddToCalendarButton(event: event, city: city)
-                        .font(.system(size: 12))
-                        .frame(maxWidth: .infinity)
-                    #endif
                 }
             }
         }
