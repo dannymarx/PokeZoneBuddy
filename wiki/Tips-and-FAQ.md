@@ -26,7 +26,6 @@ Confirm that reminders are toggled on for the event, your selected offsets are a
 The app currently ships with English and German localisation. Switch your device language to see the matching strings.
 
 **Where can I report bugs or request features?**  
-Visit [Support and Feedback](./Support-and-Feedback.md) for contact options, issue templates, and contribution notes.
+Visit [Support and Feedback](./Support-and-Feedback) for contact options, issue templates, and contribution notes.
 
-Still stuck? Drop by [Support and Feedback](./Support-and-Feedback.md) for personalised help.
-
+Still stuck? Drop by [Support and Feedback](./Support-and-Feedback) for personalised help.

@@ -30,5 +30,4 @@ PokeZoneBuddy makes it easy to safeguard your event plans, favourite cities, and
 - Review exported files before sharing to confirm there’s no personal information in your notes.
 - Use Merge mode when collaborating so multiple teammates can contribute new cities without overwriting each other.
 
-Curious about automation and calendar workflows? Explore [Shortcuts and Integrations](./Shortcuts-and-Integrations.md) next.
-
+Curious about automation and calendar workflows? Explore [Shortcuts and Integrations](./Shortcuts-and-Integrations) next.

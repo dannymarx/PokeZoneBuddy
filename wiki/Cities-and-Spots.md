@@ -19,7 +19,6 @@ Build a personal travel library by saving favourite cities and custom points of 
 - Selecting a spot jumps straight to its details inside the relevant city.
 
 ## Export and Import
-- Export your entire city and spot collection as JSON, then re-import it on another device or share it with friends. Learn how in [Data Management](./Data-Management.md).
+- Export your entire city and spot collection as JSON, then re-import it on another device or share it with friends. Learn how in [Data Management](./Data-Management).
 
-Ready to automate reminders for your favourite locations? Check out the [Notifications](./Notifications.md) guide next.
-
+Ready to automate reminders for your favourite locations? Check out the [Notifications](./Notifications) guide next.

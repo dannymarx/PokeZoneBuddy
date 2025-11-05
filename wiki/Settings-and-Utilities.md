@@ -24,5 +24,4 @@ The Settings area keeps PokeZoneBuddy organised, performant, and personalised. U
 ## Legal and About
 - Access attribution, fair use guidelines, and licensing information from the Legal section.
 
-Want to back up your cities or timelines? Visit the [Data Management](./Data-Management.md) page for import/export workflows.
-
+Want to back up your cities or timelines? Visit the [Data Management](./Data-Management) page for import/export workflows.

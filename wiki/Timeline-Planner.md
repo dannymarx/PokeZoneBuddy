@@ -17,7 +17,7 @@ The Timeline Planner helps you play Pokémon GO events across multiple cities wi
 ## Share Your Work
 - **Export Image:** Capture the timeline as a high-resolution PNG ready for Discord, social media, or guides.
 - **Export Plan (`.pzb`):** Share a portable JSON bundle that teammates can import. Plans include city ordering and metadata for the event.
-- **Import Plans:** Use the Settings → Timeline Management card to import `.pzb` files you receive (see [Data Management](./Data-Management.md)).
+- **Import Plans:** Use the Settings → Timeline Management card to import `.pzb` files you receive (see [Data Management](./Data-Management)).
 
 ## Calendar Integration (macOS)
 - macOS users can add single-city or multi-city plans directly to Calendar. Choose the cities you want, then select **Add to Calendar**.
@@ -28,5 +28,4 @@ The Timeline Planner helps you play Pokémon GO events across multiple cities wi
 - Use templates for recurring event types so you spend less time rebuilding plans.
 - Re-export plans after making edits to ensure teammates get the latest version.
 
-For location management tips, visit [Cities and Spots](./Cities-and-Spots.md). To automate alerts for your plans, read the [Notifications](./Notifications.md) guide.
-
+For location management tips, visit [Cities and Spots](./Cities-and-Spots). To automate alerts for your plans, read the [Notifications](./Notifications) guide.

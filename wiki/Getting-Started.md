@@ -28,7 +28,6 @@ New to PokeZoneBuddy? This guide walks you through installation, first launch, a
 ## Staying Up to Date
 - Pull-to-refresh on the Events list fetches new data whenever you have a connection.
 - Background refresh (macOS and iOS) keeps cached data current every 30 minutes when the app is active or in the background.
-- Check the [Timeline Planner](./Timeline-Planner.md) and [Notifications](./Notifications.md) pages to learn how reminders and exported plans stay in sync across devices.
+- Check the [Timeline Planner](./Timeline-Planner) and [Notifications](./Notifications) pages to learn how reminders and exported plans stay in sync across devices.
 
-Ready for more? Jump to the [Events Hub](./Events-Hub.md) to learn how to browse and favourite events, or skip ahead to [Tips and FAQ](./Tips-and-FAQ.md) for quick wins.
-
+Ready for more? Jump to the [Events Hub](./Events-Hub) to learn how to browse and favourite events, or skip ahead to [Tips and FAQ](./Tips-and-FAQ) for quick wins.
