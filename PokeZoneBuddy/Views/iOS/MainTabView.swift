@@ -14,6 +14,8 @@ struct MainTabView: View {
 
     @Environment(\.modelContext) private var modelContext
     @Environment(NetworkMonitor.self) private var networkMonitor
+    @Environment(TipService.self) private var tipService
+    @Environment(\.scenePhase) private var scenePhase
 
     // MARK: - State
 
@@ -34,6 +36,11 @@ struct MainTabView: View {
         .onAppear {
             if eventsViewModel == nil {
                 initializeViewModels()
+            }
+        }
+        .onChange(of: scenePhase) { _, newPhase in
+            if newPhase != .active {
+                tipService.dismissActiveTips()
             }
         }
     }

@@ -48,6 +48,7 @@ struct SettingsView: View {
 
     @Environment(\.modelContext) private var modelContext
     @Environment(\.dismiss) private var dismiss
+    @Environment(TipService.self) private var tipService
 
     // MARK: - Display Mode
 
@@ -126,6 +127,7 @@ struct SettingsView: View {
     @State private var importError: String?
     @State private var showExportAllPlans = false
     @State private var exportData: Data?
+    @State private var showResetTipsConfirmation = false
     @State private var planCount = 0
     @State private var templateCount = 0
 
@@ -215,6 +217,17 @@ struct SettingsView: View {
                 Button(String(localized: "common.cancel"), role: .cancel) { }
             } message: {
                 Text(String(localized: "data.delete_all.warning"))
+            }
+            .confirmationDialog(
+                String(localized: "settings.tips.reset_confirm_title"),
+                isPresented: $showResetTipsConfirmation
+            ) {
+                Button(String(localized: "settings.tips.reset_confirm_action"), role: .destructive) {
+                    resetTips()
+                }
+                Button(String(localized: "common.cancel"), role: .cancel) { }
+            } message: {
+                Text(String(localized: "settings.tips.reset_confirm_message"))
             }
             .alert(
                 String(localized: "timeline.import.success"),
@@ -691,6 +704,27 @@ struct SettingsView: View {
             }
 
             VStack(spacing: 0) {
+                TipsToggleRow(
+                    title: String(localized: "settings.tips.toggle_title"),
+                    subtitle: String(localized: "settings.tips.toggle_subtitle"),
+                    isOn: tipsEnabledBinding
+                )
+
+                Divider()
+                    .padding(.leading, 16)
+
+                ActionRow(
+                    title: String(localized: "settings.tips.reset_title"),
+                    subtitle: tipsResetSubtitle,
+                    buttonText: String(localized: "settings.tips.reset_confirm_action"),
+                    buttonColor: .systemPurple
+                ) {
+                    showResetTipsConfirmation = true
+                }
+
+                Divider()
+                    .padding(.leading, 16)
+
                 ActionRow(
                     title: String(localized: "cache.actions.clear_images.title"),
                     subtitle: String(localized: "cache.actions.clear_images.subtitle"),
@@ -731,7 +765,39 @@ struct SettingsView: View {
         }
     }
 
+    private var tipsEnabledBinding: Binding<Bool> {
+        Binding(
+            get: { tipService.tipsEnabled },
+            set: { newValue in
+                guard tipService.tipsEnabled != newValue else { return }
+                Task { await tipService.setTipsEnabled(newValue) }
+            }
+        )
+    }
+
+    private var tipsResetSubtitle: String {
+        if let lastReset = tipService.lastReset {
+            let relative = Self.tipsRelativeDateFormatter.localizedString(for: lastReset, relativeTo: Date())
+            let format = String(localized: "settings.tips.reset_subtitle_with_date")
+            return String(format: format, locale: Locale.current, relative as CVarArg)
+        } else {
+            return String(localized: "settings.tips.reset_subtitle")
+        }
+    }
+
+    private static let tipsRelativeDateFormatter: RelativeDateTimeFormatter = {
+        let formatter = RelativeDateTimeFormatter()
+        formatter.unitsStyle = .full
+        return formatter
+    }()
+
     // MARK: - Actions
+
+    private func resetTips() {
+        Task {
+            await tipService.resetTips()
+        }
+    }
 
     private func updateStats() {
         isRefreshing = true
@@ -919,6 +985,31 @@ private struct StatRow: View {
                 )
         }
         .padding(.vertical, 8)
+    }
+}
+
+private struct TipsToggleRow: View {
+    let title: LocalizedStringKey
+    let subtitle: LocalizedStringKey
+    @Binding var isOn: Bool
+
+    var body: some View {
+        Toggle(isOn: $isOn) {
+            VStack(alignment: .leading, spacing: 4) {
+                Text(title)
+                    .font(.system(size: 14, weight: .medium))
+                    .foregroundStyle(.primary)
+
+                Text(subtitle)
+                    .font(.system(size: 12))
+                    .foregroundStyle(.secondary)
+                    .fixedSize(horizontal: false, vertical: true)
+            }
+        }
+        .padding(.horizontal, 16)
+        .padding(.vertical, 12)
+        .toggleStyle(.switch)
+        .tint(.accentColor)
     }
 }
 
