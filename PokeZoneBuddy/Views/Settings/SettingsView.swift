@@ -595,7 +595,7 @@ struct SettingsView: View {
             }
 
             if let viewModel = citiesViewModel ?? localCitiesViewModel {
-                ImportExportView(viewModel: viewModel)
+                ImportExportContainer(viewModel: viewModel)
             } else {
                 Text("loading.generic")
                     .font(.system(size: 13))
