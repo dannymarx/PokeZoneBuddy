@@ -12,81 +12,23 @@ permissions:
   contents: write
 
 jobs:
-  build:
-    name: Build & Package
+  release:
+    name: Build & Release
     runs-on: macos-26
-    env:
-      MACOSX_DEPLOYMENT_TARGET: "26.0"
-    outputs:
-      version: ${{ steps.read_version.outputs.version }}
-      dmg_path: ${{ steps.package.outputs.dmg_path }}
-      release_tag: ${{ steps.tag.outputs.tag }}
+
     steps:
       - name: Checkout
         uses: actions/checkout@v4
-        with:
-          fetch-depth: 0
 
-      - name: Read release version
-        id: read_version
+      - name: Read version
+        id: version
         run: |
           set -euo pipefail
           version=$(tr -d ' \n' < VERSION)
-          if [[ -z "$version" ]]; then
-            echo "VERSION file is empty" >&2
-            exit 1
-          fi
+          [[ -n "$version" ]] || { echo "VERSION file is empty" >&2; exit 1; }
           echo "version=$version" >> "$GITHUB_OUTPUT"
 
-      - name: Resolve macOS build settings
-        id: build_settings
-        run: |
-          set -euo pipefail
-          settings=$(xcodebuild \
-            -project PokeZoneBuddy.xcodeproj \
-            -scheme "PokeZoneBuddy" \
-            -configuration Release \
-            -destination 'generic/platform=macOS' \
-            -showBuildSettings)
-
-          marketing=$(printf '%s\n' "$settings" | awk '/^[[:space:]]*MARKETING_VERSION = / {print $3; exit}')
-          if [[ -z "$marketing" ]]; then
-            echo "MARKETING_VERSION missing from build settings" >&2
-            exit 1
-          fi
-
-          target=$(printf '%s\n' "$settings" | awk '/^[[:space:]]*MACOSX_DEPLOYMENT_TARGET = / {print $3; exit}')
-          if [[ -z "$target" ]]; then
-            echo "MACOSX_DEPLOYMENT_TARGET missing from build settings" >&2
-            exit 1
-          fi
-
-          echo "marketing_version=$marketing" >> "$GITHUB_OUTPUT"
-          echo "deployment_target=$target" >> "$GITHUB_OUTPUT"
-
-      - name: Validate versions
-        run: |
-          set -euo pipefail
-          version="${{ steps.read_version.outputs.version }}"
-          marketing="${{ steps.build_settings.outputs.marketing_version }}"
-          if [[ "$marketing" != "$version" ]]; then
-            echo "Version mismatch: MARKETING_VERSION=$marketing, VERSION=$version" >&2
-            exit 1
-          fi
-
-          target="${{ steps.build_settings.outputs.deployment_target }}"
-          if [[ "$target" != "26.0" ]]; then
-            echo "Deployment target mismatch: MACOSX_DEPLOYMENT_TARGET=$target, expected 26.0" >&2
-            exit 1
-          fi
-
-      - name: Compose release tag
-        id: tag
-        run: |
-          set -euo pipefail
-          echo "tag=v${{ steps.read_version.outputs.version }}" >> "$GITHUB_OUTPUT"
-
-      - name: Build app
+      - name: Build app (unsigned)
         run: |
           set -euo pipefail
           xcodebuild \
@@ -100,122 +42,46 @@ jobs:
             DEVELOPMENT_TEAM="" \
             clean build
 
-      - name: Prepare dist directory
-        run: |
-          set -euo pipefail
-          mkdir -p dist
-
       - name: Create DMG
-        id: package
+        id: dmg
         run: |
           set -euo pipefail
-          VERSION="${{ steps.read_version.outputs.version }}"
-          APP_PATH="build/Build/Products/Release/PokeZoneBuddy.app"
-          if [[ ! -d "$APP_PATH" ]]; then
-            echo "App bundle not found at $APP_PATH" >&2
-            ls -R build/Build/Products/Release || true
-            exit 1
-          fi
+          VERSION="${{ steps.version.outputs.version }}"
+          APP="build/Build/Products/Release/PokeZoneBuddy.app"
+          DMG="PokeZoneBuddy-${VERSION}.dmg"
+          STAGE="dist/stage"
 
-          DMG_NAME="PokeZoneBuddy-${VERSION}.dmg"
-          STAGE="dist/ReleaseDisk"
+          [[ -d "$APP" ]] || { echo "App not found at $APP"; ls -R build/Build/Products/ || true; exit 1; }
 
-          rm -rf "$STAGE"
           mkdir -p "$STAGE"
-
-          rsync -a "$APP_PATH" "$STAGE/"
+          rsync -a "$APP" "$STAGE/"
           ln -s /Applications "$STAGE/Applications"
-
           hdiutil create \
             -volname "PokeZoneBuddy ${VERSION}" \
             -srcfolder "$STAGE" \
-            -ov -format UDZO "dist/${DMG_NAME}"
+            -ov -format UDZO "$DMG"
 
-          rm -rf "$STAGE"
+          echo "dmg=$DMG" >> "$GITHUB_OUTPUT"
 
-          echo "dmg_path=dist/${DMG_NAME}" >> "$GITHUB_OUTPUT"
-
-      - name: Upload DMG artifact
-        uses: actions/upload-artifact@v4
-        with:
-          name: release-dmg
-          path: ${{ steps.package.outputs.dmg_path }}
-          if-no-files-found: error
-
-  release:
-    name: Tag & Publish
-    runs-on: ubuntu-latest
-    needs: build
-    steps:
-      - name: Checkout
-        uses: actions/checkout@v4
-
-      - name: Extract changelog & feature name
+      - name: Extract changelog
         id: changelog
         run: |
           set -euo pipefail
-          VERSION="${{ needs.build.outputs.version }}"
-
-          # Extract the section for this version from CHANGELOG.md
-          # This will get everything between ## [$VERSION] and the next ## or end of file
-          CHANGELOG_SECTION=$(awk -v ver="$VERSION" '
-            /^## \[/ {
-              if (found) exit
-              if ($0 ~ "\\[" ver "\\]") {
-                found=1
-                next
-              }
-            }
+          VERSION="${{ steps.version.outputs.version }}"
+          SECTION=$(awk -v ver="$VERSION" '
+            /^## \[/ { if (found) exit; if ($0 ~ "\\[" ver "\\]") { found=1; next } }
             found { print }
           ' CHANGELOG.md)
-
-          if [[ -z "$CHANGELOG_SECTION" ]]; then
-            echo "Warning: No changelog section found for version $VERSION" >&2
-            CHANGELOG_SECTION="Release $VERSION"
-          fi
-
-          # Extract the main feature name from the first "Added" bullet
-          # Looking for patterns like "**Feature Name**" after "Added" section
-          FEATURE_NAME=$(echo "$CHANGELOG_SECTION" | awk '
-            /^### Added/ { in_added=1; next }
-            /^###/ { in_added=0 }
-            in_added && /^-/ {
-              # Extract text between first ** markers
-              match($0, /\*\*([^*]+)\*\*/, arr)
-              if (arr[1]) {
-                print arr[1]
-                exit
-              }
-            }
-          ')
-
-          if [[ -z "$FEATURE_NAME" ]]; then
-            FEATURE_NAME="New Release"
-          fi
-
-          # Save to outputs using heredoc to handle multiline
           {
-            echo "changelog<<EOF"
-            echo "$CHANGELOG_SECTION"
+            echo "body<<EOF"
+            echo "${SECTION:-Release $VERSION}"
             echo "EOF"
           } >> "$GITHUB_OUTPUT"
-
-          echo "feature_name=$FEATURE_NAME" >> "$GITHUB_OUTPUT"
-
-          echo "Extracted feature: $FEATURE_NAME"
-          echo "Changelog preview (first 10 lines):"
-          echo "$CHANGELOG_SECTION" | head -10
-
-      - name: Download DMG artifact
-        uses: actions/download-artifact@v4
-        with:
-          name: release-dmg
-          path: dist
 
       - name: Create GitHub release
         uses: softprops/action-gh-release@v2
         with:
-          tag_name: ${{ needs.build.outputs.release_tag }}
-          name: PokeZoneBuddy ${{ needs.build.outputs.version }} – ${{ steps.changelog.outputs.feature_name }}
-          body: ${{ steps.changelog.outputs.changelog }}
-          files: ${{ needs.build.outputs.dmg_path }}
+          tag_name: v${{ steps.version.outputs.version }}
+          name: PokeZoneBuddy ${{ steps.version.outputs.version }}
+          body: ${{ steps.changelog.outputs.body }}
+          files: ${{ steps.dmg.outputs.dmg }}

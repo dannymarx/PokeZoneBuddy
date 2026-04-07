@@ -7,7 +7,8 @@
 	objects = {
 
 /* Begin PBXFileReference section */
-		30EAC70B2E9E51EF00F47268 /* PokeZoneBuddy.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; name = PokeZoneBuddy.app; path = /Users/danny/Coding/PokeZoneBuddy/build/Debug/PokeZoneBuddy.app; sourceTree = "<absolute>"; };
+		30A7D5502F8541B000A1A38D /* PokeZoneBuddy.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; name = PokeZoneBuddy.app; path = /Users/danny/Coding/PokeZoneBuddy/build/Debug/PokeZoneBuddy.app; sourceTree = "<absolute>"; };
+		A8D47A1BC67E4611ADDCEEE1 /* Secrets.xcconfig */ = {isa = PBXFileReference; lastKnownFileType = text.xcconfig; name = Secrets.xcconfig; path = PokeZoneBuddy/Config/Secrets.xcconfig; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFileSystemSynchronizedRootGroup section */
@@ -32,6 +33,7 @@
 		305FAD6A2E8D2AF1002CBBDD = {
 			isa = PBXGroup;
 			children = (
+				A8D47A1BC67E4611ADDCEEE1 /* Secrets.xcconfig */,
 				305FAD752E8D2AF1002CBBDD /* PokeZoneBuddy */,
 			);
 			sourceTree = "<group>";
@@ -58,7 +60,7 @@
 			packageProductDependencies = (
 			);
 			productName = PokeZoneBuddy;
-			productReference = 30EAC70B2E9E51EF00F47268 /* PokeZoneBuddy.app */;
+			productReference = 30A7D5502F8541B000A1A38D /* PokeZoneBuddy.app */;
 			productType = "com.apple.product-type.application";
 		};
 /* End PBXNativeTarget section */
@@ -119,6 +121,7 @@
 /* Begin XCBuildConfiguration section */
 		305FAD942E8D2AF4002CBBDD /* Debug */ = {
 			isa = XCBuildConfiguration;
+			baseConfigurationReference = A8D47A1BC67E4611ADDCEEE1 /* Secrets.xcconfig */;
 			buildSettings = {
 				ALWAYS_SEARCH_USER_PATHS = NO;
 				ASSETCATALOG_COMPILER_GENERATE_SWIFT_ASSET_SYMBOL_EXTENSIONS = YES;
@@ -154,7 +157,6 @@
 				COPY_PHASE_STRIP = NO;
 				DEAD_CODE_STRIPPING = YES;
 				DEBUG_INFORMATION_FORMAT = dwarf;
-				DEVELOPMENT_TEAM = "";
 				ENABLE_STRICT_OBJC_MSGSEND = YES;
 				ENABLE_TESTABILITY = YES;
 				ENABLE_USER_SCRIPT_SANDBOXING = YES;
@@ -185,6 +187,7 @@
 		};
 		305FAD952E8D2AF4002CBBDD /* Release */ = {
 			isa = XCBuildConfiguration;
+			baseConfigurationReference = A8D47A1BC67E4611ADDCEEE1 /* Secrets.xcconfig */;
 			buildSettings = {
 				ALWAYS_SEARCH_USER_PATHS = NO;
 				ASSETCATALOG_COMPILER_GENERATE_SWIFT_ASSET_SYMBOL_EXTENSIONS = YES;
@@ -220,7 +223,6 @@
 				COPY_PHASE_STRIP = NO;
 				DEAD_CODE_STRIPPING = YES;
 				DEBUG_INFORMATION_FORMAT = "dwarf-with-dsym";
-				DEVELOPMENT_TEAM = "";
 				ENABLE_NS_ASSERTIONS = NO;
 				ENABLE_STRICT_OBJC_MSGSEND = YES;
 				ENABLE_USER_SCRIPT_SANDBOXING = YES;
@@ -243,6 +245,7 @@
 		};
 		305FAD972E8D2AF4002CBBDD /* Debug */ = {
 			isa = XCBuildConfiguration;
+			baseConfigurationReference = A8D47A1BC67E4611ADDCEEE1 /* Secrets.xcconfig */;
 			buildSettings = {
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
 				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
@@ -251,7 +254,6 @@
 				CODE_SIGN_STYLE = Automatic;
 				CURRENT_PROJECT_VERSION = 1;
 				DEAD_CODE_STRIPPING = YES;
-				DEVELOPMENT_TEAM = "";
 				ENABLE_APP_SANDBOX = YES;
 				ENABLE_HARDENED_RUNTIME = YES;
 				ENABLE_INCOMING_NETWORK_CONNECTIONS = YES;
@@ -285,7 +287,7 @@
 				"LD_RUNPATH_SEARCH_PATHS[sdk=macosx*]" = "@executable_path/../Frameworks";
 				MACOSX_DEPLOYMENT_TARGET = 26.0;
 				MARKETING_VERSION = 1.6.1;
-				PRODUCT_BUNDLE_IDENTIFIER = DannyHollek.PokeZoneBuddy;
+				PRODUCT_BUNDLE_IDENTIFIER = app.rosalabs.pokezonebuddy;
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				PROVISIONING_PROFILE_SPECIFIER = "";
 				REGISTER_APP_GROUPS = YES;
@@ -305,6 +307,7 @@
 		};
 		305FAD982E8D2AF4002CBBDD /* Release */ = {
 			isa = XCBuildConfiguration;
+			baseConfigurationReference = A8D47A1BC67E4611ADDCEEE1 /* Secrets.xcconfig */;
 			buildSettings = {
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
 				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
@@ -313,7 +316,6 @@
 				CODE_SIGN_STYLE = Automatic;
 				CURRENT_PROJECT_VERSION = 1;
 				DEAD_CODE_STRIPPING = YES;
-				DEVELOPMENT_TEAM = "";
 				ENABLE_APP_SANDBOX = YES;
 				ENABLE_HARDENED_RUNTIME = YES;
 				ENABLE_INCOMING_NETWORK_CONNECTIONS = YES;
@@ -347,7 +349,7 @@
 				"LD_RUNPATH_SEARCH_PATHS[sdk=macosx*]" = "@executable_path/../Frameworks";
 				MACOSX_DEPLOYMENT_TARGET = 26.0;
 				MARKETING_VERSION = 1.6.1;
-				PRODUCT_BUNDLE_IDENTIFIER = DannyHollek.PokeZoneBuddy;
+				PRODUCT_BUNDLE_IDENTIFIER = app.rosalabs.pokezonebuddy;
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				PROVISIONING_PROFILE_SPECIFIER = "";
 				REGISTER_APP_GROUPS = YES;
