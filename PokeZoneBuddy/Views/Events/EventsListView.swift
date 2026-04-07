@@ -8,6 +8,7 @@
 
 import SwiftUI
 import SwiftData
+import TipKit
 
 struct EventsListView: View {
     
@@ -489,6 +490,7 @@ struct EventsContentView: View {
     @State private var filterConfig = FilterConfiguration()
     @State private var showFilterSheet = false
     @State private var showAllPastEvents = false
+    @Environment(TipService.self) private var tipService
     
     var body: some View {
         VStack(spacing: 0) {
@@ -538,6 +540,10 @@ struct EventsContentView: View {
                     Label(String(localized: "events.filter.help"), systemImage: "line.3.horizontal.decrease.circle")
                 }
                 .badge(filterConfig.activeFilterCount > 0 ? filterConfig.activeFilterCount : 0)
+                .popoverTip(
+                    tipService.tipsEnabled ? tipService.eventFiltersTip : nil,
+                    arrowEdge: .top
+                )
             }
         }
 #else
@@ -548,6 +554,11 @@ struct EventsContentView: View {
         }
         .refreshable {
             await viewModel.forceRefresh()
+        }
+        .onChange(of: filterConfig.isActive) { oldValue, newValue in
+            if newValue && !oldValue {
+                tipService.recordFiltersUsed()
+            }
         }
     }
     
@@ -610,6 +621,10 @@ struct EventsContentView: View {
             .buttonStyle(.plain)
             .badge(filterConfig.activeFilterCount > 0 ? filterConfig.activeFilterCount : 0)
             .help(String(localized: "events.filter.help"))
+            .popoverTip(
+                tipService.tipsEnabled ? tipService.eventFiltersTip : nil,
+                arrowEdge: .top
+            )
 
             // Refresh Button
             StatefulRefreshButton(

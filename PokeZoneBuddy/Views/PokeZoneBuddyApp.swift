@@ -31,7 +31,7 @@ struct PokeZoneBuddyApp: App {
     /// SwiftData ModelContainer for local persistence
     /// Stores Events, FavoriteCities, FavoriteEvents, Timeline Plans & Templates locally (no CloudKit)
     /// Nested models (SpotlightDetails, RaidDetails, etc.) are automatically discovered via @Relationship
-    var sharedModelContainer: ModelContainer = {
+    let sharedModelContainer: ModelContainer = {
         let schema = Schema([
             Event.self,
             FavoriteCity.self,
@@ -39,11 +39,11 @@ struct PokeZoneBuddyApp: App {
             FavoriteEvent.self,
             ReminderPreferences.self,
             TimelinePlan.self,
-            TimelineTemplate.self
+            TimelineTemplate.self,
+            TipPreferences.self
         ])
 
         let modelConfiguration = ModelConfiguration(
-            schema: schema,
             isStoredInMemoryOnly: false
         )
 
@@ -68,6 +68,8 @@ struct PokeZoneBuddyApp: App {
     @State private var timelineService: TimelineService?
     /// Event preferences service for favourites + reminders
     @State private var eventPreferencesService: EventPreferencesService?
+    /// Tip service coordinating contextual guidance
+    @State private var tipService: TipService?
 
     /// Theme preference with proper reactive binding
     @AppStorage(ThemePreference.storageKey) private var themePreferenceRaw = ThemePreference.system.rawValue
@@ -82,11 +84,12 @@ struct PokeZoneBuddyApp: App {
         WindowGroup {
             #if os(iOS)
             Group {
-                if let timelineService, let eventPreferencesService {
+                if let timelineService, let eventPreferencesService, let tipService {
                     MainTabView()
                         .environment(networkMonitor)
                         .environment(timelineService)
                         .environment(eventPreferencesService)
+                        .environment(tipService)
                         .preferredColorScheme(currentTheme)
                 } else {
                     ProgressView()
@@ -98,12 +101,13 @@ struct PokeZoneBuddyApp: App {
             }
             #else
             Group {
-                if let timelineService, let eventPreferencesService {
+                if let timelineService, let eventPreferencesService, let tipService {
                     MacOSMainView()
                         .environment(networkMonitor)
                         .environment(calendarService)
                         .environment(timelineService)
                         .environment(eventPreferencesService)
+                        .environment(tipService)
                         .preferredColorScheme(currentTheme)
                 } else {
                     ProgressView()
@@ -153,6 +157,12 @@ struct PokeZoneBuddyApp: App {
             notificationManager: NotificationManager.shared
         )
         AppLogger.app.info("Event preferences service initialized")
+
+        // Initialize TipService for contextual guidance
+        let tipPreferencesStore = TipPreferencesStore(modelContext: modelContext)
+        let tipService = TipService(preferencesStore: tipPreferencesStore)
+        self.tipService = tipService
+        AppLogger.app.info("Tip service initialized")
     }
 
     // MARK: - Background Refresh Setup
