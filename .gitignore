@@ -121,7 +121,8 @@ assets/AppIcon.icon
 .env
 .env.local
 
-## Documentation builds (optional)
+## Documentation / GitHub Pages site (kept local only)
+docs/
 docs/build/
 
 ## Test coverage
@@ -176,8 +177,16 @@ coverage/
 *.sqlite3
 *.db
 
+# ===================================
+# Internal / Local Only
+# ===================================
 
+## Internal development docs (Obsidian vault, not for repo)
 dev-docs/
 
-/wiki/.obsidian
+## Wiki Obsidian metadata (local only)
+wiki/.obsidian/
 wiki/.vault-nickname
+
+## Local signing config (never commit team IDs or xcconfig secrets)
+*.xcconfig
