@@ -50,9 +50,12 @@ enum ReminderOffset: String, Codable, CaseIterable {
 /// SwiftData model for storing user's notification preferences per event
 @Model
 final class ReminderPreferences {
-    @Attribute(.unique) var eventID: String
-    var enabledOffsets: [ReminderOffset]
-    var isEnabled: Bool
+    // Note: No @Attribute(.unique) — incompatible with CloudKit sync.
+    // Deduplication is enforced in PreferencesRepository.upsertReminder instead.
+    var eventID: String = ""
+    // Default values required for CloudKit compatibility.
+    var enabledOffsets: [ReminderOffset] = [ReminderOffset.thirtyMinutes]
+    var isEnabled: Bool = false
     var lastScheduledDate: Date?
 
     init(eventID: String, enabledOffsets: [ReminderOffset] = [.thirtyMinutes], isEnabled: Bool = true) {

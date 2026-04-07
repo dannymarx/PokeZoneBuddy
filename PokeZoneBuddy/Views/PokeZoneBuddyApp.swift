@@ -28,13 +28,16 @@ struct PokeZoneBuddyApp: App {
 
     // MARK: - SwiftData Container
 
-    /// SwiftData ModelContainer with CloudKit sync for user data.
+    /// SwiftData ModelContainer with two explicit stores:
+    /// - "CloudSync"  (cloudKitDatabase: .automatic): user data synced across devices
+    /// - "LocalOnly"  (cloudKitDatabase: .none): API event cache + device-only state
     ///
-    /// One named config handles the CloudKit-synced models; SwiftData routes
-    /// everything else (Event, ReminderPreferences, TipPreferences) to the default store.
+    /// cloudKitDatabase: .none on the local config is required — without it SwiftData
+    /// validates all models in the full schema against CloudKit requirements, including
+    /// models in other configs, causing container init to fail.
     ///
-    /// Note: @Attribute(.unique) is removed from FavoriteCity and FavoriteEvent because CloudKit sync
-    /// is incompatible with SwiftData unique constraints. Deduplication is enforced in the repositories.
+    /// Note: @Attribute(.unique) is incompatible with CloudKit and is removed from all
+    /// synced models. Deduplication is enforced in the repositories instead.
     let sharedModelContainer: ModelContainer = {
         let schema = Schema([
             Event.self,
@@ -47,24 +50,20 @@ struct PokeZoneBuddyApp: App {
             TipPreferences.self
         ])
 
+        // CloudKit-synced models: user data that should appear on all devices.
+        // ReminderPreferences is here so PreferencesRepository uses one context.
         let syncedSchema = Schema([
             FavoriteCity.self, CitySpot.self, FavoriteEvent.self,
-            TimelinePlan.self, TimelineTemplate.self
+            TimelinePlan.self, TimelineTemplate.self, ReminderPreferences.self
         ])
-        let localSchema = Schema([
-            Event.self, ReminderPreferences.self, TipPreferences.self
-        ])
-
-        // Both configs must be explicit — SwiftData does not auto-route leftover
-        // models to an implicit default store when a named config is present.
-        let localConfig = ModelConfiguration("LocalOnly", schema: localSchema)
+        // Local-only models: API cache and device-specific state, never synced.
+        // cloudKitDatabase: .none is required — without it SwiftData validates
+        // ALL models in the schema against CloudKit requirements, even local ones.
+        let localSchema = Schema([Event.self, TipPreferences.self])
+        let localConfig = ModelConfiguration("LocalOnly", schema: localSchema, cloudKitDatabase: .none)
 
         // Try with CloudKit sync enabled.
-        let cloudConfig = ModelConfiguration(
-            "CloudSync",
-            schema: syncedSchema,
-            cloudKitDatabase: .automatic
-        )
+        let cloudConfig = ModelConfiguration("CloudSync", schema: syncedSchema, cloudKitDatabase: .automatic)
         if let container = try? ModelContainer(for: schema, configurations: [cloudConfig, localConfig]) {
             return container
         }
@@ -72,7 +71,7 @@ struct PokeZoneBuddyApp: App {
         // CloudKit unavailable — same store names so file paths are consistent
         // and sync activates automatically on the next successful launch.
         print("[PokeZoneBuddy] CloudKit unavailable, falling back to local-only.")
-        let cloudFallback = ModelConfiguration("CloudSync", schema: syncedSchema)
+        let cloudFallback = ModelConfiguration("CloudSync", schema: syncedSchema, cloudKitDatabase: .none)
         do {
             return try ModelContainer(for: schema, configurations: [cloudFallback, localConfig])
         } catch {
