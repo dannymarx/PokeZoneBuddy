@@ -1,6 +1,6 @@
 //
 //  StatefulRefreshButton.swift
-//  PokeZoneBuddy
+//  PokéZoneBuddy
 //
 //  Refresh button with integrated loading/success/error feedback
 //

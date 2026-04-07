@@ -1,6 +1,6 @@
 //
 //  AllSpotsContentView.swift
-//  PokeZoneBuddy
+//  PokéZoneBuddy
 //
 //  Middle column content for All Spots view on macOS
 //

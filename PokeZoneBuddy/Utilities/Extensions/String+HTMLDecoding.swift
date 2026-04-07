@@ -1,6 +1,6 @@
 //
 //  String+HTMLDecoding.swift
-//  PokeZoneBuddy
+//  PokéZoneBuddy
 //
 //  Created by Claude on 06.10.2025.
 //  HTML Entity Decoding for API responses

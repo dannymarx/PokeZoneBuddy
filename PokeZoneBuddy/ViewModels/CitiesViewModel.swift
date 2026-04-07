@@ -1,6 +1,6 @@
 //
 //  CitiesViewModel.swift
-//  PokeZoneBuddy
+//  PokéZoneBuddy
 //
 //  Created by Danny Hollek on 01.10.2025.
 //  Updated to @Observable for macOS 26 - Version 0.4
@@ -516,7 +516,7 @@ final class CitiesViewModel {
     }
 
     /// Generates a filename for the export
-    /// - Returns: String in format "PokeZoneBuddy_Export_YYYY-MM-DD.json"
+    /// - Returns: String in format "PokéZoneBuddy_Export_YYYY-MM-DD.json"
     func generateExportFilename() -> String {
         return ImportExportService.generateExportFilename()
     }

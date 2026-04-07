@@ -1,6 +1,6 @@
 //
 //  NetworkMonitor.swift
-//  PokeZoneBuddy
+//  PokéZoneBuddy
 //
 //  Network connectivity monitoring service
 //  Version 0.4 - Offline Mode Support

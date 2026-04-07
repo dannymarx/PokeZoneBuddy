@@ -1,6 +1,6 @@
 //
 //  FavoriteEvent.swift
-//  PokeZoneBuddy
+//  PokéZoneBuddy
 //
 //  Created by Claude on 03.10.2025.
 //  Version 0.3 - Favorites System

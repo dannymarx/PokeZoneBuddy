@@ -1,6 +1,6 @@
 //
 //  MainTabView.swift
-//  PokeZoneBuddy
+//  PokéZoneBuddy
 //
 //  iOS 26 TabView with Search Integration
 //

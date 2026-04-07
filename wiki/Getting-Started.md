@@ -1,6 +1,6 @@
 # Getting Started
 
-New to PokeZoneBuddy? This guide walks you through installation, first launch, and the core setup steps so you can start exploring events and building plans right away.
+New to PokéZoneBuddy? This guide walks you through installation, first launch, and the core setup steps so you can start exploring events and building plans right away.
 
 ## Requirements
 - **macOS 15 (Sequoia) or later** for the desktop app.
@@ -9,14 +9,14 @@ New to PokeZoneBuddy? This guide walks you through installation, first launch, a
 - An internet connection is recommended for the initial event sync, but most features continue to work offline once data is cached.
 
 ## Install on macOS
-1. Download the latest `.dmg` from the [releases page](https://github.com/dannymarx/PokeZoneBuddy/releases/latest).
-2. Open the disk image and drag **PokeZoneBuddy** into your Applications folder.
+1. Download the latest `.dmg` from the [releases page](https://github.com/dannymarx/PokéZoneBuddy/releases/latest).
+2. Open the disk image and drag **PokéZoneBuddy** into your Applications folder.
 3. Launch the app. Grant notification permission if you plan to use reminders.
 
 ## Install on iOS (via Xcode)
 1. Clone or download the repository.
-2. Open `PokeZoneBuddy.xcodeproj` in Xcode 16 or later.
-3. Select the `PokeZoneBuddy` iOS scheme and target your simulator or registered device.
+2. Open `PokéZoneBuddy.xcodeproj` in Xcode 16 or later.
+3. Select the `PokéZoneBuddy` iOS scheme and target your simulator or registered device.
 4. Build and run. Approve notification prompts on first launch if you want reminders.
 
 ## First Launch Checklist

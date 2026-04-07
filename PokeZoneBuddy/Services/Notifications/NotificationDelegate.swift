@@ -1,6 +1,6 @@
 //
 //  NotificationDelegate.swift
-//  PokeZoneBuddy
+//  PokéZoneBuddy
 //
 //  Created by Claude Code on 2025-10-12.
 //

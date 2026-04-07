@@ -1,6 +1,6 @@
 //
 //  EventRow.swift
-//  PokeZoneBuddy
+//  PokéZoneBuddy
 //
 //  Extracted from EventsListView for better modularity
 //

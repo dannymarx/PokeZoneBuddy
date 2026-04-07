@@ -1,6 +1,6 @@
 //
 //  EventDTO+Conversion.swift
-//  PokeZoneBuddy
+//  PokéZoneBuddy
 //
 //  Created by Claude on 20.10.2025.
 //  Converts Sendable DTOs to SwiftData Event models

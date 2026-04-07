@@ -10,11 +10,11 @@ Looking for quick wins or answers to common questions? Start here.
 - **Export before big trips:** Save your timelines and city lists before traveling so you can import them on a borrowed device if needed.
 
 ## Frequently Asked Questions
-**Does PokeZoneBuddy require an internet connection?**  
+**Does PokéZoneBuddy require an internet connection?**  
 It fetches events online, but cached data, saved cities, spots, and timelines remain fully usable offline.
 
 **Can I share timelines with players who don’t have the app?**  
-Yes. Export the timeline as an image for instant sharing, or send the `.pzb` file so another PokeZoneBuddy user can import it.
+Yes. Export the timeline as an image for instant sharing, or send the `.pzb` file so another PokéZoneBuddy user can import it.
 
 **What happens if I delete a city?**  
 Associated spots are removed automatically. Export your cities first if you think you may need them later.

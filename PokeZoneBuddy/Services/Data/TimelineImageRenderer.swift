@@ -1,6 +1,6 @@
 //
 //  TimelineImageRenderer.swift
-//  PokeZoneBuddy
+//  PokéZoneBuddy
 //
 //  Created by Claude Code on 2025-10-20.
 //  Version 1.6.0 - Multi-City Timeline Plans & Templates
@@ -93,7 +93,7 @@ final class TimelineImageRenderer {
     ) throws -> URL {
         let tempDirectory = FileManager.default.temporaryDirectory
         let sanitizedName = sanitizePlanName(planName)
-        let filename = "PokeZoneBuddy_\(sanitizedName)_\(Date().timeIntervalSince1970).png"
+        let filename = "PokéZoneBuddy_\(sanitizedName)_\(Date().timeIntervalSince1970).png"
         let fileURL = tempDirectory.appendingPathComponent(filename)
 
         #if os(iOS)
@@ -193,7 +193,7 @@ private struct TimelineExportView: View {
         HStack(alignment: .center, spacing: 24) {
             AppBadge()
             VStack(alignment: .leading, spacing: 6) {
-                Text("PokeZoneBuddy")
+                Text("PokéZoneBuddy")
                     .font(.system(size: 44, weight: .heavy, design: .rounded))
                     .foregroundStyle(Color.white)
                 Text(headerSubtitle)

@@ -1,6 +1,6 @@
 //
 //  AllSpotsView.swift
-//  PokeZoneBuddy
+//  PokéZoneBuddy
 //
 //  Shows all City Spots across all cities
 //

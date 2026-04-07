@@ -1,6 +1,6 @@
 //
 //  SharedSpotRow.swift
-//  PokeZoneBuddy
+//  PokéZoneBuddy
 //
 //  Unified spot row component used across different views
 //  Consolidates SpotRowView functionality with additional flexibility

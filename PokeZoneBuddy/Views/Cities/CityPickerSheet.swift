@@ -1,6 +1,6 @@
 //
 //  CityPickerSheet.swift
-//  PokeZoneBuddy
+//  PokéZoneBuddy
 //
 //  Sheet for selecting a city before adding a spot
 //

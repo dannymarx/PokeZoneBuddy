@@ -1,6 +1,6 @@
 //
 //  CitiesManagementView.swift
-//  PokeZoneBuddy
+//  PokéZoneBuddy
 //
 //  Moderne Städte-Verwaltung für macOS 26
 //

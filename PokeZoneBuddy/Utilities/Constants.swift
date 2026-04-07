@@ -1,6 +1,6 @@
 //
 //  Constants.swift
-//  PokeZoneBuddy
+//  PokéZoneBuddy
 //
 //  Created by Danny Hollek on 01.10.2025.
 //
@@ -52,7 +52,7 @@ enum Constants {
         static let pokemonTrademark = "Pokémon and Pokémon character names are trademarks of Nintendo."
         
         /// App Disclaimer
-        static let appDisclaimer = "PokeZoneBuddy is not affiliated with, endorsed, sponsored, or specifically approved by Nintendo, The Pokémon Company, or Niantic."
+        static let appDisclaimer = "PokéZoneBuddy is not affiliated with, endorsed, sponsored, or specifically approved by Nintendo, The Pokémon Company, or Niantic."
         
         /// Vollständiger Legal-Text für About-Screen
         static let fullLegalText = """

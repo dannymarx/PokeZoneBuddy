@@ -1,6 +1,6 @@
 //
 //  CoordinateParsingService.swift
-//  PokeZoneBuddy
+//  PokéZoneBuddy
 //
 //  Created by Danny Hollek on 06.10.2025.
 //

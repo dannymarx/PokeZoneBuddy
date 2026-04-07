@@ -1,6 +1,6 @@
 //
 //  InfoCard.swift
-//  PokeZoneBuddy
+//  PokéZoneBuddy
 //
 //  Reusable card component for displaying information with icon, title, and value
 //

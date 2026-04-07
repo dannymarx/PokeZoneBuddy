@@ -1,6 +1,6 @@
 # Changelog
 
-All notable changes to **PokeZoneBuddy** are documented here.
+All notable changes to **PokéZoneBuddy** are documented here.
 This project follows [Semantic Versioning](https://semver.org/).
 
 ---
@@ -162,7 +162,7 @@ This project follows [Semantic Versioning](https://semver.org/).
 
 ## [1.0.0] – 2025-10-06
 
-Initial release of PokeZoneBuddy – Your companion for tracking Pokémon GO events across timezones.
+Initial release of PokéZoneBuddy – Your companion for tracking Pokémon GO events across timezones.
 
 ### 🎉 Core Features
 - **Event Overview**: Browse upcoming Pokémon GO events with images and live countdowns

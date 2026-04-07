@@ -1,6 +1,6 @@
 //
 //  ImportExportService.swift
-//  PokeZoneBuddy
+//  PokéZoneBuddy
 //
 //  Created by Danny Hollek on 13.10.2025.
 //
@@ -42,12 +42,12 @@ final class ImportExportService {
     }
 
     /// Generates a filename for the export with current date
-    /// - Returns: String in format "PokeZoneBuddy_Export_YYYY-MM-DD.json"
+    /// - Returns: String in format "PokéZoneBuddy_Export_YYYY-MM-DD.json"
     static func generateExportFilename() -> String {
         let dateFormatter = DateFormatter()
         dateFormatter.dateFormat = "yyyy-MM-dd"
         let dateString = dateFormatter.string(from: Date())
-        return "PokeZoneBuddy_Export_\(dateString).json"
+        return "PokéZoneBuddy_Export_\(dateString).json"
     }
 
     // MARK: - Import

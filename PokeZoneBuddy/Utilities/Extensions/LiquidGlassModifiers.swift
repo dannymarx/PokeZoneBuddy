@@ -1,6 +1,6 @@
 //
 //  LiquidGlassModifiers.swift
-//  PokeZoneBuddy
+//  PokéZoneBuddy
 //
 //  Liquid Glass Design System for macOS 26 / iOS 26
 //  Implements Apple's new Liquid Glass material design language

@@ -1,6 +1,6 @@
 # Cities and Spots
 
-Build a personal travel library by saving favourite cities and custom points of interest. PokeZoneBuddy keeps everything synchronised with rich metadata, so your raid routes and meetup points are always close at hand.
+Build a personal travel library by saving favourite cities and custom points of interest. PokéZoneBuddy keeps everything synchronised with rich metadata, so your raid routes and meetup points are always close at hand.
 
 ## Managing Favourite Cities
 - **Add Cities:** Tap the add button in the Cities tab and type a city name. Suggestions come from Apple Maps search; pick the best match to capture the correct timezone.

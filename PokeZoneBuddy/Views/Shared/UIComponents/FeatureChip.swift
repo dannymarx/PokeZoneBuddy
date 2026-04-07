@@ -1,6 +1,6 @@
 //
 //  FeatureChip.swift
-//  PokeZoneBuddy
+//  PokéZoneBuddy
 //
 //  Reusable badge/chip component for displaying features with icon
 //

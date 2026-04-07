@@ -56,11 +56,10 @@ Podfile.lock
 Carthage/Build/
 Carthage/Checkouts/
 
-## fastlane (falls je verwendet)
-fastlane/report.xml
-fastlane/Preview.html
-fastlane/screenshots/**/*.png
-fastlane/test_output
+## fastlane + Ruby tooling (entire folder kept local — not shared in public repo)
+fastlane/
+Gemfile
+Gemfile.lock
 
 # ===================================
 # macOS

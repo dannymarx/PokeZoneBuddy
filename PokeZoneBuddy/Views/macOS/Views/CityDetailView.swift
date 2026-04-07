@@ -1,6 +1,6 @@
 //
 //  CityDetailView.swift
-//  PokeZoneBuddy
+//  PokéZoneBuddy
 //
 //  Detail view for a city on macOS
 //

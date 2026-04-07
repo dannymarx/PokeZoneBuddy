@@ -1,11 +1,11 @@
 # Data Management
 
-PokeZoneBuddy makes it easy to safeguard your event plans, favourite cities, and raid spots. Use these tools to export backups, share data with friends, or restore everything on a new device.
+PokéZoneBuddy makes it easy to safeguard your event plans, favourite cities, and raid spots. Use these tools to export backups, share data with friends, or restore everything on a new device.
 
 ## Cities and Spots Export
 - Open **Settings → Import & Export**.
 - Tap **Export Cities & Spots** to generate a JSON file that contains every saved city and spot, including notes, categories, and favourite flags.
-- The app names exports `PokeZoneBuddy_Export_<YYYY-MM-DD>.json` and shares them via the system share sheet (AirDrop, Files, email, etc.).
+- The app names exports `PokéZoneBuddy_Export_<YYYY-MM-DD>.json` and shares them via the system share sheet (AirDrop, Files, email, etc.).
 - Keep exports in a safe place so you can restore them later or share coordinates with teammates.
 
 ## Import Cities and Spots

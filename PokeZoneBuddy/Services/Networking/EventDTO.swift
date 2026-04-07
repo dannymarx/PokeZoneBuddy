@@ -1,6 +1,6 @@
 //
 //  EventDTO.swift
-//  PokeZoneBuddy
+//  PokéZoneBuddy
 //
 //  Created by Claude on 20.10.2025.
 //  Sendable Data Transfer Objects for API layer to comply with Swift 6 concurrency

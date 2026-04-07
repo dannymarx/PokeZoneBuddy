@@ -1,9 +1,9 @@
-# PokeZoneBuddy
+# PokéZoneBuddy
 
-**PokeZoneBuddy** is a SwiftUI companion for macOS and iOS that keeps every Pokémon GO event and travel-ready timezone plan at your fingertips. Convert event schedules for Tokyo, New York, Berlin, or anywhere else without manual math and keep reusable timelines synced across devices.
+**PokéZoneBuddy** is a SwiftUI companion for macOS and iOS that keeps every Pokémon GO event and travel-ready timezone plan at your fingertips. Convert event schedules for Tokyo, New York, Berlin, or anywhere else without manual math and keep reusable timelines synced across devices.
 
-[![Version](https://img.shields.io/badge/version-1.6.1-blue.svg)](https://github.com/dannymarx/PokeZoneBuddy/releases)
-[![Platform](https://img.shields.io/badge/platform-macOS%2026.0+%20%7C%20iOS%2026.0+-lightgrey.svg)](https://github.com/dannymarx/PokeZoneBuddy)
+[![Version](https://img.shields.io/badge/version-1.6.1-blue.svg)](https://github.com/dannymarx/PokéZoneBuddy/releases)
+[![Platform](https://img.shields.io/badge/platform-macOS%2026.0+%20%7C%20iOS%2026.0+-lightgrey.svg)](https://github.com/dannymarx/PokéZoneBuddy)
 [![License](https://img.shields.io/badge/license-MIT-green.svg)](./LICENSE)
 [![Swift](https://img.shields.io/badge/swift-5.9+-orange.svg)](https://swift.org)
 
@@ -61,13 +61,13 @@
 ## 🚀 Installation
 
 ### macOS
-1. Download the latest **[Release](https://github.com/dannymarx/PokeZoneBuddy/releases/latest)**
+1. Download the latest **[Release](https://github.com/dannymarx/PokéZoneBuddy/releases/latest)**
 2. Open the `.dmg` file
-3. Drag **PokeZoneBuddy** to your Applications folder
+3. Drag **PokéZoneBuddy** to your Applications folder
 4. Launch and enjoy!
 
 ### iOS
-- Open `PokeZoneBuddy.xcodeproj` with Xcode 16 or newer
+- Open `PokéZoneBuddy.xcodeproj` with Xcode 16 or newer
 - Select the iOS scheme and run on a simulator or development device (no App Store build yet)
 
 ---

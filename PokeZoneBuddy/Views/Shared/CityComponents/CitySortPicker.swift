@@ -1,6 +1,6 @@
 //
 //  CitySortPicker.swift
-//  PokeZoneBuddy
+//  PokéZoneBuddy
 //
 //  Sort picker component for city lists
 //

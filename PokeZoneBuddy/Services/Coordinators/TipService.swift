@@ -1,6 +1,6 @@
 //
 //  TipService.swift
-//  PokeZoneBuddy
+//  PokéZoneBuddy
 //
 //  Created by Codex on 21.10.25.
 //

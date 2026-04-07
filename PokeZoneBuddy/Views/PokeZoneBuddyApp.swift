@@ -1,6 +1,6 @@
 //
-//  PokeZoneBuddyApp.swift
-//  PokeZoneBuddy
+//  PokéZoneBuddyApp.swift
+//  PokéZoneBuddy
 //
 //  Created by Danny Hollek on 01.10.25.
 //  Version 0.4 - Added NetworkMonitor & BackgroundRefresh (Singleton)

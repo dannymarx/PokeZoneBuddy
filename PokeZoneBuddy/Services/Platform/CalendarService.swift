@@ -1,6 +1,6 @@
 //
 //  CalendarService.swift
-//  PokeZoneBuddy
+//  PokéZoneBuddy
 //
 //  Created by Claude on 03.10.2025.
 //  Version 0.3 - Calendar Integration (macOS only)
@@ -230,7 +230,7 @@ class CalendarService {
 
         // App credit
         notes.append("")
-        notes.append("Added via PokeZoneBuddy")
+        notes.append("Added via PokéZoneBuddy")
 
         return notes.joined(separator: "\n")
     }
@@ -322,7 +322,7 @@ class CalendarService {
 
         // App credit
         notes.append("")
-        notes.append("Added via PokeZoneBuddy")
+        notes.append("Added via PokéZoneBuddy")
         notes.append("Multi-City Planner")
 
         return notes.joined(separator: "\n")

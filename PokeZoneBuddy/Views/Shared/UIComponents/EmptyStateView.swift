@@ -1,6 +1,6 @@
 //
 //  EmptyStateView.swift
-//  PokeZoneBuddy
+//  PokéZoneBuddy
 //
 //  Unified empty state component for consistent UX across the app
 //

@@ -1,6 +1,6 @@
 //
 //  APIService.swift
-//  PokeZoneBuddy
+//  PokéZoneBuddy
 //
 //  Created by Danny Hollek on 01.10.2025.
 //  Version 0.4 - Added Offline Support with URLCache
@@ -77,7 +77,7 @@ final class APIService {
 
         // OPTIMIZED: URLCache für automatisches Image + API Caching
         let cachesDirectory = FileManager.default.urls(for: .cachesDirectory, in: .userDomainMask)[0]
-        let cacheURL = cachesDirectory.appendingPathComponent("PokeZoneBuddyCache")
+        let cacheURL = cachesDirectory.appendingPathComponent("PokéZoneBuddyCache")
 
         let cache = URLCache(
             memoryCapacity: 50_000_000,   // 50 MB memory (Images + API responses)

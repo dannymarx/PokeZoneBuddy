@@ -1,6 +1,6 @@
 //
 //  CitiesContentView.swift
-//  PokeZoneBuddy
+//  PokéZoneBuddy
 //
 //  Middle column content for Cities view on macOS
 //

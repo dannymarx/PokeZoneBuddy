@@ -1,6 +1,6 @@
 //
 //  TimezoneService.swift
-//  PokeZoneBuddy
+//  PokéZoneBuddy
 //
 //  Created by Danny Hollek on 01.10.2025.
 //

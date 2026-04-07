@@ -1,6 +1,6 @@
 //
 //  MacOSMainView.swift
-//  PokeZoneBuddy
+//  PokéZoneBuddy
 //
 //  Main macOS window with 3-column NavigationSplitView
 //  Follows macOS 26 design patterns

@@ -1,6 +1,6 @@
 //
 //  CityRepository.swift
-//  PokeZoneBuddy
+//  PokéZoneBuddy
 //
 //  Created by Claude on 10/16/25.
 //

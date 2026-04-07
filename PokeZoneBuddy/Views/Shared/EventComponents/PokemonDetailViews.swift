@@ -1,6 +1,6 @@
 //
 //  PokemonDetailViews.swift
-//  PokeZoneBuddy
+//  PokéZoneBuddy
 //
 //  Components für Pokemon-Anzeige in Events
 //  Version 0.2

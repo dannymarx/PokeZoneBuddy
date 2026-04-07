@@ -1,6 +1,6 @@
 //
 //  EventCountdownView.swift
-//  PokeZoneBuddy
+//  PokéZoneBuddy
 //
 //  Live Countdown für Events
 //  Version 0.2

@@ -1,6 +1,6 @@
 //
 //  CityTimeRowView.swift
-//  PokeZoneBuddy
+//  PokéZoneBuddy
 //
 //  Moderne Zeitumrechnungs-Komponente für macOS 26
 //

@@ -1,6 +1,6 @@
 //
 //  NotificationManager.swift
-//  PokeZoneBuddy
+//  PokéZoneBuddy
 //
 //  Created by Claude Code on 2025-10-12.
 //
@@ -264,7 +264,7 @@ class NotificationManager: ObservableObject {
     func scheduleTestNotification() async {
         let content = UNMutableNotificationContent()
         content.title = "Test Notification"
-        content.body = "This is a test notification from PokeZoneBuddy"
+        content.body = "This is a test notification from PokéZoneBuddy"
         content.sound = .default
 
         let trigger = UNTimeIntervalNotificationTrigger(timeInterval: 5, repeats: false)

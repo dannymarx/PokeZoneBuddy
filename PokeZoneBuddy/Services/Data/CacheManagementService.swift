@@ -1,6 +1,6 @@
 //
 //  CacheManagementService.swift
-//  PokeZoneBuddy
+//  PokéZoneBuddy
 //
 //  Service for managing cache data and cleanup
 //  Version 0.4

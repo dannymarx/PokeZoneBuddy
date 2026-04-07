@@ -1,6 +1,6 @@
 //
 //  AddCitySheet.swift
-//  PokeZoneBuddy
+//  PokéZoneBuddy
 //
 //  Sheet for searching and adding new cities
 //

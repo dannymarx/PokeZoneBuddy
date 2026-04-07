@@ -1,6 +1,6 @@
 //
 //  FavoriteEventCard.swift
-//  PokeZoneBuddy
+//  PokéZoneBuddy
 //
 //  Created by Claude on 06.10.2025.
 //  Compact event card for sidebar favorite events display

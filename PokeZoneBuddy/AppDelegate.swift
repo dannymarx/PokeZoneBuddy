@@ -1,6 +1,6 @@
 //
 //  AppDelegate.swift
-//  PokeZoneBuddy
+//  PokéZoneBuddy
 //
 //  Handles window configuration for macOS
 //

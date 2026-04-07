@@ -1,9 +1,9 @@
 # Notifications
 
-Never miss a raid hour or Community Day again. PokeZoneBuddy’s reminder system keeps you updated with flexible lead times, timezone-aware scheduling, and optional calendar exports.
+Never miss a raid hour or Community Day again. PokéZoneBuddy’s reminder system keeps you updated with flexible lead times, timezone-aware scheduling, and optional calendar exports.
 
 ## Enabling Notifications
-- On first launch, accept the system prompt to allow notifications. If you declined, visit **System Settings → Notifications → PokeZoneBuddy** (macOS) or **Settings → Notifications → PokeZoneBuddy** (iOS) to enable alerts later.
+- On first launch, accept the system prompt to allow notifications. If you declined, visit **System Settings → Notifications → PokéZoneBuddy** (macOS) or **Settings → Notifications → PokéZoneBuddy** (iOS) to enable alerts later.
 - Use the in-app **Notification Settings** screen to check your current permission status and run a test notification.
 
 ## Scheduling Reminders

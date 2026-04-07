@@ -1,6 +1,6 @@
 //
 //  ImportExportView.swift
-//  PokeZoneBuddy
+//  PokéZoneBuddy
 //
 //  Created by Danny Hollek on 13.10.2025.
 //

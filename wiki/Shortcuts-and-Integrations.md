@@ -1,6 +1,6 @@
 # Shortcuts and Integrations
 
-Extend PokeZoneBuddy beyond the app with system integrations that save time and keep your plans connected.
+Extend PokéZoneBuddy beyond the app with system integrations that save time and keep your plans connected.
 
 ## macOS Shortcuts
 - Use the share button inside the Timeline Planner to send city schedules directly to macOS Shortcuts flows.

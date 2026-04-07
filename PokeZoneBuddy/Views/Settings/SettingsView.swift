@@ -1,6 +1,6 @@
 //
 //  SettingsView.swift
-//  PokeZoneBuddy
+//  PokéZoneBuddy
 //
 //  Settings view for preferences & cache
 //  Version 0.5 - Professional Redesign
@@ -1160,7 +1160,7 @@ private struct SettingsSupplementaryContent: View {
                     text: LSafe(
                         "legal.disclaimer.text",
                         """
-                        PokeZoneBuddy ist eine inoffizielle, fan‑gemachte App. Es besteht keine Partnerschaft oder Verbindung zu Niantic, The Pokémon Company, Nintendo, Creatures Inc. oder GAME FREAK. Alle Inhalte dienen ausschließlich Informationszwecken.
+                        PokéZoneBuddy ist eine inoffizielle, fan‑gemachte App. Es besteht keine Partnerschaft oder Verbindung zu Niantic, The Pokémon Company, Nintendo, Creatures Inc. oder GAME FREAK. Alle Inhalte dienen ausschließlich Informationszwecken.
                         """,
                         comment: "Independence disclaimer."
                     )

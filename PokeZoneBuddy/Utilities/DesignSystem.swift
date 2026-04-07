@@ -1,6 +1,6 @@
 //
 //  DesignSystem.swift
-//  PokeZoneBuddy
+//  PokéZoneBuddy
 //
 //  Centralized design system for consistent styling across the app
 //

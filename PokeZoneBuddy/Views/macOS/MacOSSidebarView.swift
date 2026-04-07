@@ -1,6 +1,6 @@
 //
 //  MacOSSidebarView.swift
-//  PokeZoneBuddy
+//  PokéZoneBuddy
 //
 //  Sidebar for macOS main window with Liquid Glass design
 //

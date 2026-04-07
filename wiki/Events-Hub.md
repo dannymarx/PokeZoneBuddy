@@ -1,6 +1,6 @@
 # Events Hub
 
-The Events hub is the heart of PokeZoneBuddy. It keeps you informed about current, upcoming, and recent Pokémon GO events with rich detail cards, filters, and reminders.
+The Events hub is the heart of PokéZoneBuddy. It keeps you informed about current, upcoming, and recent Pokémon GO events with rich detail cards, filters, and reminders.
 
 ## Browsing Events
 - **Events Tab (iOS) / Events Sidebar (macOS):** Access the list from the main navigation. Entries are grouped into Active, Upcoming, and Past.
@@ -26,7 +26,7 @@ Selecting an event opens a detail sheet or panel tailored to your platform:
 - Head over to [Notifications](./Notifications) for deeper control over permissions, test reminders, and calendar exports.
 
 ## Background Updates
-- PokeZoneBuddy checks for fresh event data in the background every 30 minutes when the network allows it.
+- PokéZoneBuddy checks for fresh event data in the background every 30 minutes when the network allows it.
 - Background refresh also clears expired reminders and temporary images so your device stays tidy.
 
 Next steps: learn how to turn event schedules into multi-city strategies with the [Timeline Planner](./Timeline-Planner).

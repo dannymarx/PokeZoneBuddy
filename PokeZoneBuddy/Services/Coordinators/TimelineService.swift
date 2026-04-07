@@ -1,6 +1,6 @@
 //
 //  TimelineService.swift
-//  PokeZoneBuddy
+//  PokéZoneBuddy
 //
 //  Created by Claude Code on 2025-10-20.
 //  Version 1.6.0 - Multi-City Timeline Plans & Templates

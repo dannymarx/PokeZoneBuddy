@@ -3,7 +3,7 @@ import os
 
 // MARK: - AppLogger
 //
-// Centralized logging system for PokeZoneBuddy using Apple's Unified Logging (OSLog)
+// Centralized logging system for PokéZoneBuddy using Apple's Unified Logging (OSLog)
 //
 // USAGE STANDARDS:
 //

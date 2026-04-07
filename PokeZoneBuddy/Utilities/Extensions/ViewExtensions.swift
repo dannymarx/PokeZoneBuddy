@@ -1,6 +1,6 @@
 //
 //  ViewExtensions.swift
-//  PokeZoneBuddy
+//  PokéZoneBuddy
 //
 //  Design System Extensions für macOS 26
 //

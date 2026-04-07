@@ -1,6 +1,6 @@
 # Settings and Utilities
 
-The Settings area keeps PokeZoneBuddy organised, performant, and personalised. Use it to manage themes, cache usage, timeline assets, and quick access tools.
+The Settings area keeps PokéZoneBuddy organised, performant, and personalised. Use it to manage themes, cache usage, timeline assets, and quick access tools.
 
 ## Layout Overview
 - **Theme Controls:** Switch between system, light, and dark appearances. The app remembers your choice per device.

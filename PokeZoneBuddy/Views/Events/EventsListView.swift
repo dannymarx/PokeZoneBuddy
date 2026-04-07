@@ -1,6 +1,6 @@
 //
 //  EventsListView.swift
-//  PokeZoneBuddy
+//  PokéZoneBuddy
 //
 //  Moderne macOS 26 Haupt-View
 //  Version 0.4 - Updated for @Observable Pattern

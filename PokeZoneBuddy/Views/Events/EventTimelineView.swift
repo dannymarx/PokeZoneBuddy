@@ -1,6 +1,6 @@
 //
 //  EventTimelineView.swift
-//  PokeZoneBuddy
+//  PokéZoneBuddy
 //
 //  Sequential event planning timeline for multi-city event participation.
 //  Shows chronological event times across cities with travel gaps.

@@ -1,6 +1,6 @@
 //
 //  CityDisplayHelpers.swift
-//  PokeZoneBuddy
+//  PokéZoneBuddy
 //
 //  Helper utilities for displaying city information with flags and continents
 //

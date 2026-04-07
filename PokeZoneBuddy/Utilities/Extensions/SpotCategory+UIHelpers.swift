@@ -1,6 +1,6 @@
 //
 //  SpotCategory+UIHelpers.swift
-//  PokeZoneBuddy
+//  PokéZoneBuddy
 //
 //  Created by Assistant on 06.10.2025.
 //

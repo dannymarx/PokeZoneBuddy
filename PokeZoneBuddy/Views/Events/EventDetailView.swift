@@ -1,6 +1,6 @@
 //
 //  EventDetailView.swift
-//  PokeZoneBuddy
+//  PokéZoneBuddy
 //
 //  Moderne Event-Detail Ansicht für macOS 26
 //  Version 0.4 - URLCache + AsyncImage

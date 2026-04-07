@@ -1,6 +1,6 @@
 //
 //  ExportModels.swift
-//  PokeZoneBuddy
+//  PokéZoneBuddy
 //
 //  Created by Danny Hollek on 13.10.2025.
 //  Updated by Claude Code on 2025-10-20 for v1.6.0 Timeline Plans
@@ -79,7 +79,7 @@ struct ExportSpot: Codable {
 // MARK: - Timeline Plan Export (v1.6.0)
 
 /// Exportable timeline plan in portable JSON format
-/// File extension: .pzb (PokeZoneBuddy file)
+/// File extension: .pzb (PokéZoneBuddy file)
 struct ExportableTimelinePlan: Codable {
     /// Version string for format compatibility
     let version: String

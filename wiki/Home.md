@@ -1,6 +1,6 @@
-# PokeZoneBuddy Wiki
+# PokéZoneBuddy Wiki
 
-Welcome to the public guide for PokeZoneBuddy — your Swiss army knife for keeping Pokémon GO events, cities, and timelines organised across macOS and iOS. This wiki highlights what the app can do, how to get started fast, and where to dive deeper.
+Welcome to the public guide for PokéZoneBuddy — your Swiss army knife for keeping Pokémon GO events, cities, and timelines organised across macOS and iOS. This wiki highlights what the app can do, how to get started fast, and where to dive deeper.
 
 ## What You Can Do
 - Track live and upcoming events with countdowns, filters, and rich detail cards.

@@ -1,6 +1,6 @@
 //
 //  EventsViewModel.swift
-//  PokeZoneBuddy
+//  PokéZoneBuddy
 //
 //  Created by Danny Hollek on 01.10.2025.
 //  Version 0.4 - Performance & Offline Optimizations

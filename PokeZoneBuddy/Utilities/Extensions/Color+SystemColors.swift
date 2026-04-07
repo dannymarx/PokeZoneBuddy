@@ -1,6 +1,6 @@
 //
 //  Color+SystemColors.swift
-//  PokeZoneBuddy
+//  PokéZoneBuddy
 //
 //  System color extensions for automatic light/dark mode support
 //

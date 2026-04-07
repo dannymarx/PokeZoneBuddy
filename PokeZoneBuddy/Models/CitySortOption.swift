@@ -1,6 +1,6 @@
 //
 //  CitySortOption.swift
-//  PokeZoneBuddy
+//  PokéZoneBuddy
 //
 //  Sort options for city lists
 //

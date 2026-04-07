@@ -1,6 +1,6 @@
 //
 //  SearchView.swift
-//  PokeZoneBuddy
+//  PokéZoneBuddy
 //
 //  Unified search view for Events and City Spots
 //

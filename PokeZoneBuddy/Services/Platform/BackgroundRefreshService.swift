@@ -1,6 +1,6 @@
 //
 //  BackgroundRefreshService.swift
-//  PokeZoneBuddy
+//  PokéZoneBuddy
 //
 //  Background refresh service for automatic event updates
 //  Version 0.4 - Singleton Pattern
