@@ -31,10 +31,9 @@ struct PokeZoneBuddyApp: App {
     /// SwiftData ModelContainer with CloudKit sync for user data.
     ///
     /// Two stores:
-    /// - "CloudSync": FavoriteCity, CitySpot, FavoriteEvent — synced via CloudKit across iOS and macOS.
-    ///   Merge strategy: additive. Adding a city on one device shows it on all devices.
-    /// - Local (unnamed): Events from API, ReminderPreferences, TimelinePlan, TimelineTemplate, TipPreferences.
-    ///   These are device-local and do not sync.
+    /// - "CloudSync": FavoriteCity, CitySpot, FavoriteEvent, TimelinePlan, TimelineTemplate
+    ///   Synced via CloudKit. Falls back to local-only if CloudKit isn't ready yet.
+    /// - "LocalOnly": Event (API cache), ReminderPreferences, TipPreferences — never synced.
     ///
     /// Note: @Attribute(.unique) is removed from FavoriteCity and FavoriteEvent because CloudKit sync
     /// is incompatible with SwiftData unique constraints. Deduplication is enforced in the repositories.
@@ -50,24 +49,33 @@ struct PokeZoneBuddyApp: App {
             TipPreferences.self
         ])
 
-        // CloudKit-backed store: cities, spots, favorite events, and timeline plans/templates sync across devices.
+        let syncedModels = Schema([
+            FavoriteCity.self, CitySpot.self, FavoriteEvent.self,
+            TimelinePlan.self, TimelineTemplate.self
+        ])
+        let localModels = Schema([Event.self, ReminderPreferences.self, TipPreferences.self])
+
+        // Local-only store (always succeeds).
+        let localConfig = ModelConfiguration("LocalOnly", schema: localModels)
+
+        // Try CloudKit-backed store first. Falls back to plain local store if the CloudKit
+        // container isn't provisioned yet or the device isn't signed into iCloud.
         let cloudConfig = ModelConfiguration(
             "CloudSync",
-            schema: Schema([FavoriteCity.self, CitySpot.self, FavoriteEvent.self, TimelinePlan.self, TimelineTemplate.self]),
-            cloudKitDatabase: .private("iCloud.app.rosalabs.pokezonebuddy.data")
+            schema: syncedModels,
+            cloudKitDatabase: .automatic
         )
 
-        // Local-only store: API event data, preferences — device-specific, no sync needed.
-        let localConfig = ModelConfiguration(
-            schema: Schema([
-                Event.self,
-                ReminderPreferences.self,
-                TipPreferences.self
-            ])
-        )
+        if let container = try? ModelContainer(for: schema, configurations: [cloudConfig, localConfig]) {
+            return container
+        }
 
+        // CloudKit unavailable — use same store names so paths stay consistent for when
+        // sync is enabled later (e.g. after CloudKit container is provisioned).
+        print("[PokeZoneBuddy] CloudKit sync unavailable, running local-only.")
+        let localFallback = ModelConfiguration("CloudSync", schema: syncedModels)
         do {
-            return try ModelContainer(for: schema, configurations: [cloudConfig, localConfig])
+            return try ModelContainer(for: schema, configurations: [localFallback, localConfig])
         } catch {
             fatalError(String(format: String(localized: "fatal.model_container_creation_failed"), String(describing: error)))
         }
