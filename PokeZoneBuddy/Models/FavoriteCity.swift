@@ -18,8 +18,9 @@ final class FavoriteCity {
 
     /// TimeZone Identifier (z.B. "Asia/Tokyo", "America/New_York")
     /// Verwendet Apple's TimeZone-System für präzise Konvertierungen
-    /// Unique constraint prevents duplicate cities
-    @Attribute(.unique) var timeZoneIdentifier: String
+    /// Note: No @Attribute(.unique) — CloudKit sync is incompatible with unique constraints.
+    /// Deduplication is enforced in CityRepository.saveCity instead.
+    var timeZoneIdentifier: String
 
     /// Vollständiger Name mit Kontext (z.B. "Tokyo, Japan", "Los Angeles, California")
     /// Wird von MapKit's addressRepresentations.cityWithContext bereitgestellt

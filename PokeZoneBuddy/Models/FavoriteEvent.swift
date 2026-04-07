@@ -17,8 +17,9 @@ final class FavoriteEvent {
     // MARK: - Properties
     
     /// Unique event ID (matches Event.id)
-    /// The @Attribute(.unique) ensures no duplicate favorites
-    @Attribute(.unique) var eventID: String
+    /// Note: No @Attribute(.unique) — CloudKit sync is incompatible with unique constraints.
+    /// Deduplication is enforced in PreferencesRepository.addFavorite instead.
+    var eventID: String
     
     /// Timestamp when this event was favorited
     var addedDate: Date

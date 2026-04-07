@@ -28,9 +28,16 @@ struct PokeZoneBuddyApp: App {
 
     // MARK: - SwiftData Container
 
-    /// SwiftData ModelContainer for local persistence
-    /// Stores Events, FavoriteCities, FavoriteEvents, Timeline Plans & Templates locally (no CloudKit)
-    /// Nested models (SpotlightDetails, RaidDetails, etc.) are automatically discovered via @Relationship
+    /// SwiftData ModelContainer with CloudKit sync for user data.
+    ///
+    /// Two stores:
+    /// - "CloudSync": FavoriteCity, CitySpot, FavoriteEvent — synced via CloudKit across iOS and macOS.
+    ///   Merge strategy: additive. Adding a city on one device shows it on all devices.
+    /// - Local (unnamed): Events from API, ReminderPreferences, TimelinePlan, TimelineTemplate, TipPreferences.
+    ///   These are device-local and do not sync.
+    ///
+    /// Note: @Attribute(.unique) is removed from FavoriteCity and FavoriteEvent because CloudKit sync
+    /// is incompatible with SwiftData unique constraints. Deduplication is enforced in the repositories.
     let sharedModelContainer: ModelContainer = {
         let schema = Schema([
             Event.self,
@@ -43,12 +50,24 @@ struct PokeZoneBuddyApp: App {
             TipPreferences.self
         ])
 
-        let modelConfiguration = ModelConfiguration(
-            isStoredInMemoryOnly: false
+        // CloudKit-backed store: cities, spots, favorite events, and timeline plans/templates sync across devices.
+        let cloudConfig = ModelConfiguration(
+            "CloudSync",
+            schema: Schema([FavoriteCity.self, CitySpot.self, FavoriteEvent.self, TimelinePlan.self, TimelineTemplate.self]),
+            cloudKitDatabase: .private("iCloud.app.rosalabs.pokezonebuddy.data")
+        )
+
+        // Local-only store: API event data, preferences — device-specific, no sync needed.
+        let localConfig = ModelConfiguration(
+            schema: Schema([
+                Event.self,
+                ReminderPreferences.self,
+                TipPreferences.self
+            ])
         )
 
         do {
-            return try ModelContainer(for: schema, configurations: [modelConfiguration])
+            return try ModelContainer(for: schema, configurations: [cloudConfig, localConfig])
         } catch {
             fatalError(String(format: String(localized: "fatal.model_container_creation_failed"), String(describing: error)))
         }

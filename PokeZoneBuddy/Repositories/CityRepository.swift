@@ -50,6 +50,15 @@ final class CityRepository: CityRepositoryProtocol {
     }
 
     func saveCity(_ city: FavoriteCity) async throws {
+        // Guard against duplicates — required because CloudKit sync removes the
+        // @Attribute(.unique) guarantee on timeZoneIdentifier.
+        let tzID = city.timeZoneIdentifier
+        let duplicate = FetchDescriptor<FavoriteCity>(
+            predicate: #Predicate { $0.timeZoneIdentifier == tzID }
+        )
+        let existing = (try? modelContext.fetch(duplicate)) ?? []
+        guard existing.isEmpty else { return }
+
         modelContext.insert(city)
         try modelContext.save()
     }
