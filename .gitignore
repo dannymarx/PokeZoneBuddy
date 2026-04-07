@@ -61,6 +61,9 @@ fastlane/
 Gemfile
 Gemfile.lock
 
+## UI test sources (local screenshot automation only)
+PokeZoneBuddyUITests/
+
 # ===================================
 # macOS
 # ===================================
@@ -189,3 +192,4 @@ wiki/.vault-nickname
 
 ## Local signing config (never commit team IDs or xcconfig secrets)
 *.xcconfig
+CLAUDE.md
