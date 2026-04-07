@@ -51,6 +51,13 @@ struct PokeZoneBuddyApp: App {
             FavoriteCity.self, CitySpot.self, FavoriteEvent.self,
             TimelinePlan.self, TimelineTemplate.self
         ])
+        let localSchema = Schema([
+            Event.self, ReminderPreferences.self, TipPreferences.self
+        ])
+
+        // Both configs must be explicit — SwiftData does not auto-route leftover
+        // models to an implicit default store when a named config is present.
+        let localConfig = ModelConfiguration("LocalOnly", schema: localSchema)
 
         // Try with CloudKit sync enabled.
         let cloudConfig = ModelConfiguration(
@@ -58,17 +65,16 @@ struct PokeZoneBuddyApp: App {
             schema: syncedSchema,
             cloudKitDatabase: .automatic
         )
-        if let container = try? ModelContainer(for: schema, configurations: [cloudConfig]) {
+        if let container = try? ModelContainer(for: schema, configurations: [cloudConfig, localConfig]) {
             return container
         }
 
-        // CloudKit unavailable (not signed in, container not ready, etc.) —
-        // fall back to same named store without sync. Same file path means no
-        // data loss; sync activates automatically on the next successful launch.
+        // CloudKit unavailable — same store names so file paths are consistent
+        // and sync activates automatically on the next successful launch.
         print("[PokeZoneBuddy] CloudKit unavailable, falling back to local-only.")
-        let localConfig = ModelConfiguration("CloudSync", schema: syncedSchema)
+        let cloudFallback = ModelConfiguration("CloudSync", schema: syncedSchema)
         do {
-            return try ModelContainer(for: schema, configurations: [localConfig])
+            return try ModelContainer(for: schema, configurations: [cloudFallback, localConfig])
         } catch {
             fatalError(String(format: String(localized: "fatal.model_container_creation_failed"), String(describing: error)))
         }
