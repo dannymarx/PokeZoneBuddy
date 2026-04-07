@@ -19,10 +19,11 @@ final class FavoriteEvent {
     /// Unique event ID (matches Event.id)
     /// Note: No @Attribute(.unique) — CloudKit sync is incompatible with unique constraints.
     /// Deduplication is enforced in PreferencesRepository.addFavorite instead.
-    var eventID: String
-    
+    // Default "" required for CloudKit compatibility (all properties must have a default).
+    var eventID: String = ""
+
     /// Timestamp when this event was favorited
-    var addedDate: Date
+    var addedDate: Date = Date()
     
     // MARK: - Initializer
     

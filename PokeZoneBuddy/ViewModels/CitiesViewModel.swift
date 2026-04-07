@@ -353,7 +353,7 @@ final class CitiesViewModel {
 
         // Prüfe auf Duplikate (gleiche Koordinaten in gleicher Stadt)
         // Uses Haversine distance with 10 meter threshold for realistic duplicate detection
-        let isDuplicate = city.spots.contains { spot in
+        let isDuplicate = (city.spots ?? []).contains { spot in
             coordinatesAreDuplicate(lat1: spot.latitude, lon1: spot.longitude,
                                   lat2: latitude, lon2: longitude)
         }
@@ -500,7 +500,7 @@ final class CitiesViewModel {
     /// - Parameter city: Die Stadt, deren Spots geladen werden sollen
     /// - Returns: Array von CitySpots, sortiert nach createdAt descending
     func getSpots(for city: FavoriteCity) -> [CitySpot] {
-        return city.spots.sorted { $0.createdAt > $1.createdAt }
+        return (city.spots ?? []).sorted { $0.createdAt > $1.createdAt }
     }
 
     // MARK: - Import/Export

@@ -14,24 +14,25 @@ import SwiftData
 @Model
 final class FavoriteCity {
     /// Stadtname (z.B. "Tokyo", "New York")
-    var name: String
+    // Default "" required for CloudKit compatibility (all properties must have a default).
+    var name: String = ""
 
     /// TimeZone Identifier (z.B. "Asia/Tokyo", "America/New_York")
     /// Verwendet Apple's TimeZone-System für präzise Konvertierungen
     /// Note: No @Attribute(.unique) — CloudKit sync is incompatible with unique constraints.
     /// Deduplication is enforced in CityRepository.saveCity instead.
-    var timeZoneIdentifier: String
+    var timeZoneIdentifier: String = ""
 
     /// Vollständiger Name mit Kontext (z.B. "Tokyo, Japan", "Los Angeles, California")
     /// Wird von MapKit's addressRepresentations.cityWithContext bereitgestellt
-    var fullName: String
+    var fullName: String = ""
 
     /// Wann wurde diese Stadt hinzugefügt
-    var addedDate: Date
+    var addedDate: Date = Date()
 
     /// Gespeicherte Spots (Koordinaten) für diese Stadt
-    /// Cascade-Delete: Wenn die Stadt gelöscht wird, werden auch alle Spots gelöscht
-    @Relationship(deleteRule: .cascade) var spots: [CitySpot] = []
+    /// Optional + default required for CloudKit compatibility (relationships must be optional).
+    @Relationship(deleteRule: .cascade) var spots: [CitySpot]? = []
 
     /// Berechnete Property für das TimeZone-Objekt
     var timeZone: TimeZone? {
@@ -40,7 +41,7 @@ final class FavoriteCity {
 
     /// Anzahl der gespeicherten Spots für diese Stadt
     var spotCount: Int {
-        return spots.count
+        return spots?.count ?? 0
     }
     
     /// Initializer für neue Lieblingsstädte

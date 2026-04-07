@@ -14,25 +14,26 @@ import SwiftData
 @Model
 final class CitySpot {
     /// Name des Spots (z.B. "Central Park Gym Cluster")
-    var name: String
+    // Default values required for CloudKit compatibility (all properties must have a default).
+    var name: String = ""
 
     /// Mehrzeilige Notizen zum Spot (z.B. "5 Gyms, viele Spawns, gute Raid-Location")
-    var notes: String
+    var notes: String = ""
 
     /// Breitengrad der Koordinate
-    var latitude: Double
+    var latitude: Double = 0.0
 
     /// Längengrad der Koordinate
-    var longitude: Double
+    var longitude: Double = 0.0
 
     /// Kategorie des Spots (Gym, PokéStop, Meeting Point, Other)
-    var category: SpotCategory
+    var category: SpotCategory = SpotCategory.other
 
     /// Wann wurde dieser Spot erstellt
-    var createdAt: Date
+    var createdAt: Date = Date()
 
     /// Ist dieser Spot als Favorit markiert
-    private(set) var isFavorite: Bool
+    private(set) var isFavorite: Bool = false
 
     /// Relationship zur zugehörigen Stadt (optional, wird automatisch gesetzt)
     var city: FavoriteCity?

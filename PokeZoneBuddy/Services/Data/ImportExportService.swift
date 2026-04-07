@@ -24,7 +24,7 @@ final class ImportExportService {
         let exportCities = cities.map { ExportCity(from: $0) }
         let exportData = ExportData(cities: exportCities)
 
-        let spotCount = cities.reduce(0) { $0 + $1.spots.count }
+        let spotCount = cities.reduce(0) { $0 + ($1.spots?.count ?? 0) }
         AppLogger.service.info("Starting export of \(cities.count) cities with \(spotCount) spots")
 
         let encoder = JSONEncoder()

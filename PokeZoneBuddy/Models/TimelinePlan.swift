@@ -16,29 +16,30 @@ final class TimelinePlan {
 
     // MARK: - Properties
 
+    // Default values required for CloudKit compatibility (all properties must have a default).
     /// Unique identifier
-    var id: UUID
+    var id: UUID = UUID()
 
     /// User-defined plan name
-    var name: String
+    var name: String = ""
 
     /// Links to Event.id (e.g., "community-day-march-2025")
-    var eventID: String
+    var eventID: String = ""
 
     /// Event display name for historical reference
-    var eventName: String
+    var eventName: String = ""
 
     /// Event type for filtering/grouping
-    var eventType: String
+    var eventType: String = ""
 
     /// TimeZone identifiers (e.g., ["Asia/Tokyo", "America/New_York"])
-    var cityIdentifiers: [String]
+    var cityIdentifiers: [String] = []
 
     /// Creation timestamp
-    var dateCreated: Date
+    var dateCreated: Date = Date()
 
     /// Last modification timestamp
-    var dateModified: Date
+    var dateModified: Date = Date()
 
     // MARK: - Initializer
 

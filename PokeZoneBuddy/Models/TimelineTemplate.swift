@@ -16,26 +16,27 @@ final class TimelineTemplate {
 
     // MARK: - Properties
 
+    // Default values required for CloudKit compatibility (all properties must have a default).
     /// Unique identifier
-    var id: UUID
+    var id: UUID = UUID()
 
     /// Template name (e.g., "Community Day Default")
-    var name: String
+    var name: String = ""
 
     /// Target event type ("community-day", "raid-hour", "all")
-    var eventType: String
+    var eventType: String = ""
 
     /// Default cities for this event type (timezone identifiers)
-    var cityIdentifiers: [String]
+    var cityIdentifiers: [String] = []
 
     /// Auto-apply when viewing matching event type
-    var isDefault: Bool
+    var isDefault: Bool = false
 
     /// Creation timestamp
-    var dateCreated: Date
+    var dateCreated: Date = Date()
 
     /// Last modification timestamp
-    var dateModified: Date
+    var dateModified: Date = Date()
 
     // MARK: - Initializer
 

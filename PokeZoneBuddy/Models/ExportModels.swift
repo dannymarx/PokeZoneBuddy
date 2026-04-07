@@ -47,7 +47,7 @@ struct ExportCity: Codable {
         self.fullName = city.fullName
         self.addedDate = city.addedDate
         // Safely map spots, filtering out any nil values if needed
-        self.spots = city.spots.compactMap { spot in
+        self.spots = (city.spots ?? []).compactMap { spot in
             return ExportSpot(from: spot)
         }
     }
