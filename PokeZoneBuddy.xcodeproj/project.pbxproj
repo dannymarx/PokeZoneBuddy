@@ -11,9 +11,22 @@
 		A8D47A1BC67E4611ADDCEEE1 /* Secrets.xcconfig */ = {isa = PBXFileReference; lastKnownFileType = text.xcconfig; name = Secrets.xcconfig; path = PokeZoneBuddy/Config/Secrets.xcconfig; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
+/* Begin PBXFileSystemSynchronizedBuildFileExceptionSet section */
+		306D66D02F8585CE00C2B6AA /* Exceptions for "PokeZoneBuddy" folder in "PokeZoneBuddy" target */ = {
+			isa = PBXFileSystemSynchronizedBuildFileExceptionSet;
+			membershipExceptions = (
+				Info.plist,
+			);
+			target = 305FAD722E8D2AF1002CBBDD /* PokeZoneBuddy */;
+		};
+/* End PBXFileSystemSynchronizedBuildFileExceptionSet section */
+
 /* Begin PBXFileSystemSynchronizedRootGroup section */
 		305FAD752E8D2AF1002CBBDD /* PokeZoneBuddy */ = {
 			isa = PBXFileSystemSynchronizedRootGroup;
+			exceptions = (
+				306D66D02F8585CE00C2B6AA /* Exceptions for "PokeZoneBuddy" folder in "PokeZoneBuddy" target */,
+			);
 			path = PokeZoneBuddy;
 			sourceTree = "<group>";
 		};
@@ -256,6 +269,7 @@
 				CODE_SIGN_STYLE = Automatic;
 				CURRENT_PROJECT_VERSION = 1;
 				DEAD_CODE_STRIPPING = YES;
+				DEVELOPMENT_TEAM = 4B9TPJ9FTQ;
 				ENABLE_APP_SANDBOX = YES;
 				ENABLE_HARDENED_RUNTIME = YES;
 				ENABLE_INCOMING_NETWORK_CONNECTIONS = YES;
@@ -271,6 +285,7 @@
 				ENABLE_RESOURCE_ACCESS_USB = NO;
 				ENABLE_USER_SELECTED_FILES = readwrite;
 				GENERATE_INFOPLIST_FILE = YES;
+				INFOPLIST_FILE = PokeZoneBuddy/Info.plist;
 				INFOPLIST_KEY_CFBundleDisplayName = "PokéZoneBuddy";
 				INFOPLIST_KEY_LSApplicationCategoryType = "public.app-category.productivity";
 				INFOPLIST_KEY_NSCalendarsWriteOnlyAccessUsageDescription = "PokéZoneBuddy wants to add an event to your calendar. ";
@@ -319,6 +334,7 @@
 				CODE_SIGN_STYLE = Automatic;
 				CURRENT_PROJECT_VERSION = 1;
 				DEAD_CODE_STRIPPING = YES;
+				DEVELOPMENT_TEAM = 4B9TPJ9FTQ;
 				ENABLE_APP_SANDBOX = YES;
 				ENABLE_HARDENED_RUNTIME = YES;
 				ENABLE_INCOMING_NETWORK_CONNECTIONS = YES;
@@ -334,6 +350,7 @@
 				ENABLE_RESOURCE_ACCESS_USB = NO;
 				ENABLE_USER_SELECTED_FILES = readwrite;
 				GENERATE_INFOPLIST_FILE = YES;
+				INFOPLIST_FILE = PokeZoneBuddy/Info.plist;
 				INFOPLIST_KEY_CFBundleDisplayName = "PokéZoneBuddy";
 				INFOPLIST_KEY_LSApplicationCategoryType = "public.app-category.productivity";
 				INFOPLIST_KEY_NSCalendarsWriteOnlyAccessUsageDescription = "PokéZoneBuddy wants to add an event to your calendar. ";
