@@ -6,27 +6,11 @@
 	objectVersion = 77;
 	objects = {
 
-/* Begin PBXContainerItemProxy section */
-		305DBA262EA6B2E1004E0089 /* PBXContainerItemProxy */ = {
-			isa = PBXContainerItemProxy;
-			containerPortal = 305FAD6B2E8D2AF1002CBBDD /* Project object */;
-			proxyType = 1;
-			remoteGlobalIDString = 305FAD722E8D2AF1002CBBDD;
-			remoteInfo = PokeZoneBuddy;
-		};
-/* End PBXContainerItemProxy section */
-
 /* Begin PBXFileReference section */
-		305DBA222EA6B2E1004E0089 /* PokeZoneBuddyTests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = PokeZoneBuddyTests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
-		30EAC70B2E9E51EF00F47268 /* PokeZoneBuddy.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = PokeZoneBuddy.app; sourceTree = BUILT_PRODUCTS_DIR; };
+		30EAC70B2E9E51EF00F47268 /* PokeZoneBuddy.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; name = PokeZoneBuddy.app; path = /Users/danny/Coding/PokeZoneBuddy/build/Debug/PokeZoneBuddy.app; sourceTree = "<absolute>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFileSystemSynchronizedRootGroup section */
-		305DBA232EA6B2E1004E0089 /* PokeZoneBuddyTests */ = {
-			isa = PBXFileSystemSynchronizedRootGroup;
-			path = PokeZoneBuddyTests;
-			sourceTree = "<group>";
-		};
 		305FAD752E8D2AF1002CBBDD /* PokeZoneBuddy */ = {
 			isa = PBXFileSystemSynchronizedRootGroup;
 			path = PokeZoneBuddy;
@@ -35,13 +19,6 @@
 /* End PBXFileSystemSynchronizedRootGroup section */
 
 /* Begin PBXFrameworksBuildPhase section */
-		305DBA1F2EA6B2E1004E0089 /* Frameworks */ = {
-			isa = PBXFrameworksBuildPhase;
-			buildActionMask = 2147483647;
-			files = (
-			);
-			runOnlyForDeploymentPostprocessing = 0;
-		};
 		305FAD702E8D2AF1002CBBDD /* Frameworks */ = {
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
@@ -56,38 +33,12 @@
 			isa = PBXGroup;
 			children = (
 				305FAD752E8D2AF1002CBBDD /* PokeZoneBuddy */,
-				30EAC70B2E9E51EF00F47268 /* PokeZoneBuddy.app */,
-				305DBA222EA6B2E1004E0089 /* PokeZoneBuddyTests.xctest */,
-				305DBA232EA6B2E1004E0089 /* PokeZoneBuddyTests */,
 			);
 			sourceTree = "<group>";
 		};
 /* End PBXGroup section */
 
 /* Begin PBXNativeTarget section */
-		305DBA212EA6B2E1004E0089 /* PokeZoneBuddyTests */ = {
-			isa = PBXNativeTarget;
-			buildConfigurationList = 305DBA2A2EA6B2E1004E0089 /* Build configuration list for PBXNativeTarget "PokeZoneBuddyTests" */;
-			buildPhases = (
-				305DBA1E2EA6B2E1004E0089 /* Sources */,
-				305DBA1F2EA6B2E1004E0089 /* Frameworks */,
-				305DBA202EA6B2E1004E0089 /* Resources */,
-			);
-			buildRules = (
-			);
-			dependencies = (
-				305DBA272EA6B2E1004E0089 /* PBXTargetDependency */,
-			);
-			fileSystemSynchronizedGroups = (
-				305DBA232EA6B2E1004E0089 /* PokeZoneBuddyTests */,
-			);
-			name = PokeZoneBuddyTests;
-			packageProductDependencies = (
-			);
-			productName = PokeZoneBuddyTests;
-			productReference = 305DBA222EA6B2E1004E0089 /* PokeZoneBuddyTests.xctest */;
-			productType = "com.apple.product-type.bundle.unit-test";
-		};
 		305FAD722E8D2AF1002CBBDD /* PokeZoneBuddy */ = {
 			isa = PBXNativeTarget;
 			buildConfigurationList = 305FAD962E8D2AF4002CBBDD /* Build configuration list for PBXNativeTarget "PokeZoneBuddy" */;
@@ -118,12 +69,8 @@
 			attributes = {
 				BuildIndependentTargetsInParallel = 1;
 				LastSwiftUpdateCheck = 2600;
-				LastUpgradeCheck = 2600;
+				LastUpgradeCheck = 2640;
 				TargetAttributes = {
-					305DBA212EA6B2E1004E0089 = {
-						CreatedOnToolsVersion = 26.0.1;
-						TestTargetID = 305FAD722E8D2AF1002CBBDD;
-					};
 					305FAD722E8D2AF1002CBBDD = {
 						CreatedOnToolsVersion = 26.0.1;
 					};
@@ -145,19 +92,11 @@
 			projectRoot = "";
 			targets = (
 				305FAD722E8D2AF1002CBBDD /* PokeZoneBuddy */,
-				305DBA212EA6B2E1004E0089 /* PokeZoneBuddyTests */,
 			);
 		};
 /* End PBXProject section */
 
 /* Begin PBXResourcesBuildPhase section */
-		305DBA202EA6B2E1004E0089 /* Resources */ = {
-			isa = PBXResourcesBuildPhase;
-			buildActionMask = 2147483647;
-			files = (
-			);
-			runOnlyForDeploymentPostprocessing = 0;
-		};
 		305FAD712E8D2AF1002CBBDD /* Resources */ = {
 			isa = PBXResourcesBuildPhase;
 			buildActionMask = 2147483647;
@@ -168,13 +107,6 @@
 /* End PBXResourcesBuildPhase section */
 
 /* Begin PBXSourcesBuildPhase section */
-		305DBA1E2EA6B2E1004E0089 /* Sources */ = {
-			isa = PBXSourcesBuildPhase;
-			buildActionMask = 2147483647;
-			files = (
-			);
-			runOnlyForDeploymentPostprocessing = 0;
-		};
 		305FAD6F2E8D2AF1002CBBDD /* Sources */ = {
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
@@ -184,74 +116,13 @@
 		};
 /* End PBXSourcesBuildPhase section */
 
-/* Begin PBXTargetDependency section */
-		305DBA272EA6B2E1004E0089 /* PBXTargetDependency */ = {
-			isa = PBXTargetDependency;
-			target = 305FAD722E8D2AF1002CBBDD /* PokeZoneBuddy */;
-			targetProxy = 305DBA262EA6B2E1004E0089 /* PBXContainerItemProxy */;
-		};
-/* End PBXTargetDependency section */
-
 /* Begin XCBuildConfiguration section */
-		305DBA282EA6B2E1004E0089 /* Debug */ = {
-			isa = XCBuildConfiguration;
-			buildSettings = {
-				BUNDLE_LOADER = "$(TEST_HOST)";
-				CODE_SIGN_STYLE = Automatic;
-				CURRENT_PROJECT_VERSION = 1;
-				DEVELOPMENT_TEAM = ;
-				GENERATE_INFOPLIST_FILE = YES;
-				IPHONEOS_DEPLOYMENT_TARGET = 26.0;
-				MACOSX_DEPLOYMENT_TARGET = 26.0;
-				MARKETING_VERSION = 1.0;
-				PRODUCT_BUNDLE_IDENTIFIER = DannyHollek.PokeZoneBuddyTests;
-				PRODUCT_NAME = "$(TARGET_NAME)";
-				SDKROOT = auto;
-				STRING_CATALOG_GENERATE_SYMBOLS = NO;
-				SUPPORTED_PLATFORMS = "iphoneos iphonesimulator macosx";
-				SUPPORTS_MACCATALYST = NO;
-				SWIFT_APPROACHABLE_CONCURRENCY = YES;
-				SWIFT_EMIT_LOC_STRINGS = NO;
-				SWIFT_UPCOMING_FEATURE_MEMBER_IMPORT_VISIBILITY = YES;
-				SWIFT_VERSION = 5.0;
-				TARGETED_DEVICE_FAMILY = 1;
-				TEST_HOST = "$(BUILT_PRODUCTS_DIR)/PokeZoneBuddy.app/$(BUNDLE_EXECUTABLE_FOLDER_PATH)/PokeZoneBuddy";
-				XROS_DEPLOYMENT_TARGET = 26.0;
-			};
-			name = Debug;
-		};
-		305DBA292EA6B2E1004E0089 /* Release */ = {
-			isa = XCBuildConfiguration;
-			buildSettings = {
-				BUNDLE_LOADER = "$(TEST_HOST)";
-				CODE_SIGN_STYLE = Automatic;
-				CURRENT_PROJECT_VERSION = 1;
-				DEVELOPMENT_TEAM = ;
-				GENERATE_INFOPLIST_FILE = YES;
-				IPHONEOS_DEPLOYMENT_TARGET = 26.0;
-				MACOSX_DEPLOYMENT_TARGET = 26.0;
-				MARKETING_VERSION = 1.0;
-				PRODUCT_BUNDLE_IDENTIFIER = DannyHollek.PokeZoneBuddyTests;
-				PRODUCT_NAME = "$(TARGET_NAME)";
-				SDKROOT = auto;
-				STRING_CATALOG_GENERATE_SYMBOLS = NO;
-				SUPPORTED_PLATFORMS = "iphoneos iphonesimulator macosx";
-				SUPPORTS_MACCATALYST = NO;
-				SWIFT_APPROACHABLE_CONCURRENCY = YES;
-				SWIFT_EMIT_LOC_STRINGS = NO;
-				SWIFT_UPCOMING_FEATURE_MEMBER_IMPORT_VISIBILITY = YES;
-				SWIFT_VERSION = 5.0;
-				TARGETED_DEVICE_FAMILY = 1;
-				TEST_HOST = "$(BUILT_PRODUCTS_DIR)/PokeZoneBuddy.app/$(BUNDLE_EXECUTABLE_FOLDER_PATH)/PokeZoneBuddy";
-				XROS_DEPLOYMENT_TARGET = 26.0;
-			};
-			name = Release;
-		};
 		305FAD942E8D2AF4002CBBDD /* Debug */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
 				ALWAYS_SEARCH_USER_PATHS = NO;
 				ASSETCATALOG_COMPILER_GENERATE_SWIFT_ASSET_SYMBOL_EXTENSIONS = YES;
+				CLANG_ANALYZER_LOCALIZABILITY_NONLOCALIZED = YES;
 				CLANG_ANALYZER_NONNULL = YES;
 				CLANG_ANALYZER_NUMBER_OBJECT_CONVERSION = YES_AGGRESSIVE;
 				CLANG_CXX_LANGUAGE_STANDARD = "gnu++20";
@@ -281,6 +152,7 @@
 				CLANG_WARN_UNREACHABLE_CODE = YES;
 				CLANG_WARN__DUPLICATE_METHOD_MATCH = YES;
 				COPY_PHASE_STRIP = NO;
+				DEAD_CODE_STRIPPING = YES;
 				DEBUG_INFORMATION_FORMAT = dwarf;
 				DEVELOPMENT_TEAM = ;
 				ENABLE_STRICT_OBJC_MSGSEND = YES;
@@ -304,6 +176,7 @@
 				MTL_ENABLE_DEBUG_INFO = INCLUDE_SOURCE;
 				MTL_FAST_MATH = YES;
 				ONLY_ACTIVE_ARCH = YES;
+				STRING_CATALOG_GENERATE_SYMBOLS = YES;
 				SWIFT_ACTIVE_COMPILATION_CONDITIONS = "DEBUG $(inherited)";
 				SWIFT_OPTIMIZATION_LEVEL = "-Onone";
 				VERSIONING_SYSTEM = "apple-generic";
@@ -315,6 +188,7 @@
 			buildSettings = {
 				ALWAYS_SEARCH_USER_PATHS = NO;
 				ASSETCATALOG_COMPILER_GENERATE_SWIFT_ASSET_SYMBOL_EXTENSIONS = YES;
+				CLANG_ANALYZER_LOCALIZABILITY_NONLOCALIZED = YES;
 				CLANG_ANALYZER_NONNULL = YES;
 				CLANG_ANALYZER_NUMBER_OBJECT_CONVERSION = YES_AGGRESSIVE;
 				CLANG_CXX_LANGUAGE_STANDARD = "gnu++20";
@@ -344,6 +218,7 @@
 				CLANG_WARN_UNREACHABLE_CODE = YES;
 				CLANG_WARN__DUPLICATE_METHOD_MATCH = YES;
 				COPY_PHASE_STRIP = NO;
+				DEAD_CODE_STRIPPING = YES;
 				DEBUG_INFORMATION_FORMAT = "dwarf-with-dsym";
 				DEVELOPMENT_TEAM = ;
 				ENABLE_NS_ASSERTIONS = NO;
@@ -360,6 +235,7 @@
 				LOCALIZATION_PREFERS_STRING_CATALOGS = YES;
 				MTL_ENABLE_DEBUG_INFO = NO;
 				MTL_FAST_MATH = YES;
+				STRING_CATALOG_GENERATE_SYMBOLS = YES;
 				SWIFT_COMPILATION_MODE = wholemodule;
 				VERSIONING_SYSTEM = "apple-generic";
 			};
@@ -374,6 +250,7 @@
 				CODE_SIGN_IDENTITY = "Apple Development";
 				CODE_SIGN_STYLE = Automatic;
 				CURRENT_PROJECT_VERSION = 1;
+				DEAD_CODE_STRIPPING = YES;
 				DEVELOPMENT_TEAM = ;
 				ENABLE_APP_SANDBOX = YES;
 				ENABLE_HARDENED_RUNTIME = YES;
@@ -435,6 +312,7 @@
 				CODE_SIGN_IDENTITY = "Apple Development";
 				CODE_SIGN_STYLE = Automatic;
 				CURRENT_PROJECT_VERSION = 1;
+				DEAD_CODE_STRIPPING = YES;
 				DEVELOPMENT_TEAM = ;
 				ENABLE_APP_SANDBOX = YES;
 				ENABLE_HARDENED_RUNTIME = YES;
@@ -490,15 +368,6 @@
 /* End XCBuildConfiguration section */
 
 /* Begin XCConfigurationList section */
-		305DBA2A2EA6B2E1004E0089 /* Build configuration list for PBXNativeTarget "PokeZoneBuddyTests" */ = {
-			isa = XCConfigurationList;
-			buildConfigurations = (
-				305DBA282EA6B2E1004E0089 /* Debug */,
-				305DBA292EA6B2E1004E0089 /* Release */,
-			);
-			defaultConfigurationIsVisible = 0;
-			defaultConfigurationName = Release;
-		};
 		305FAD6E2E8D2AF1002CBBDD /* Build configuration list for PBXProject "PokeZoneBuddy" */ = {
 			isa = XCConfigurationList;
 			buildConfigurations = (
