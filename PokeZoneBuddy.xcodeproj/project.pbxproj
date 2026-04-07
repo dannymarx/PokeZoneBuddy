@@ -7,7 +7,7 @@
 	objects = {
 
 /* Begin PBXFileReference section */
-		30A7D5502F8541B000A1A38D /* PokeZoneBuddy.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; name = PokeZoneBuddy.app; path = /Users/danny/Coding/PokeZoneBuddy/build/Debug/PokeZoneBuddy.app; sourceTree = "<absolute>"; };
+		30994FB32F85496900CF49CA /* PokeZoneBuddy.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = PokeZoneBuddy.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		A8D47A1BC67E4611ADDCEEE1 /* Secrets.xcconfig */ = {isa = PBXFileReference; lastKnownFileType = text.xcconfig; name = Secrets.xcconfig; path = PokeZoneBuddy/Config/Secrets.xcconfig; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
@@ -35,6 +35,7 @@
 			children = (
 				A8D47A1BC67E4611ADDCEEE1 /* Secrets.xcconfig */,
 				305FAD752E8D2AF1002CBBDD /* PokeZoneBuddy */,
+				30994FB32F85496900CF49CA /* PokeZoneBuddy.app */,
 			);
 			sourceTree = "<group>";
 		};
@@ -60,7 +61,7 @@
 			packageProductDependencies = (
 			);
 			productName = PokeZoneBuddy;
-			productReference = 30A7D5502F8541B000A1A38D /* PokeZoneBuddy.app */;
+			productReference = 30994FB32F85496900CF49CA /* PokeZoneBuddy.app */;
 			productType = "com.apple.product-type.application";
 		};
 /* End PBXNativeTarget section */

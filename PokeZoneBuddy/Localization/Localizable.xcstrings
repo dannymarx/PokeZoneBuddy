@@ -4368,13 +4368,13 @@
         "de": {
           "stringUnit": {
             "state": "translated",
-            "value": "Testen"
+            "value": "Benachrichtigungsvorschau"
           }
         },
         "en": {
           "stringUnit": {
             "state": "translated",
-            "value": "Testing"
+            "value": "Notification Preview"
           }
         }
       }
