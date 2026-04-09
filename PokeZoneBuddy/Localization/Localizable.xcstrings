@@ -1228,7 +1228,23 @@
         }
       }
     },
-    "common.save": {},
+    "common.save": {
+      "extractionState": "manual",
+      "localizations": {
+        "de": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Speichern"
+          }
+        },
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Save"
+          }
+        }
+      }
+    },
     "continent.africa": {
       "extractionState": "manual",
       "localizations": {
@@ -6606,8 +6622,40 @@
         }
       }
     },
-    "timeline.plans.cities": {},
-    "timeline.plans.city": {},
+    "timeline.plans.cities": {
+      "extractionState": "manual",
+      "localizations": {
+        "de": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Städte"
+          }
+        },
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "cities"
+          }
+        }
+      }
+    },
+    "timeline.plans.city": {
+      "extractionState": "manual",
+      "localizations": {
+        "de": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Stadt"
+          }
+        },
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "city"
+          }
+        }
+      }
+    },
     "timeline.plans.delete_confirm": {
       "extractionState": "manual",
       "localizations": {
@@ -6625,9 +6673,57 @@
         }
       }
     },
-    "timeline.plans.dialog.details": {},
-    "timeline.plans.dialog.footer": {},
-    "timeline.plans.dialog.header": {},
+    "timeline.plans.dialog.details": {
+      "extractionState": "manual",
+      "localizations": {
+        "de": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Event-Details"
+          }
+        },
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Event Details"
+          }
+        }
+      }
+    },
+    "timeline.plans.dialog.footer": {
+      "extractionState": "manual",
+      "localizations": {
+        "de": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Tippe auf den Vorschlag, um ihn zu verwenden"
+          }
+        },
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Tap the suggestion to use it"
+          }
+        }
+      }
+    },
+    "timeline.plans.dialog.header": {
+      "extractionState": "manual",
+      "localizations": {
+        "de": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Planname"
+          }
+        },
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Plan Name"
+          }
+        }
+      }
+    },
     "timeline.plans.export_data": {
       "extractionState": "manual",
       "localizations": {
