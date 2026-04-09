@@ -31,7 +31,6 @@ struct PlanDetailView: View {
     @State private var isExportingData = false
     @State private var showShareSheet = false
     @State private var shareItem: ShareableItem?
-    @State private var showEditSheet = false
     @State private var errorMessage: String?
     @State private var showSuccessAnimation = false
 
@@ -60,28 +59,10 @@ struct PlanDetailView: View {
 #endif
         .toolbar {
             ToolbarItem(placement: .primaryAction) {
-                Menu {
-                    Button {
-                        showEditSheet = true
-                    } label: {
-                        Label(
-                            String(localized: "common.edit"),
-                            systemImage: "pencil"
-                        )
-                    }
-
-                    Divider()
-
-                    Button(role: .destructive) {
-                        deletePlan()
-                    } label: {
-                        Label(
-                            String(localized: "common.delete"),
-                            systemImage: "trash"
-                        )
-                    }
+                Button(role: .destructive) {
+                    deletePlan()
                 } label: {
-                    Image(systemName: "ellipsis.circle")
+                    Image(systemName: "trash")
                 }
             }
         }
@@ -110,54 +91,108 @@ struct PlanDetailView: View {
 
     // MARK: - Sections
 
+    @ViewBuilder
     private var planHeaderSection: some View {
-        VStack(spacing: 16) {
-            Image(systemName: "map.fill")
-                .font(.system(size: 48))
-                .foregroundStyle(
-                    LinearGradient(
-                        colors: [.systemPurple, .systemPurple.opacity(0.7)],
-                        startPoint: .topLeading,
-                        endPoint: .bottomTrailing
-                    )
-                )
-                .frame(width: 80, height: 80)
-                .background(
-                    Circle()
-                        .fill(Color.systemPurple.opacity(0.1))
-                )
+        if let event {
+            VStack(alignment: .leading, spacing: 16) {
+                // Event image with countdown overlay
+                if let imageURLString = event.imageURL, let imageURL = URL(string: imageURLString) {
+                    AsyncImage(url: imageURL, transaction: Transaction(animation: .easeInOut)) { phase in
+                        switch phase {
+                        case .success(let image):
+                            image
+                                .resizable()
+                                .scaledToFit()
+                                .frame(maxWidth: .infinity)
+                                .clipShape(RoundedRectangle(cornerRadius: 20, style: .continuous))
+                                .overlay(
+                                    RoundedRectangle(cornerRadius: 20, style: .continuous)
+                                        .strokeBorder(Color.primary.opacity(0.05))
+                                )
+                                .shadow(color: .black.opacity(0.08), radius: 12, y: 4)
+                        default:
+                            RoundedRectangle(cornerRadius: 20, style: .continuous)
+                                .fill(.quaternary.opacity(0.4))
+                                .aspectRatio(16 / 9, contentMode: .fit)
+                                .frame(maxWidth: .infinity)
+                        }
+                    }
+                    .overlay {
+                        GeometryReader { geometry in
+                            VStack {
+                                Spacer()
+                                EventCountdownView(event: event)
+                                    .frame(width: min(geometry.size.width * 0.6, 420))
+                                    .padding(.bottom, 12)
+                                    .shadow(color: Color.black.opacity(0.18), radius: 14, y: 6)
+                            }
+                            .frame(width: geometry.size.width, height: geometry.size.height, alignment: .bottom)
+                            .allowsHitTesting(false)
+                        }
+                    }
+                }
 
-            VStack(spacing: 8) {
-                Text(plan.name)
-                    .font(.system(size: 24, weight: .bold))
-                    .multilineTextAlignment(.center)
+                // Type badge + live badge + favorite button
+                HStack {
+                    ModernBadge(event.eventType, icon: "tag.fill", color: Color.systemBlue)
+                        .liquidGlassBadge(color: Color.systemBlue)
 
-                Text(plan.eventName)
-                    .font(.system(size: 16))
-                    .foregroundStyle(.secondary)
-                    .multilineTextAlignment(.center)
+                    if event.isCurrentlyActive {
+                        ModernBadge(String(localized: "badge.live_now"), icon: "circle.fill", color: Color.systemGreen)
+                            .liquidGlassBadge(color: Color.systemGreen)
+                            .liquidGlassAnimated()
+                    }
+
+                    Spacer()
+
+                    FavoriteButton(eventID: event.id)
+                        .font(.system(size: 24))
+                        .symbolRenderingMode(.hierarchical)
+                }
+
+                // Event name
+                Text(event.displayName)
+                    .font(.system(size: 28, weight: .bold, design: .rounded))
+                    .foregroundStyle(.primary)
+                    .multilineTextAlignment(.leading)
+                    .fixedSize(horizontal: false, vertical: true)
+
+                // Event heading
+                if !event.displayHeading.isEmpty {
+                    Text(event.displayHeading)
+                        .font(.system(size: 15, weight: .medium))
+                        .foregroundStyle(.secondary)
+                        .multilineTextAlignment(.leading)
+                        .fixedSize(horizontal: false, vertical: true)
+                }
+
+                // Plan name label
+                HStack(spacing: 6) {
+                    Image(systemName: "map.fill")
+                        .font(.system(size: 11))
+                    Text(plan.name)
+                        .font(.system(size: 13, weight: .medium))
+                }
+                .foregroundStyle(.tertiary)
             }
+            .frame(maxWidth: .infinity, alignment: .leading)
+            .padding(20)
+            .background(
+                RoundedRectangle(cornerRadius: 16, style: .continuous)
+                    .fill(.ultraThinMaterial)
+            )
+        } else {
+            HStack {
+                Spacer()
+                ProgressView()
+                Spacer()
+            }
+            .padding(40)
+            .background(
+                RoundedRectangle(cornerRadius: 16, style: .continuous)
+                    .fill(.ultraThinMaterial)
+            )
         }
-        .frame(maxWidth: .infinity)
-        .padding(24)
-        .background(
-            RoundedRectangle(cornerRadius: 16, style: .continuous)
-                .fill(.ultraThinMaterial)
-        )
-        .overlay(
-            RoundedRectangle(cornerRadius: 16, style: .continuous)
-                .strokeBorder(
-                    LinearGradient(
-                        colors: [
-                            .white.opacity(0.3),
-                            .systemPurple.opacity(0.2)
-                        ],
-                        startPoint: .topLeading,
-                        endPoint: .bottomTrailing
-                    ),
-                    lineWidth: 1
-                )
-        )
     }
 
     private var metadataSection: some View {
@@ -184,13 +219,6 @@ struct PlanDetailView: View {
                 icon: "clock"
             )
 
-            Divider()
-
-            MetadataRow(
-                label: String(localized: "timeline.plan.modified"),
-                value: plan.dateModified.formatted(date: .long, time: .omitted),
-                icon: "clock.arrow.circlepath"
-            )
         }
         .padding(16)
         .background(
@@ -200,12 +228,8 @@ struct PlanDetailView: View {
     }
 
     private var citiesSection: some View {
-        VStack(alignment: .leading, spacing: 12) {
-            Text(String(localized: "timeline.plan.cities"))
-                .font(.system(size: 16, weight: .semibold))
-                .padding(.horizontal, 4)
-
-            if cities.isEmpty {
+        Group {
+            if cities.isEmpty || event == nil {
                 HStack {
                     Spacer()
                     ProgressView()
@@ -213,11 +237,11 @@ struct PlanDetailView: View {
                 }
                 .padding()
             } else {
-                VStack(spacing: 8) {
-                    ForEach(Array(cities.enumerated()), id: \.element.id) { index, city in
-                        CityRowView(city: city, index: index + 1)
-                    }
-                }
+                EventTimelineView(
+                    event: event!,
+                    favoriteCities: cities,
+                    plannerMenu: nil
+                )
             }
         }
     }
@@ -438,51 +462,6 @@ private struct MetadataRow: View {
                 .font(.system(size: 14, weight: .medium))
                 .foregroundStyle(.primary)
         }
-    }
-}
-
-private struct CityRowView: View {
-    let city: FavoriteCity
-    let index: Int
-
-    var body: some View {
-        HStack(spacing: 12) {
-            Text("\(index)")
-                .font(.system(size: 14, weight: .semibold, design: .rounded))
-                .foregroundStyle(.tertiary)
-                .frame(width: 28, height: 28)
-                .background(
-                    Circle()
-                        .fill(Color.systemPurple.opacity(0.1))
-                )
-
-            VStack(alignment: .leading, spacing: 2) {
-                Text(city.name)
-                    .font(.system(size: 14, weight: .medium))
-                    .foregroundStyle(.primary)
-
-                Text(city.fullName)
-                    .font(.system(size: 12))
-                    .foregroundStyle(.secondary)
-            }
-
-            Spacer()
-
-            Text(city.timeZoneIdentifier)
-                .font(.system(size: 11, weight: .medium, design: .monospaced))
-                .foregroundStyle(.tertiary)
-                .padding(.horizontal, 8)
-                .padding(.vertical, 4)
-                .background(
-                    Capsule()
-                        .fill(Color.secondary.opacity(0.1))
-                )
-        }
-        .padding(12)
-        .background(
-            RoundedRectangle(cornerRadius: 10, style: .continuous)
-                .fill(Color.secondary.opacity(0.05))
-        )
     }
 }
 
