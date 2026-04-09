@@ -401,16 +401,16 @@ struct SpotListView: View {
         guard !didSeedSelection else { return }
 
         let initialID = resolveExistingID(from: initialSpot?.persistentModelID)
-        let fallbackID = initialID ?? spots.first?.persistentModelID
 
         switch style {
         case .split:
-            activeSpotID = fallbackID
+            activeSpotID = initialID ?? spots.first?.persistentModelID
         case .stack:
-            activeSpotID = fallbackID
-            if let fallbackID {
-                navigationPath = [fallbackID]
+            if let initialID {
+                activeSpotID = initialID
+                navigationPath = [initialID]
             }
+            // No fallback for stack — show the list, let user tap a spot
         }
 
         didSeedSelection = true

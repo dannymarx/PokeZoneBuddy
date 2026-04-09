@@ -115,7 +115,6 @@ struct CitiesManagementView: View {
                 List {
                     ForEach(viewModel.favoriteCities, id: \.persistentModelID) { city in
                         Button {
-                            activeSpotForSpots = viewModel.getSpots(for: city).first
                             activeCityForSpots = city
                         } label: {
                             FavoriteCityRowContent(city: city, viewModel: viewModel)
