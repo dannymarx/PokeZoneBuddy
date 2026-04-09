@@ -79,7 +79,7 @@ struct SpotDetailView: View {
         .alert(String(localized: "spots.copied"), isPresented: $showCopiedAlert) {
             Button(String(localized: "common.ok"), role: .cancel) {}
         } message: {
-            Text(String(localized: "spots.copied"))
+            Text(String(localized: "spots.copied.message"))
         }
         .onChange(of: spot.persistentModelID) { _, _ in
             // Update camera position when spot changes

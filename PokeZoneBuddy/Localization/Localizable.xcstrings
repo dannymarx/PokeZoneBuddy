@@ -5271,6 +5271,22 @@
         }
       }
     },
+    "spots.copied.message": {
+      "localizations": {
+        "de": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Koordinaten in die Zwischenablage kopiert."
+          }
+        },
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Coordinates copied to clipboard."
+          }
+        }
+      }
+    },
     "spots.detail.coordinates": {
       "localizations": {
         "de": {
