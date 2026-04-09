@@ -501,10 +501,12 @@ private struct MetricCapsule: View {
                 Text(title)
                     .font(.system(size: 11, weight: .semibold))
                     .foregroundStyle(.secondary)
+                    .lineLimit(1)
 
                 Text(value)
                     .font(.system(size: 13, weight: .semibold))
                     .foregroundStyle(.primary)
+                    .lineLimit(1)
             }
         }
         .padding(.horizontal, 12)
