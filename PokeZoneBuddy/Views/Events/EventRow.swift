@@ -107,6 +107,8 @@ struct EventRow: View {
         .opacity(isPast ? 0.6 : 1.0)
         .animation(.spring(response: 0.4, dampingFraction: 0.75), value: isSelected)
         .animation(.spring(response: 0.4, dampingFraction: 0.75), value: isActive)
+        .accessibilityIdentifier("event-row")
+        .accessibilityAddTraits(.isButton)
     }
 
     /// Returns the semantic system color for the event type

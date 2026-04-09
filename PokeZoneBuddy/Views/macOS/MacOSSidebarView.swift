@@ -170,6 +170,7 @@ struct MacOSSidebarView: View {
                 }
             }
             .buttonStyle(.plain)
+            .accessibilityIdentifier("sidebar-\(item.rawValue)")
             .animation(.spring(response: 0.3, dampingFraction: 0.7), value: isSelected)
             .animation(.spring(response: 0.25, dampingFraction: 0.8), value: isHovered)
             .onHover { hovering in

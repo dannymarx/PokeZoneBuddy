@@ -122,6 +122,7 @@ struct CitiesManagementView: View {
                         }
                         .buttonStyle(.plain)
                         .contentShape(Rectangle())
+                        .accessibilityIdentifier("city-row")
                     }
                     .onDelete { offsets in
                         viewModel.removeCities(at: offsets)

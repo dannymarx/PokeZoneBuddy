@@ -120,6 +120,7 @@ struct AllSpotsView: View {
                             }
                             .buttonStyle(.plain)
                             .contentShape(Rectangle())
+                            .accessibilityIdentifier("spot-row")
                         }
                         .onDelete { offsets in
                             citiesViewModel.deleteSpots(at: offsets, from: city)

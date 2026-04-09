@@ -93,6 +93,7 @@ struct AllSpotsContentView: View {
                                 }
                                 .buttonStyle(.plain)
                                 .contentShape(Rectangle())
+                                .accessibilityIdentifier("spot-row")
                                 .disabled(isEditMode)
                             }
                             .listRowBackground(Color.clear)

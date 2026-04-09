@@ -57,6 +57,7 @@ struct CitiesContentView: View {
                 }
                 .buttonStyle(.plain)
                 .contentShape(Rectangle())
+                .accessibilityIdentifier("city-row")
                 .listRowBackground(Color.clear)
                 .listRowInsets(EdgeInsets(top: 4, leading: 8, bottom: 4, trailing: 8))
             }

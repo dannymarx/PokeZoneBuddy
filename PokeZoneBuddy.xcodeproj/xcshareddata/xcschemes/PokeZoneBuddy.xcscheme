@@ -31,22 +31,10 @@
       shouldAutocreateTestPlan = "YES">
       <Testables>
          <TestableReference
-            skipped = "NO"
-            parallelizable = "YES">
+            skipped = "NO">
             <BuildableReference
                BuildableIdentifier = "primary"
-               BlueprintIdentifier = "305DBA212EA6B2E1004E0089"
-               BuildableName = "PokeZoneBuddyTests.xctest"
-               BlueprintName = "PokeZoneBuddyTests"
-               ReferencedContainer = "container:PokeZoneBuddy.xcodeproj">
-            </BuildableReference>
-         </TestableReference>
-         <TestableReference
-            skipped = "NO"
-            parallelizable = "YES">
-            <BuildableReference
-               BuildableIdentifier = "primary"
-               BlueprintIdentifier = "305FAD8B2E8D2AF4002CBBDD"
+               BlueprintIdentifier = "306D66D72F858DBA00C2B6AA"
                BuildableName = "PokeZoneBuddyUITests.xctest"
                BlueprintName = "PokeZoneBuddyUITests"
                ReferencedContainer = "container:PokeZoneBuddy.xcodeproj">
@@ -74,6 +62,16 @@
             ReferencedContainer = "container:PokeZoneBuddy.xcodeproj">
          </BuildableReference>
       </BuildableProductRunnable>
+      <CommandLineArguments>
+         <CommandLineArgument
+            argument = "-ClearSampleData "
+            isEnabled = "NO">
+         </CommandLineArgument>
+         <CommandLineArgument
+            argument = "-SeedSampleData"
+            isEnabled = "YES">
+         </CommandLineArgument>
+      </CommandLineArguments>
    </LaunchAction>
    <ProfileAction
       buildConfiguration = "Release"

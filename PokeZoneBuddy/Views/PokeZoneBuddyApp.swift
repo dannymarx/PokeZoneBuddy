@@ -24,6 +24,8 @@ struct PokeZoneBuddyApp: App {
     init() {
         // Set up notification delegate
         UNUserNotificationCenter.current().delegate = NotificationDelegate.shared
+        // Seed or clear sample data when launched with -SeedSampleData / -ClearSampleData
+        SeedDataManager.handleLaunchArguments(with: sharedModelContainer.mainContext)
     }
 
     // MARK: - SwiftData Container
